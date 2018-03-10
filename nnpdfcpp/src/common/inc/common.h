@@ -38,7 +38,7 @@ enum sumRule {SUM_MSR, SUM_UVL, SUM_DVL, SUM_SVL, SUM_CVL, SUM_USM, SUM_DSM, SUM
 
 // ************ Code Organisation Enums ***********
 
-enum minType    {MIN_UNDEF, MIN_GA, MIN_NGA, MIN_NGAFT, MIN_CMAES};
+enum minType    {MIN_UNDEF, MIN_CMAES};
 enum stopType   {STOP_UNDEF, STOP_NONE, STOP_LB};
 enum paramType  {PARAM_UNDEF, PARAM_NN, PARAM_SLN, PARAM_SLNPP };
 enum basisType  {BASIS_UNDEF, BASIS_NN23, BASIS_NN23QED,

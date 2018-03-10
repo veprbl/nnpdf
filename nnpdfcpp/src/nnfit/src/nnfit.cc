@@ -174,21 +174,6 @@ int main(int argc, char **argv)
       Minimizer* minim = NULL;
       switch (NNPDFSettings::getFitMethod(settings.Get("fitting","fitmethod").as<string>()))
       {
-        case MIN_GA:
-          minim = new GAMinimizer(settings);
-          cout  << Colour::FG_BLUE << "Minimiser: Genetic Algorithm" << Colour::FG_DEFAULT << endl;
-          break;
-
-        case MIN_NGA:
-          minim = new NGAMinimizer(settings);
-          cout  << Colour::FG_BLUE << "Minimiser: Genetic Algorithm w/ nodal mutations" << Colour::FG_DEFAULT << endl;
-          break;
-
-        case MIN_NGAFT:
-          minim = new NGAFTMinimizer(settings);
-          cout  << Colour::FG_BLUE << "Minimiser: Genetic Algorithm w/ fixed threshold term NN(x)-NN(1)" << Colour::FG_DEFAULT << endl;
-          break;
-
         case MIN_CMAES:
           minim = new CMAESMinimizer(settings);
           cout  << Colour::FG_BLUE << "Minimiser: CMA-ES" << Colour::FG_DEFAULT << endl;
@@ -205,17 +190,17 @@ int main(int argc, char **argv)
       switch (NNPDFSettings::getParamType(settings.Get("fitting","paramtype").as<string>()))
       {
         case PARAM_NN:
-          fitset = FitPDFSet::Generate<MultiLayerPerceptron,GAMinimizer>(settings, fitbasis); // need to rewrite generate
+          fitset = FitPDFSet::Generate<MultiLayerPerceptron>(settings, fitbasis);
           cout << Colour::FG_BLUE << "Parametrisation: Neural Network" << Colour::FG_DEFAULT << endl;
           break;
 
         case PARAM_SLNPP:
-          fitset = FitPDFSet::Generate<SingleLayerPerceptronPreproc,GAMinimizer>(settings, fitbasis); // need to rewrite generate
+          fitset = FitPDFSet::Generate<SingleLayerPerceptronPreproc>(settings, fitbasis);
           cout << Colour::FG_BLUE << "Parametrisation: Single layer network (preprocessed)" << Colour::FG_DEFAULT << endl;
           break;
 
         case PARAM_SLN:
-          fitset = FitPDFSet::Generate<SingleLayerPerceptron,GAMinimizer>(settings, fitbasis); // need to rewrite generate
+          fitset = FitPDFSet::Generate<SingleLayerPerceptron>(settings, fitbasis);
           cout << Colour::FG_BLUE << "Parametrisation: Single layer network" << Colour::FG_DEFAULT << endl;
           break;
 
@@ -282,10 +267,7 @@ int main(int argc, char **argv)
         }
 
         if (i % 100 == 0)
-          {
             LogChi2(settings,fitset,pos,training,validation,Exp);
-            LogPDF(settings,fitset,replica);
-          }
       }
 
       state = FIT_END;
@@ -518,14 +500,6 @@ void LogChi2(NNPDFSettings const& settings,
     }
 
   return;
-}
-
-void LogPDF(NNPDFSettings const& settings,
-            FitPDFSet* pdf,
-            int replica)
-{
-  if (settings.Get("closuretest","printpdf4gen").as<bool>())
-    LogManager::AddLogEntry("PDFgenerations",pdf->ExportPDF(replica));
 }
 
 void TrainValidSplit(NNPDFSettings const& settings,

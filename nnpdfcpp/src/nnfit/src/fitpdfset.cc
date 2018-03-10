@@ -54,30 +54,13 @@ fbtype(NNPDFSettings::getFitBasisType(nnset.Get("fitting","fitbasis").as<string>
  */
 FitPDFSet::~FitPDFSet()
 {
-  for (int j=0; j<fSettings.GetNFL(); j++)
-    if (fBestFit[j] != NULL)
-      delete fBestFit[j];
-
-  for (size_t i=0; i<fPDFs.size(); i++)
-  {
-    for (int j=0; j<fSettings.GetNFL(); j++)
-      delete fPDFs[i][j];
-
-    delete[] fPDFs[i];
-  }
+  delete fBestFit;
+  for (auto pdf : fPDFs) delete pdf;
   fPDFs.clear();
 
   for (size_t i=0; i<fPreprocParam.size(); i++)
     delete[] fPreprocParam[i];
   fPreprocParam.clear();
-}
-
-/**
- * @brief FitPDFSet initializer
- */
-void FitPDFSet::InitPDFSet() const
-{
-  return;
 }
 
 /**
@@ -93,8 +76,7 @@ void FitPDFSet::SetBestFit(int const& i)
   }
 
   // Set best fit PDF
-  for (int fl = 0; fl < fSettings.GetNFL(); fl++)
-    fBestFit[fl]->CopyPars(fPDFs[i][fl]);
+  fBestFit->CopyPars(fPDFs[i]);
 }
 
 /**
@@ -113,14 +95,10 @@ void FitPDFSet::ExpandMembers()
   // Generate new mutants if required by duplicating best fit parametrization and architecture
   for (int i=0; i<nnew; i++)
   {
-    Parametrisation** newpdf = new Parametrisation*[fSettings.GetNFL()];
-
-    for (int j=0; j<fSettings.GetNFL(); j++)
-      newpdf[j] = fBestFit[j]->Duplicate();
-
-    fPDFs.push_back(newpdf);
+    fPDFs.push_back(fBestFit->Duplicate());
     fPreprocParam.push_back(new PreprocParam(fNfl));
   }
+  cout << "Done"<<std::endl;
 }
 
 /**
@@ -136,14 +114,8 @@ void FitPDFSet::DisableMember(int i)
     return;
 
   // Swap parametrisations
-  Parametrisation **movePDF = fPDFs[i];
-  fPDFs[i] = fPDFs[fMembers];
-  fPDFs[fMembers] = movePDF;
-
-  // Swap Preprocessing
-  PreprocParam* movePP = fPreprocParam[i];
-  fPreprocParam[i] = fPreprocParam[fMembers];
-  fPreprocParam[fMembers] = movePP;
+  std::swap(fPDFs[i], fPDFs[fMembers]);
+  std::swap(fPreprocParam[i], fPreprocParam[fMembers]);
 }
 
 /**
@@ -173,17 +145,10 @@ void FitPDFSet::ClearPDFs(int const& indx)
   {
     for (size_t i=fMembers; i<fPDFs.size(); i++)
     {
-      for (int fl = 0; fl<fNfl; fl++)
-        delete fPDFs[i][fl];
-
-      delete[] fPDFs[i];
-      delete[] fPreprocParam[i];
+      delete fPDFs[i];
+      delete fPreprocParam[i];
     }
-
-    fPDFs.erase(fPDFs.begin()+fMembers, fPDFs.end());
-    fPreprocParam.erase(fPreprocParam.begin()+fMembers, fPreprocParam.end());
   }
-
   return;
 }
 
@@ -192,6 +157,7 @@ void FitPDFSet::ClearPDFs(int const& indx)
  */
 bool FitPDFSet::ComputeIntegrals( int const& i )
 {
+    // This looks like it's computing sum rules more than once, probably unneccesary?
   bool err=false;
   fFitBasis->ComputeParam(this, i, *(fPreprocParam[i]), err);              if (err) return false;
   fFitBasis->ComputeSumRules(SUM_USM, i, this, err);                       if (err) return false;
@@ -204,6 +170,7 @@ bool FitPDFSet::ComputeIntegrals( int const& i )
 /**
  * @brief Compute the sum rules.
  */
+// Not totally sure what the logic is here
 void FitPDFSet::ComputeSumRules()
 {
   for (int i=0; i<fMembers; i++)
@@ -216,8 +183,7 @@ void FitPDFSet::ComputeSumRules()
       }
       else
       {
-        for (int j=0; j<fNfl; j++)
-          fPDFs[0][j]->CopyPars(fBestFit[j]);
+          fPDFs[0]->CopyPars(fBestFit);
       }
     }
 }
@@ -242,11 +208,8 @@ void FitPDFSet::ValidateStartingPDFs()
     {
       cout << "FitPDFSet::ValidateStartingFit:: Rerolling initial PDF attempt "<<i+1 << endl;
       // Reinitialize starting PDF
-      for (int j=0; j<fNfl; j++)
-      {
-        fPDFs[0][j]->InitParameters();
-        fBestFit[j]->CopyPars(fPDFs[0][j]);
-      }
+      fPDFs[0]->InitParameters();
+      fBestFit->CopyPars(fPDFs[0]);
     }
     else
     {
@@ -268,6 +231,7 @@ void FitPDFSet::ValidateStartingPDFs()
  * @param x the momentum fraction
  * @param n the member index
  * @param pdf the output PDF vector
+ * TODO: Need to store 'fitpdfs' not call new every call
  */
 void FitPDFSet::GetPDF(real const& x, real const& Q2, int const& n, real* pdf) const
 {
@@ -279,13 +243,13 @@ void FitPDFSet::GetPDF(real const& x, real const& Q2, int const& n, real* pdf) c
       xvals[1] = log(x);
       real* fitpdfs = nullptr;
 
+      // !?!!?!
       if (fbtype == BASIS_LUX)
-	fitpdfs = new real[fNfl+1];
+	fitpdfs = new real[fNfl+1]();
       else
-	fitpdfs = new real[fNfl];
+	fitpdfs = new real[fNfl]();
 
-      for (int i=0; i<fNfl; i++)
-        fPDFs[n][i]->Compute(xvals,&fitpdfs[i]);
+      fPDFs[n]->Compute(xvals, fitpdfs);
 
       // Preprocess
       fFitBasis->Preprocess(x, fitpdfs, *fPreprocParam[n]);
@@ -313,7 +277,7 @@ void FitPDFSet::GetPDF(real const& x, real const& Q2, int const& n, real* pdf) c
   return;
 }
 
-/**
+/*
  * @brief Returns the Preprocessed NN output at fixed x, for a fixed member
  * @param x the momentum fraction
  * @param n the member index
@@ -329,21 +293,24 @@ real FitPDFSet::GetPDF(real const& x, const real &Q2, int const& n, int const& f
       xvals[0] = x;
       xvals[1] = log(x);
 
+      // !?!!?!
+      real* fitpdfs = nullptr;
+      if (fbtype == BASIS_LUX)
+	fitpdfs = new real[fNfl+1]();
+      else
+	fitpdfs = new real[fNfl]();
+
       int* transform = new int[fNfl];
       fFitBasis->NetTransform(fl,fNfl,transform);
+      fPDFs[n]->Compute(xvals, fitpdfs);
 
       for (int i = 0; i < fNfl; i++)
-        if (transform[i])
-        {
-          real tmp = 0;
-          fPDFs[n][i]->Compute(xvals,&tmp);
-          if(fFitBasis->GetPDFSqrPos(i)) tmp *= tmp;
-          pdf+=transform[i]*tmp;
-        }
+          pdf+=transform[i]*fitpdfs[i];
 
       fFitBasis->Preprocess(x, fl, pdf, *fPreprocParam[n]);
 
       delete[] xvals;
+      delete[] fitpdfs;
       delete[] transform;
     }
   else
@@ -355,8 +322,9 @@ real FitPDFSet::GetPDF(real const& x, const real &Q2, int const& n, int const& f
   return pdf;
 }
 
+
 /**
- * @brief Prototype LHGrid output
+ * @brief LHGrid output
  * @param rep the replica
  * @param erf_val the validation error function
  * @param erf_trn the training error function
@@ -442,14 +410,7 @@ void FitPDFSet::ExportPDF( int const& rep, real const& erf_val, real const& erf_
             << fSettings.GetPDFName() <<".params";
 
   ofstream params(file.str().c_str());
-
-  for (int i = 0; i < fNfl; i++)
-    {
-      params << fFitBasis->GetPDFName(i) << endl;
-      for (int j = 0; j < (int) fBestFit[i]->GetNParameters(); j++)
-        params << fBestFit[i]->GetParameters()[j] << endl;
-    }
-
+  fBestFit->WritePars(params);
   params.close();
 
   // Preparing settings from APFELSingleton
@@ -578,64 +539,6 @@ void FitPDFSet::ExportPDF( int const& rep, real const& erf_val, real const& erf_
   lhaout.close();
 
   cout << Colour::FG_GREEN << "\n- LHAPDF successful writeout!" << Colour::FG_DEFAULT << endl << endl;
-}
-
-/**
- * @brief FitPDFSet::ExportPDF
- * @param rep
- * Export PDFs for each generation
- */
-string FitPDFSet::ExportPDF(int const& rep)
-{
-  // Settings
-  const int nf = std::max(APFELSingleton::getNFpdf(),APFELSingleton::getNFas());
-  vector<double> xgrid = APFELSingleton::getX();
-
-  if (fSettings.Get("debug").as<bool>())
-    cout << "- Printing grid to grid file: " << fSettings.GetPDFName() <<endl;
-
-  // Write out the contents of the xfxvals array to the LHgrid
-  real *pdf = new real[14];
-  const int nx = xgrid.size();
-  vector<real*> res;
-
-  for (int ix = 0; ix < nx; ix++)
-    {
-      real *lha = new real[14];
-      GetPDF(xgrid[ix], fQ20, 0, pdf);
-      PDFSet::EVLN2LHA(pdf, lha);
-      res.push_back(lha);
-    }
-
-  delete[] pdf;
-
-  // print the replica
-  stringstream lhaout;
-  lhaout << scientific << setprecision(7);
-  lhaout << "PdfType: replica\nFormat: lhagrid1\nFromMCReplica: " << rep << "\n---" << std::endl;
-
-  for (int ix = 0; ix < nx; ix++)
-    lhaout << xgrid[ix] << " ";
-  lhaout << endl;
-
-  lhaout << sqrt(fQ20) << endl;
-
-  for (int i = -nf; i <= nf; i++)
-    if (i == 0) lhaout << 21 << " ";
-    else lhaout << i << " ";
-  lhaout << endl;
-
-  const int floffset = 6-nf;
-  for (int ix = 0; ix < nx; ix++)
-    {
-      lhaout << " ";
-      for (int fl = floffset; fl <= 12-floffset; fl++)
-        lhaout << setw(14) << res[ix][fl] << " ";
-      lhaout << std::endl;
-    }
-  lhaout << "---" << std::endl;
-
-  return lhaout.str();
 }
 
 /**

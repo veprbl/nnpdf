@@ -17,7 +17,7 @@
 #include "version.h"
 
 // Strings for config file output
-static const string minString[6]   = {"UNDEFINED", "GA", "NGA", "NGAFT","CMAES"};
+static const string minString[6]   = {"UNDEFINED", "CMAES"};
 static const string stopString[6]  = {"UNDEFINED", "FIXEDLENGTH", "LOOKBACK"};
 static const string paramString[6] = {"UNDEFINED", "NN", "SLN", "SLNPP"};
 static const string basisString[16]= {"UNDEFINED", "NN23", "NN23QED","EVOL", "EVOLQED","EVOLS",
@@ -45,17 +45,11 @@ static const vector< vector<string> > basiselem = { {},
 /* Convert string to enum */
 minType NNPDFSettings::getFitMethod(string const& method)
 {
-  if (method.compare("GA") == 0)      return MIN_GA;
-  if (method.compare("NGA") == 0)     return MIN_NGA;
-  if (method.compare("NGAFT") == 0)     return MIN_NGAFT;
   if (method.compare("CMAES") == 0)     return MIN_CMAES;
 
   cerr << "getFitMethod Error: Invalid fit method: "<<method<<endl;
   cerr << "choices are: "<<endl;
-  cerr <<" - GA (Basic GA)"<<endl;
-  cerr <<" - NGA"<<endl;
-  cerr <<" - NGAP"<<endl;
-  cerr <<" - NGAFT"<<endl;
+  cerr <<" - CMAES"<<endl;
   exit(-1);
 
   return MIN_UNDEF;

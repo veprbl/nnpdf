@@ -63,51 +63,6 @@ protected:
   const NNPDFSettings& fSettings;
 };
 
-/**
- *  \class GAMinimizer
- *  \brief Basic Single Epoch Genetic Algorithm Minimizer
- */
-
-class GAMinimizer : public Minimizer
-{
-public:
-  GAMinimizer(NNPDFSettings const&);
-
-  virtual void Iterate(FitPDFSet*, vector<Experiment*> const&, vector<PositivitySet> const&);
-
-protected:
-  virtual void Mutation(FitPDFSet*, int const& nmut);
-  int  Selection(FitPDFSet*);
-};
-
-/**
- *  \class NGAMinimiser
- *  \brief GA minimiser with nodal mutations
- */
-
-class NGAMinimizer : public GAMinimizer
-{
-public:
-  NGAMinimizer(NNPDFSettings const&);
-
-protected:
-   virtual void Mutation(FitPDFSet*, int const& nmut);
-};
-
-/*!
- * \brief The NGAFTMinimizer class
- * A NGA which fixes the threshold term so NN(x) = NN(x)-NN(1).
- */
-class NGAFTMinimizer : public GAMinimizer
-{
-public:
-  NGAFTMinimizer(NNPDFSettings const&);
-
-protected:
-   virtual void Mutation(FitPDFSet*, int const& nmut);
-};
-
-
 // *************************************************************************************
 
 class CMAESParam
@@ -149,8 +104,8 @@ private:
   void CSA(gsl_vector const* yavg);
   void CMA(FitPDFSet*, vector<size_t> const& rank, std::vector<gsl_vector*> const& yvals, gsl_vector const* yavg);
 
-  void GetParam(Parametrisation** const, gsl_vector*) const;
-  void SetParam(gsl_vector* const, Parametrisation**) const;
+  void GetParam(Parametrisation* const, gsl_vector*) const;
+  void SetParam(gsl_vector* const, Parametrisation*) const;
 
   void NormVect(gsl_vector*) const; //!< Normally distributed random vector
   void ComputeEigensystem();

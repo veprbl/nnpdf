@@ -111,252 +111,6 @@ void Minimizer::ComputeErf(FitPDFSet* pdf,
   }
 }
 
-// ************************* GA MINIMIZER *****************************
-/**
- * @brief GAMinimizer is the basic single Epoch Genetic Algorithm minimizer
- * @param settings the global NNPDFSettings
- */
-GAMinimizer::GAMinimizer(NNPDFSettings const& settings):
-Minimizer(settings)
-{
-  // Init logger
-  LogManager::AddLogger("GAMinimizer", "GAMin.log");
-}
-
-/**
- * @brief GA implementation of the iterate function.
- * @param pdf the input pdf for the minimization
- * @param exps the experiments to be used when minimizing
- * @param pos the positivity sets
- * This function does the mutation, compute the error function and sort the chi2s
- * and finally applies the selection method. This is a very simple, single epoch, always to experiments, minimisation.
- */
-void GAMinimizer::Iterate(FitPDFSet* pdf,vector<Experiment*> const& exps,  vector<PositivitySet> const& pos)
-{
-  // Mutation of PDFs
-  Mutation(pdf, fSettings.Get("fitting","nmutants").as<int>());
-
-  // Calculate Experimental Chi2 values
-  ComputeErf(pdf,exps, pos, Minimizer::ExpMode, Minimizer::PDF_SORT);
-
-  // Selection of best fit PDF
-  Selection(pdf);
-
-  if (fChi2Mem && fSettings.Get("debug").as<bool>())
-    cout << " chi2 trn: "<<pdf->GetEbf()<<endl;
-
-  // Iterate FitPDFSet counter
-  pdf->Iterate();
-}
-
-/**
- * @brief The mutation algorithm implementation
- * @param pdf the input PDF
- */
-void GAMinimizer::Mutation(FitPDFSet* pdf, int const& nmut)
-{
-  vector<Parametrisation**>& pdfs = pdf->GetPDFs();
-  RandomGenerator* rg = RandomGenerator::GetRNG();
-  // Set number of members
-  pdf->SetNMembers(nmut);
-
-  // Copy best fit parameters
-  for (int i=0; i<nmut; i++)
-    for (int j=0; j<fSettings.GetNFL(); j++)
-        pdfs[i][j]->CopyPars(pdf->GetBestFit()[j]);
-
-  // Mutate copies
-  const int NIte = pdf->GetNIte() + 1; // +1 to avoid on iteration 0 div by 0 error
-  for (int i=0; i<nmut; i++)
-    for (int j=0; j<fSettings.GetNFL(); j++)
-    {
-      const real ex    =  rg->GetRandomUniform();
-      const int NParam =  pdfs[i][j]->GetNParameters();
-      for (int n=0; n< (int) fSettings.GetFlMutProp(j).mutsize.size(); n++)
-      {
-
-        const int mutDice = rg->GetRandomUniform(100);
-        const int mutProb = 100*fSettings.GetFlMutProp(j).mutprob[n];
-        if (mutDice < mutProb) // mutation probability
-        {
-          const real sz    =  fSettings.GetFlMutProp(j).mutsize[n];
-          pdfs[i][j]->GetParameters()[rg->GetRandomUniform(NParam)]+=sz*rg->GetRandomUniform(-1,1)/pow(NIte,ex);
-        }
-      }
-    }
-
-  // Compute Preprocessing
-  pdf->ComputeSumRules();
-
-  return;
-}
-
-/**
- * @brief The selection algorithm,
- * @param pdf the input PDF to be minimized
- * @return 0
- */
-int GAMinimizer::Selection(FitPDFSet *pdf)
-{
-  // find minimum chi2
-  if (pdf->GetMembers() > 0)
-  {
-    int index = 0;
-    real bestchi2 = fChi2Mem[0];
-    for (int i=1; i<pdf->GetMembers(); i++)
-      if (fChi2Mem[i] < bestchi2)
-      {
-        bestchi2 = fChi2Mem[i];
-        index = i;
-      }
-
-    // Set best fit pdf to the correct index if it's better than the current one
-    if (bestchi2 < pdf->GetEbf() )
-    {
-      pdf->SetBestFit(index);
-      pdf->SetEbf(bestchi2);
-
-      // Update fit logger
-      stringstream fitLog; fitLog << "GEN "<<pdf->GetNIte()<<" Erf: " <<bestchi2;
-      LogManager::AddLogEntry("GAMinimizer",fitLog.str());
-    }
-  }
-
-  // Copy best fit parameters into member zero
-  for (int i=0; i<fSettings.GetNFL(); i++)
-    pdf->GetPDFs()[0][i]->CopyPars(pdf->GetBestFit()[i]);
-
-  // Set FitPDFset only to use member zero
-  pdf->SetNMembers(1);
-  pdf->ComputeSumRules();
-
-  return 0;
-}
-
-// ************************* GA MINIMIZER *****************************
-/**
- * @brief NGAMinimizer is a version of GAMinimizer with nodal mutations
- * @param settings the global NNPDFSettings
- */
-NGAMinimizer::NGAMinimizer(NNPDFSettings const& settings):
-GAMinimizer(settings){}
-
-/**
- * @brief The mutation algorithm implementation
- * @param pdf the input PDF
- */
-void NGAMinimizer::Mutation(FitPDFSet* pdf, int const& nmut)
-{
-  vector<Parametrisation**>& pdfs = pdf->GetPDFs();
-  RandomGenerator* rg = RandomGenerator::GetRNG();
-  // Set number of members
-  pdf->SetNMembers(nmut);
-
-  // Copy best fit parameters
-  for (int i=0; i<nmut; i++)
-    for (int j=0; j<fSettings.GetNFL(); j++)
-        pdfs[i][j]->CopyPars(pdf->GetBestFit()[j]);
-
-  // Mutate copies
-  const int Nlayers = (int) fSettings.GetArch().size();
-  vector<int> Nnodes = fSettings.GetArch();
-
-  const int NIte = pdf->GetNIte() + 1; // +1 to avoid on iteration 0 div by 0 error
-  for (int i=0; i<nmut; i++)
-    for (int j=0; j<fSettings.GetNFL(); j++)
-    {
-      Parametrisation* tpdf = pdfs[i][j];
-      if (tpdf->GetParamName() != "MultiLayerPerceptron")
-          throw NNPDF::RuntimeException("NGAMinimizer", "NGAMinimizer requires a MultiLayerPerceptron as a parametrisation");
-      MultiLayerPerceptron* mlp = static_cast<MultiLayerPerceptron*>(tpdf);
-      const real ex    =  rg->GetRandomUniform();
-      for (int n=0; n< (int) fSettings.GetFlMutProp(j).mutsize.size(); n++)
-      {
-       	int index = 0;
-        for (int m=1; m<Nlayers; m++)
-          for (int l=0; l< Nnodes[m]; l++)
-          {
-            if (rg->GetRandomUniform() < fSettings.GetFlMutProp(j).mutprob[n]) // mutation probability
-              for (int k=0; k< mlp->GetNumNodeParams(m); k++)
-              {
-                const real sz    = fSettings.GetFlMutProp(j).mutsize[n];
-                mlp->GetParameters()[index+k]+=sz*rg->GetRandomUniform(-1,1)/pow(NIte,ex);
-              }
-            index+= mlp->GetNumNodeParams(m);
-          }
-      }
-    }
-
-  // Compute Preprocessing
-  pdf->ComputeSumRules();
-
-  return;
-}
-
-// ************************* NGAFT MINIMIZER *****************************
-/*!
- * \brief NGAFTMinimizer::NGAFTMinimizer
- * \param settings
- */
-NGAFTMinimizer::NGAFTMinimizer(NNPDFSettings const& settings):
-GAMinimizer(settings){}
-
-/**
- * @brief The mutation algorithm implementation
- * @param pdf the input PDF
- */
-void NGAFTMinimizer::Mutation(FitPDFSet* pdf, int const& nmut)
-{
-  vector<Parametrisation**>& pdfs = pdf->GetPDFs();
-  RandomGenerator* rg = RandomGenerator::GetRNG();
-  // Set number of members
-  pdf->SetNMembers(nmut);
-
-  // Copy best fit parameters
-  for (int i=0; i<nmut; i++)
-    for (int j=0; j<fSettings.GetNFL(); j++)
-        pdfs[i][j]->CopyPars(pdf->GetBestFit()[j]);
-
-  // Mutate copies
-  const int Nlayers = (int) fSettings.GetArch().size();
-  vector<int> Nnodes = fSettings.GetArch();
-
-  real xvals[2] = {1, 0}, fitpdfs;
-
-  const int NIte = pdf->GetNIte() + 1; // +1 to avoid on iteration 0 div by 0 error
-  for (int i=0; i<nmut; i++)
-    for (int j=0; j<fSettings.GetNFL(); j++)
-    {
-      Parametrisation* tpdf = pdfs[i][j];
-      if (tpdf->GetParamName() != "MultiLayerPerceptron")
-          throw NNPDF::RuntimeException("NGAMinimizer", "NGAMinimizer requires a MultiLayerPerceptron as a parametrisation");
-      MultiLayerPerceptron* mlp = static_cast<MultiLayerPerceptron*>(tpdf);
-      const real ex    =  rg->GetRandomUniform();
-      for (int n=0; n< (int) fSettings.GetFlMutProp(j).mutsize.size(); n++)
-      {
-        int index = 0;
-        for (int m=1; m<Nlayers; m++)
-          for (int l=0; l< Nnodes[m]; l++)
-          {
-            if (rg->GetRandomUniform() < fSettings.GetFlMutProp(j).mutprob[n]) // mutation probability
-              for (int k=0; k< mlp->GetNumNodeParams(m); k++)
-              {
-                const real sz    = fSettings.GetFlMutProp(j).mutsize[n];
-                mlp->GetParameters()[index+k]+=sz*rg->GetRandomUniform(-1,1)/pow(NIte,ex);
-              }
-            index+= mlp->GetNumNodeParams(m);
-          }
-      }
-      mlp->Compute(xvals, &fitpdfs);
-      mlp->GetParameters()[pdfs[i][j]->GetNParameters()-1] += fitpdfs;
-    }
-
-  // Compute Preprocessing
-  pdf->ComputeSumRules();
-
-  return;
-}
-
 // ************************* CMA-ES MINIMIZER *****************************
 
 // Initialises parameters for CMA-ES minimiser
@@ -521,9 +275,7 @@ void CMAESMinimizer::ComputeEigensystem()
 
 void CMAESMinimizer::Init(FitPDFSet* pdf, vector<Experiment*> const&, vector<PositivitySet> const&)
 {
-  fNTparam = 0;
-  for (size_t i=0; i<fSettings.GetNFL(); i++)
-    fNTparam += pdf->GetBestFit()[i]->GetNParameters();
+  fNTparam = pdf->GetBestFit()->GetNParameters();
 
   // GSL vectors/matrices
   fpsigma = gsl_vector_calloc( fNTparam );
@@ -688,18 +440,17 @@ void CMAESMinimizer::NormVect(gsl_vector* vec) const
       gsl_vector_set(vec, i, RandomGenerator::GetRNG()->GetRandomGausDev(1));
 }
 
-void CMAESMinimizer::GetParam(Parametrisation** const pdfs, gsl_vector* params) const
+// These can probably be done better with a vector view
+void CMAESMinimizer::GetParam(Parametrisation* const pdfs, gsl_vector* params) const
 {
   int icount = 0;
-  for (int i=0; i<fSettings.GetNFL(); i++)
-      for (int j=0; j<pdfs[i]->GetNParameters(); j++)
-        gsl_vector_set(params, icount++, pdfs[i]->GetParameters()[j]);
+  for (int j=0; j<pdfs->GetNParameters(); j++)
+    gsl_vector_set(params, icount++, pdfs->GetParameters()[j]);
 }
 
-void CMAESMinimizer::SetParam(gsl_vector* const params, Parametrisation** pdfs) const
+void CMAESMinimizer::SetParam(gsl_vector* const params, Parametrisation* pdfs) const
 {
   int icount = 0;
-  for (int i=0; i<fSettings.GetNFL(); i++)
-      for (int j=0; j<pdfs[i]->GetNParameters(); j++)
-        pdfs[i]->GetParameters()[j] = gsl_vector_get(params,icount++);
+  for (int j=0; j<pdfs->GetNParameters(); j++)
+    pdfs->GetParameters()[j] = gsl_vector_get(params,icount++);
 }

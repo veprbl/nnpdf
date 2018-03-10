@@ -66,12 +66,7 @@ LookBackCV::~LookBackCV()
 {
   // Delete current best fit
   if (fCurrentBest)
-  {
-    for (int i=0; i<fSettings.GetNFL(); i++)
-      delete fCurrentBest[i];
-
-    delete[] fCurrentBest;
-  }
+    delete fCurrentBest;
 }
 
 bool LookBackCV::Stop(  FitPDFSet* pdf,
@@ -81,11 +76,7 @@ bool LookBackCV::Stop(  FitPDFSet* pdf,
 {
   // Grab the best fit
   if (!fCurrentBest)
-  {
-    fCurrentBest = new Parametrisation*[fSettings.GetNFL()];
-    for (int i=0; i<fSettings.GetNFL(); i++)
-      fCurrentBest[i] = pdf->GetPDFs()[0][i]->Duplicate();
-  }
+    fCurrentBest = pdf->GetBestFit()->Duplicate();
 
   // Compute Validation Chi2 values
   real ValChi2Tot = 0;
@@ -97,8 +88,7 @@ bool LookBackCV::Stop(  FitPDFSet* pdf,
   if (ValChi2Tot < fCurrentValidErf)
   {
     fCurrentValidErf = ValChi2Tot;
-    for (int i=0; i<fSettings.GetNFL(); i++)
-      fCurrentBest[i]->CopyPars(pdf->GetBestFit()[i]);
+    fCurrentBest->CopyPars(pdf->GetBestFit());
 
     fBestGeneration = pdf->GetNIte();
   }
@@ -106,13 +96,9 @@ bool LookBackCV::Stop(  FitPDFSet* pdf,
   // Number of iterations exceeded max
   if (StoppingCriterion::Stop(pdf,train, valid, positivity))
   {
-    // Set best fit
-    for (int i=0; i<fSettings.GetNFL(); i++)
-      pdf->GetBestFit()[i]->CopyPars(fCurrentBest[i]);
-
-    // Set zeroth member fit
-    for (int i=0; i<fSettings.GetNFL(); i++)
-      pdf->GetPDFs()[0][i]->CopyPars(fCurrentBest[i]);
+    // Set best fit and zero-th member
+    pdf->GetBestFit()->CopyPars(fCurrentBest);
+    pdf->GetPDFs()[0]->CopyPars(fCurrentBest);
 
     pdf->ComputeSumRules();
 

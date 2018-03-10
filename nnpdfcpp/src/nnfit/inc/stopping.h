@@ -54,7 +54,7 @@ public:
               vector<PositivitySet>const& positivity);
 
 private:
-  Parametrisation** fCurrentBest;
+  Parametrisation* fCurrentBest;
   float fCurrentValidErf;
   int fBestGeneration;
 };
