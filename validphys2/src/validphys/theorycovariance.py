@@ -1092,8 +1092,8 @@ def plot_matched_datasets_shift_matrix_correlations(
 all_matched_results = collect('matched_dataspecs_results',
                               ['dataspecs'])
 
-def combine_by_type_dataspecs(process_lookup, all_matched_results, matched_dataspecs_dataset_name):
-    return combine_by_type(process_lookup, all_matched_results, matched_dataspecs_dataset_name)
+def combine_by_type_dataspecs(all_matched_results, matched_dataspecs_dataset_name):
+    return combine_by_type(all_matched_results, matched_dataspecs_dataset_name)
 
 datapsecs_theoryids = collect('theoryid', ['theoryconfig', 'original', 'dataspecs'])
 
@@ -1298,8 +1298,8 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
     orig_matrix = thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0]))
     # constructing shift vectors
-    scalevartheory_vectors = allthx_vector[0]
     xs = [(thx_vector[0] - scalevarvector)/thx_vector[0] for scalevarvector in allthx_vector[0]]
+    embed()
     # iteratively orthogonalising deltas
     ys = [x/np.linalg.norm(x) for x in xs]
     xdashs = [None]*len(ys)
