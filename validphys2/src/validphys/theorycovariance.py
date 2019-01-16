@@ -1298,7 +1298,29 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
     orig_matrix = thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0]))
     # constructing shift vectors
-    xs = [(thx_vector[0] - scalevarvector)/thx_vector[0] for scalevarvector in allthx_vector[0]]
+    xs = [((thx_vector[0] - scalevarvector)/thx_vector[0]).reorder_levels(['Dataset name',
+									'Experiment name',
+									'Point'])
+			 for scalevarvector in allthx_vector[0]]
+    embed()
+    indexlist = list(xs[0].index.values)
+    procdict = {}
+    for index in indexlist:
+        name = index[0]
+        proc = _process_lookup(name)
+        if proc not in list(procdict.keys()):
+            procdict[proc] = [name]
+        elif name not in procdict[proc]:
+            procdict[proc].append(name)
+    # creating new xs with processes separated
+    newxs = []
+    for process, dslist in procdict.items():
+        for x in xs:
+            newx = x.copy()
+            for ds in dslist:
+                newx.loc[ds] = 0
+            newxs.append(newx)
+    xs = newxs
     embed()
     # iteratively orthogonalising deltas
     ys = [x/np.linalg.norm(x) for x in xs]
