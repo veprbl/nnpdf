@@ -1296,7 +1296,9 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
     return fig
 
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
-    orig_matrix = thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0]))
+    orig_matrix = (thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0]))).reorder_levels(['Dataset name',
+									'Experiment name',
+									'Point'])
     # constructing shift vectors
     diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0]).reorder_levels(['Dataset name',
 									'Experiment name',
@@ -1324,7 +1326,6 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
           splitdiffs[0] + splitdiffs[3],
           splitdiffs[1] + splitdiffs[2],
           splitdiffs[1] + splitdiffs[3]]
-    embed()
     # iteratively orthogonalising deltas
     ys = [x/np.linalg.norm(x) for x in xs]
     xdashs = [None]*len(ys)
@@ -1338,10 +1339,17 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
         ys[n] = xdashs[n]/np.linalg.norm(xdashs[n])
 #    xdash = xs[1] - ys[0]*np.dot(ys[0].T, xs[1])[0]
 #    ys[1] = xdash/np.linalg.norm(xdash)
-    P = np.column_stack(ys)
-    projected_matrix = np.dot(P.T, np.dot(orig_matrix, P))
+    P = pd.concat(ys, axis=1)
+    embed()
+#    projected_matrix = np.dot(P.T, np.dot(orig_matrix, P))
+    projected_matrix = (P.T).dot((orig_matrix.T.dot(P)).reorder_levels([
+                                    'Dataset name',
+									'Experiment name',
+									'Point']))
     w, v_projected = la.eigh(projected_matrix)
-    v = np.dot(P, v_projected)
+ #   v = np.dot(P, v_projected)
+    v = P.dot(v_projected)
+    embed()
     return w, v
 
 def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
