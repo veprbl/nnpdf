@@ -1298,12 +1298,11 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
     orig_matrix = thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0]))
     # constructing shift vectors
-    xs = [((thx_vector[0] - scalevarvector)/thx_vector[0]).reorder_levels(['Dataset name',
+    diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0]).reorder_levels(['Dataset name',
 									'Experiment name',
 									'Point'])
 			 for scalevarvector in allthx_vector[0]]
-    embed()
-    indexlist = list(xs[0].index.values)
+    indexlist = list(diffs[0].index.values)
     procdict = {}
     for index in indexlist:
         name = index[0]
@@ -1312,15 +1311,19 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
             procdict[proc] = [name]
         elif name not in procdict[proc]:
             procdict[proc].append(name)
-    # creating new xs with processes separated
-    newxs = []
+    # creating split diffs with processes separated
+    splitdiffs = []
     for process, dslist in procdict.items():
-        for x in xs:
-            newx = x.copy()
+        for diff in diffs:
+            splitdiff = diff.copy()
             for ds in dslist:
-                newx.loc[ds] = 0
-            newxs.append(newx)
-    xs = newxs
+                splitdiff.loc[ds] = 0
+            splitdiffs.append(splitdiff)
+    # For 3pts 2 processes only!:
+    xs = [splitdiffs[0] + splitdiffs[2],
+          splitdiffs[0] + splitdiffs[3],
+          splitdiffs[1] + splitdiffs[2],
+          splitdiffs[1] + splitdiffs[3]]
     embed()
     # iteratively orthogonalising deltas
     ys = [x/np.linalg.norm(x) for x in xs]
@@ -1371,7 +1374,7 @@ def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
             if loc >=0:
                 w_nonzero.append(w[loc])
     # ^ taking 0th element to extract list from tuple
-    else: 
+    else:
         nonzero_locs = range(len(w))
         w_nonzero = w[nonzero_locs]
     v_nonzero = []
@@ -1386,7 +1389,6 @@ def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
     return w_nonzero, v_nonzero, projectors, f, fmiss, w_max, w, all_projectors
 
 def cutoff(theory_shift_test, eigenvalue_cutoff:(bool, type(None)) = None):
-    w_max = theory_shift_test[5]
     if eigenvalue_cutoff == True:
         cutoff = "10 times modulus of largest 'negative' eigenvalue"
     else:
