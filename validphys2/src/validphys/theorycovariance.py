@@ -677,7 +677,7 @@ def experiments_chi2_table_diagtheory(experiments, pdf,
 
 def matrix_plot_labels(df):
     explabels = [x[0] for x in df.columns]
-    points = [x[2] for x in df.columns]
+    points = [x[1] for x in df.columns]
     unique_exp = []
     unique_exp.append([explabels[0],points[0]])
     for x in range(len(explabels)-1):
@@ -952,10 +952,10 @@ def matched_datasets_shift_matrix(matched_dataspecs_dataset_prediction_shift,
                 else:
                     pass
     #build index
-    expnames = np.concatenate([
-        np.full(len(val.shifts), val.experiment_name, dtype=object)
-        for val in matched_dataspecs_dataset_prediction_shift
-    ])
+  #  expnames = np.concatenate([
+  #      np.full(len(val.shifts), val.experiment_name, dtype=object)
+  #      for val in matched_dataspecs_dataset_prediction_shift
+  #  ])
     dsnames = np.concatenate([
         np.full(len(val.shifts), val.dataset_name, dtype=object)
         for val in matched_dataspecs_dataset_prediction_shift
@@ -966,8 +966,8 @@ def matched_datasets_shift_matrix(matched_dataspecs_dataset_prediction_shift,
     ])
 
     index = pd.MultiIndex.from_arrays(
-        [expnames, dsnames, point_indexes],
-        names=["Experiment name", "Dataset name", "Point"])
+        [dsnames, point_indexes],
+        names=["Dataset name", "Point"])
 
     return pd.DataFrame(mat, columns=index, index=index)
 
@@ -979,10 +979,10 @@ def shift_vector(matched_dataspecs_dataset_prediction_shift,
         [val.shifts for val in matched_dataspecs_dataset_theory])
     norm_shifts = all_shifts/all_theory
      #build index
-    expnames = np.concatenate([
-        np.full(len(val.shifts), val.experiment_name, dtype=object)
-        for val in matched_dataspecs_dataset_prediction_shift
-    ])
+ #   expnames = np.concatenate([
+ #       np.full(len(val.shifts), val.experiment_name, dtype=object)
+ #       for val in matched_dataspecs_dataset_prediction_shift
+ #   ])
     dsnames = np.concatenate([
         np.full(len(val.shifts), val.dataset_name, dtype=object)
         for val in matched_dataspecs_dataset_prediction_shift
@@ -993,8 +993,8 @@ def shift_vector(matched_dataspecs_dataset_prediction_shift,
     ])
 
     index = pd.MultiIndex.from_arrays(
-        [expnames, dsnames, point_indexes],
-        names=["Experiment name", "Dataset name", "Point"])
+        [dsnames, point_indexes],
+        names=["Dataset name", "Point"])
     return pd.DataFrame(norm_shifts, index=index)
 
 def dataspecs_dataset_theory(matched_dataspecs_results, experiment_name, dataset_name):
@@ -1009,10 +1009,10 @@ def theory_vector(matched_dataspecs_dataset_theory):
     all_theory = np.concatenate(
         [val.shifts for val in matched_dataspecs_dataset_theory])
      #build index
-    expnames = np.concatenate([
-        np.full(len(val.shifts), val.experiment_name, dtype=object)
-        for val in matched_dataspecs_dataset_theory
-    ])
+ #   expnames = np.concatenate([
+ #       np.full(len(val.shifts), val.experiment_name, dtype=object)
+ #       for val in matched_dataspecs_dataset_theory
+ #   ])
     dsnames = np.concatenate([
         np.full(len(val.shifts), val.dataset_name, dtype=object)
         for val in matched_dataspecs_dataset_theory
@@ -1023,8 +1023,8 @@ def theory_vector(matched_dataspecs_dataset_theory):
     ])
 
     index = pd.MultiIndex.from_arrays(
-        [expnames, dsnames, point_indexes],
-        names=["Experiment name", "Dataset name", "Point"])
+        [dsnames, point_indexes],
+        names=["Dataset name", "Point"])
     return pd.DataFrame(all_theory, index=index)
 
 def dataspecs_dataset_alltheory(matched_dataspecs_results, experiment_name, dataset_name):
@@ -1038,11 +1038,11 @@ matched_dataspecs_dataset_alltheory = collect('dataspecs_dataset_alltheory', ['d
 def alltheory_vector(matched_dataspecs_dataset_alltheory, matched_dataspecs_dataset_theory):
     all_theory = np.concatenate(
         [val.shifts for val in matched_dataspecs_dataset_alltheory], axis=1)
-    expnames = np.concatenate([
-        np.full(len(val.shifts),
-        val.experiment_name, dtype=object)
-        for val in matched_dataspecs_dataset_theory
-    ])
+ #   expnames = np.concatenate([
+ #       np.full(len(val.shifts),
+ #       val.experiment_name, dtype=object)
+ #       for val in matched_dataspecs_dataset_theory
+ #   ])
     dsnames = np.concatenate([
         np.full(len(val.shifts),
         val.dataset_name, dtype=object)
@@ -1053,8 +1053,8 @@ def alltheory_vector(matched_dataspecs_dataset_alltheory, matched_dataspecs_data
         for val in matched_dataspecs_dataset_theory
     ])
     index = pd.MultiIndex.from_arrays(
-        [expnames, dsnames, point_indexes],
-        names=["Experiment name", "Dataset name", "Point"])
+        [dsnames, point_indexes],
+        names=["Dataset name", "Point"])
     theory_vectors = []
     for theoryvector in all_theory:
         theory_vectors.append(pd.DataFrame(theoryvector, index=index))
@@ -1140,10 +1140,10 @@ def matched_experiments_index(matched_dataspecs_experiment_name,
     dsnames = matched_dataspecs_dataset_name
     lens = all_matched_data_lengths
     #build index
-    expnames = np.concatenate([
-        np.full(l, ename, dtype=object)
-        for (l, ename) in zip(lens, enames)
-    ])
+ #   expnames = np.concatenate([
+ #       np.full(l, ename, dtype=object)
+ #       for (l, ename) in zip(lens, enames)
+ #   ])
     dsnames = np.concatenate([
         np.full(l, dsname, dtype=object)
         for (l, dsname) in zip(lens, dsnames)
@@ -1154,8 +1154,8 @@ def matched_experiments_index(matched_dataspecs_experiment_name,
     ])
 
     index = pd.MultiIndex.from_arrays(
-        [expnames, dsnames, point_indexes],
-        names=["Experiment name", "Dataset name", "Point"])
+        [dsnames, point_indexes],
+        names=["Dataset name", "Point"])
     return index
 
 @table
@@ -1296,14 +1296,12 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
     return fig
 
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
-    orig_matrix = (thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0]))).reorder_levels(['Dataset name',
-									'Experiment name',
-									'Point'])
+    orig_matrix = (thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0])))#.reorder_levels(['Dataset name',
+									#'Experiment name',
+									#'Point'])
     # constructing shift vectors
-    diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0]).reorder_levels(['Dataset name',
-									'Experiment name',
-									'Point'])
-			 for scalevarvector in allthx_vector[0]]
+    diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0])
+                                    for scalevarvector in allthx_vector[0]]
     indexlist = list(diffs[0].index.values)
     procdict = {}
     for index in indexlist:
@@ -1326,26 +1324,27 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
           splitdiffs[0] + splitdiffs[3],
           splitdiffs[1] + splitdiffs[2],
           splitdiffs[1] + splitdiffs[3]]
+    A = pd.concat(xs, axis=1)
+    # for 3-pt 2 processes only:
+    constructed_covmat = (1/4)*A.dot(A.T)
     # iteratively orthogonalising deltas
     ys = [x/np.linalg.norm(x) for x in xs]
-    xdashs = [None]*len(ys)
-    for n, x in enumerate(xs):
-        sub_ys = ys[:n]
-        subtract_terms = [None]*len(sub_ys)
-        xlist = [x]*len(sub_ys)
-        for i in range(len(sub_ys)):
-            subtract_terms[i] = np.dot(sub_ys[i], np.dot(sub_ys[i].T, xlist[i]))
-        xdashs[n] = x - np.sum(subtract_terms, axis=0)
-        ys[n] = xdashs[n]/np.linalg.norm(xdashs[n])
-#    xdash = xs[1] - ys[0]*np.dot(ys[0].T, xs[1])[0]
-#    ys[1] = xdash/np.linalg.norm(xdash)
+#    xdashs = [None]*len(ys)
+#    for n, x in enumerate(xs):
+#        sub_ys = ys[:n]
+#        subtract_terms = [None]*len(sub_ys)
+#        xlist = [x]*len(sub_ys)
+#        for i in range(len(sub_ys)):
+#            subtract_terms[i] = np.dot(sub_ys[i], np.dot(sub_ys[i].T, xlist[i]))
+#        xdashs[n] = x - np.sum(subtract_terms, axis=0)
+#        ys[n] = xdashs[n]/np.linalg.norm(xdashs[n])
+    for i in range(1, len(xs)):
+        for j in range(0,i):
+            ys[i] = ys[i] - (ys[i].T.dot(ys[j]))[0][0]*ys[j]/np.linalg.norm(ys[j])
+            ys[i] = ys[i]/np.linalg.norm(ys[i])
     P = pd.concat(ys, axis=1)
-    embed()
 #    projected_matrix = np.dot(P.T, np.dot(orig_matrix, P))
-    projected_matrix = (P.T).dot((orig_matrix.T.dot(P)).reorder_levels([
-                                    'Dataset name',
-									'Experiment name',
-									'Point']))
+    projected_matrix = (P.T).dot(constructed_covmat.dot(P))
     w, v_projected = la.eigh(projected_matrix)
  #   v = np.dot(P, v_projected)
     v = P.dot(v_projected)
