@@ -13,6 +13,7 @@ import scipy.linalg as la
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors as mcolors
 import pandas as pd
+import scipy
 
 from reportengine.figure import figure
 from reportengine.checks import make_argcheck, check
@@ -1302,6 +1303,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
     # constructing shift vectors
     diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0])
                                     for scalevarvector in allthx_vector[0]]
+    num_pts = len(diffs) + 1
     indexlist = list(diffs[0].index.values)
     procdict = {}
     for index in indexlist:
@@ -1319,34 +1321,46 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
             for ds in dslist:
                 splitdiff.loc[ds] = 0
             splitdiffs.append(splitdiff)
-    # For 3pts 2 processes only!:
-    xs = [splitdiffs[0] + splitdiffs[2],
-          splitdiffs[0] + splitdiffs[3],
-          splitdiffs[1] + splitdiffs[2],
-          splitdiffs[1] + splitdiffs[3]]
+    num_procs = len(procdict)
+    if (num_pts == 3) and (num_procs == 2):
+        N = (1/4)
+        # defining key
+        pp1 = splitdiffs[0]
+        mm1 = splitdiffs[1]
+        pp2 = splitdiffs[2]
+        mm2 = splitdiffs[3]
+        ###################
+        xs = [pp1 + pp2, pp1 + mm2, mm1 + pp2, mm1 + mm2]
+    elif (num_pts == 9) and (num_procs == 2):
+        N = (1/24)
+        # defining key
+        pz1 = splitdiffs[0]
+        mz1 = splitdiffs[1]
+        zp1 = splitdiffs[2]
+        zm1 = splitdiffs[3]
+        pp1 = splitdiffs[4]
+        mm1 = splitdiffs[5]
+        pm1 = splitdiffs[6]
+        mp1 = splitdiffs[7]
+        pz2 = splitdiffs[8]
+        mz2 = splitdiffs[9]
+        zp2 = splitdiffs[10]
+        zm2 = splitdiffs[11]
+        pp2 = splitdiffs[12]
+        mm2 = splitdiffs[13]
+        pm2 = splitdiffs[14]
+        mp2 = splitdiffs[15]
+        ####################
+        xs = [pz1 + pz2, mz1 + mz2, zp1, zm1, zp2, zm2, pp1 + pz2,
+              pm1 + pz2, mp1 + mz2, mm1 + mz2, pz1 + pp2, pz1 + pm2,
+              mz1 + mp2, mz1 + mm2, zp1 + zp2, zm1 + zm2, zp1 + zm2,
+              zm1 + zp2, pp1 + pp2, pp1 + pm2, pm1 + pp2, pm1 + pm2,
+              mp1 + mp2, mp1 + mm2, mm1 + mp2, mm1 + mm2]
     A = pd.concat(xs, axis=1)
-    # for 3-pt 2 processes only:
-    constructed_covmat = (1/4)*A.dot(A.T)
-    # iteratively orthogonalising deltas
-    ys = [x/np.linalg.norm(x) for x in xs]
-#    xdashs = [None]*len(ys)
-#    for n, x in enumerate(xs):
-#        sub_ys = ys[:n]
-#        subtract_terms = [None]*len(sub_ys)
-#        xlist = [x]*len(sub_ys)
-#        for i in range(len(sub_ys)):
-#            subtract_terms[i] = np.dot(sub_ys[i], np.dot(sub_ys[i].T, xlist[i]))
-#        xdashs[n] = x - np.sum(subtract_terms, axis=0)
-#        ys[n] = xdashs[n]/np.linalg.norm(xdashs[n])
-    for i in range(1, len(xs)):
-        for j in range(0,i):
-            ys[i] = ys[i] - (ys[i].T.dot(ys[j]))[0][0]*ys[j]/np.linalg.norm(ys[j])
-            ys[i] = ys[i]/np.linalg.norm(ys[i])
-    P = pd.concat(ys, axis=1)
-#    projected_matrix = np.dot(P.T, np.dot(orig_matrix, P))
+    constructed_covmat = N*A.dot(A.T)
+    P = scipy.linalg.orth(A)
     projected_matrix = (P.T).dot(constructed_covmat.dot(P))
     w, v_projected = la.eigh(projected_matrix)
- #   v = np.dot(P, v_projected)
     v = P.dot(v_projected)
     embed()
     return w, v
