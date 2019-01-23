@@ -1351,11 +1351,19 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector):
         pm2 = splitdiffs[14]
         mp2 = splitdiffs[15]
         ####################
-        xs = [pz1 + pz2, mz1 + mz2, zp1, zm1, zp2, zm2, pp1 + pz2,
-              pm1 + pz2, mp1 + mz2, mm1 + mz2, pz1 + pp2, pz1 + pm2,
-              mz1 + mp2, mz1 + mm2, zp1 + zp2, zm1 + zm2, zp1 + zm2,
-              zm1 + zp2, pp1 + pp2, pp1 + pm2, pm1 + pp2, pm1 + pm2,
-              mp1 + mp2, mp1 + mm2, mm1 + mp2, mm1 + mm2]
+     #   xs = [pz1 + pz2, mz1 + mz2, zp1, zm1, zp2, zm2, pp1 + pz2,
+     #         pm1 + pz2, mp1 + mz2, mm1 + mz2, pz1 + pp2, pz1 + pm2,
+     #         mz1 + mp2, mz1 + mm2, zp1 + zp2, zm1 + zm2, zp1 + zm2,
+     #         zm1 + zp2, pp1 + pp2, pp1 + pm2, pm1 + pp2, pm1 + pm2,
+     #         mp1 + mp2, mp1 + mm2, mm1 + mp2, mm1 + mm2]
+        xs = [ pz1 + pz2, pz1 + pz2, pz1 + pp2, pz1 + pp2, pz1 + pm2, pz1 + pm2,
+	       pp1 + pz2, pp1 + pz2, pp1 + pp2, pp1 + pp2, pp1 + pm2, pp1 + pm2,
+               pm1 + pz2, pm1 + pz2, pm1 + pp2, pm1 + pp2, pm1 + pm2, pm1 + pm2,
+               mz1 + mz2, mz1 + mz2, mz1 + mp2, mz1 + mp2, mz1 + mm2, mz1 + mm2,
+               mp1 + mz2, mp1 + mz2, mp1 + mp2, mp1 + mp2, mp1 + mm2, mp1 + mm2,
+               mm1 + mz2, mm1 + mz2, mm1 + mp2, mm1 + mp2, mm1 + mm2, mm1 + mm2,
+               zm1 + zp2, zm1 + zp2, zm1 + zp2, zm1 + zm2, zm1 + zm2, zm1 + zm2,
+               zp1 + zp2, zp1 + zp2, zp1 + zp2, zp1 + zm2, zp1 + zm2, zp1 + zm2]
     A = pd.concat(xs, axis=1)
     constructed_covmat = N*A.dot(A.T)
     P = scipy.linalg.orth(A)
