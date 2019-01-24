@@ -1297,7 +1297,8 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
     return fig
 
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
-                        fivetheories:(str, type(None)) = None):
+                        fivetheories:(str, type(None)) = None,
+                        seventheories:(str, type(None)) = None):
     orig_matrix = (thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0])))#.reorder_levels(['Dataset name',
 									#'Experiment name',
 									#'Point'])
@@ -1323,7 +1324,6 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                 splitdiff.loc[ds] = 0
             splitdiffs.append(splitdiff)
     num_procs = len(procdict)
-    embed()
     if (num_pts == 3) and (num_procs == 2):
         N = (1/4)
         # defining key
@@ -1361,6 +1361,25 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         ###################
         xs = [pp1 + pp2, pp1 + pm2, mm1 + mp2, mm1 + mm2,
               pm1 + pp2, pm1 + pm2, mp1 + mp2, mp1 + mm2 ]
+    elif (num_pts == 7) and (num_procs == 2) and (seventheories != "original"):
+        N = (1/6)
+        # defining key
+        pz1 = splitdiffs[0]
+        mz1 = splitdiffs[1]
+        zp1 = splitdiffs[2]
+        zm1 = splitdiffs[3]
+        pp1 = splitdiffs[4]
+        mm1 = splitdiffs[5]
+        pz2 = splitdiffs[6]
+        mz2 = splitdiffs[7]
+        zp2 = splitdiffs[8]
+        zm2 = splitdiffs[9]
+        pp2 = splitdiffs[10]
+        mm2 = splitdiffs[11]
+        ####################
+        xs = [pz1 + pz2, mz1 + mz2, zp1 + zp2, zm1 + zp2, pp1 + pp2,
+              mm1 + pp2, pz1 + pz2, mz1 + mz2, zp1 + zm2, zm1 + zm2,
+              pp1 + mm2, mm1 + mm2]
     elif (num_pts == 9) and (num_procs == 2):
         N = (1/24)
         # defining key
@@ -1381,11 +1400,6 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         pm2 = splitdiffs[14]
         mp2 = splitdiffs[15]
         ####################
-     #   xs = [pz1 + pz2, mz1 + mz2, zp1, zm1, zp2, zm2, pp1 + pz2,
-     #         pm1 + pz2, mp1 + mz2, mm1 + mz2, pz1 + pp2, pz1 + pm2,
-     #         mz1 + mp2, mz1 + mm2, zp1 + zp2, zm1 + zm2, zp1 + zm2,
-     #         zm1 + zp2, pp1 + pp2, pp1 + pm2, pm1 + pp2, pm1 + pm2,
-     #         mp1 + mp2, mp1 + mm2, mm1 + mp2, mm1 + mm2]
         xs = [ pz1 + pz2, pz1 + pz2, pz1 + pp2, pz1 + pp2, pz1 + pm2, pz1 + pm2,
 	       pp1 + pz2, pp1 + pz2, pp1 + pp2, pp1 + pp2, pp1 + pm2, pp1 + pm2,
                pm1 + pz2, pm1 + pz2, pm1 + pp2, pm1 + pp2, pm1 + pm2, pm1 + pm2,
