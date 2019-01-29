@@ -1409,11 +1409,15 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                mm1 + mz2, mm1 + mz2, mm1 + mp2, mm1 + mp2, mm1 + mm2, mm1 + mm2,
                zm1 + zp2, zm1 + zp2, zm1 + zp2, zm1 + zm2, zm1 + zm2, zm1 + zm2,
                zp1 + zp2, zp1 + zp2, zp1 + zp2, zp1 + zm2, zp1 + zm2, zp1 + zm2]
-    if (num_pts == 3) and (num_procs == 5):
+    elif (num_pts == 3) and (num_procs == 5):
         xs = splitdiffs
-    if (num_pts == 5) and (num_procs == 5) and (fivetheories == "nobar"):
+    elif (num_pts == 5) and (num_procs == 5) and (fivetheories == "nobar"):
         embed()
-       # plusvectors = splitdiffs[(len(splitdiffs)-1)%(num_pts-1) = 0]
+        pzs = splitdiffs[::(num_pts-1)]
+        mzs = splitdiffs[:1][::(num_pts-1)]
+        zps = splitdiffs[:2][::(num_pts-1)]
+        zms = splitdiffs[:3][::(num_pts-1)]
+
     else:
         xs = []
     A = pd.concat(xs, axis=1)
