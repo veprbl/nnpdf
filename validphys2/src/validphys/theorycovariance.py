@@ -1402,7 +1402,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         mp2 = splitdiffs[15]
         ####################
         xs = [ pz1 + pz2, pz1 + pz2, pz1 + pp2, pz1 + pp2, pz1 + pm2, pz1 + pm2,
-	           pp1 + pz2, pp1 + pz2, pp1 + pp2, pp1 + pp2, pp1 + pm2, pp1 + pm2,
+	       pp1 + pz2, pp1 + pz2, pp1 + pp2, pp1 + pp2, pp1 + pm2, pp1 + pm2,
                pm1 + pz2, pm1 + pz2, pm1 + pp2, pm1 + pp2, pm1 + pm2, pm1 + pm2,
                mz1 + mz2, mz1 + mz2, mz1 + mp2, mz1 + mp2, mz1 + mm2, mz1 + mm2,
                mp1 + mz2, mp1 + mz2, mp1 + mp2, mp1 + mp2, mp1 + mm2, mp1 + mm2,
@@ -1413,11 +1413,17 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         xs = splitdiffs
     elif (num_pts == 5) and (num_procs == 5) and (fivetheories == "nobar"):
         embed()
+        def shuffle_list(l, shift):
+            i=0
+            newlist = l.copy()
+            while i in range(shift):
+                newlist.append(newlist.pop(0))
+                i = i + 1
+            return newlist
         pzs = splitdiffs[::(num_pts-1)]
-        mzs = splitdiffs[:1][::(num_pts-1)]
-        zps = splitdiffs[:2][::(num_pts-1)]
-        zms = splitdiffs[:3][::(num_pts-1)]
-
+        mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
+        zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
+        zms = shuffle_list(splitdiffs,3)[::(num_pts-1)]
     else:
         xs = []
     A = pd.concat(xs, axis=1)
