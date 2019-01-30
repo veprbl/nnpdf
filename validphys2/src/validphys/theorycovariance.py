@@ -1318,13 +1318,14 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
     # creating split diffs with processes separated
     splitdiffs = []
     for process, dslist in procdict.items():
+        alldatasets = [y for x in list(procdict.values()) for y in x]
+        otherdatasets = [x for x in alldatasets if x not in procdict[process]]
         for diff in diffs:
             splitdiff = diff.copy()
-            for ds in dslist:
+            for ds in otherdatasets:
                 splitdiff.loc[ds] = 0
             splitdiffs.append(splitdiff)
     num_procs = len(procdict)
-#    embed()
     if (num_pts == 3) and (num_procs == 2):
         N = (1/4)
         # defining key
@@ -1416,7 +1417,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         def shuffle_list(l, shift):
             i=0
             newlist = l.copy()
-            while i in range(shift):
+            while i <= (shift-1):
                 newlist.append(newlist.pop(0))
                 i = i + 1
             return newlist
