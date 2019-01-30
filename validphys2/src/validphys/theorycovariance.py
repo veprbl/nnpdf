@@ -26,6 +26,7 @@ from validphys.calcutils import calc_chi2, all_chi2_theory, central_chi2_theory
 from validphys.plotoptions import get_info
 from validphys import plotutils
 from validphys.checks import check_two_dataspecs
+import itertools
 
 from IPython import embed
 
@@ -1413,7 +1414,6 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
     elif (num_pts == 3) and (num_procs == 5):
         xs = splitdiffs
     elif (num_pts == 5) and (num_procs == 5) and (fivetheories == "nobar"):
-        embed()
         def shuffle_list(l, shift):
             i=0
             newlist = l.copy()
@@ -1425,6 +1425,22 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
         zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
         zms = shuffle_list(splitdiffs,3)[::(num_pts-1)]
+        xs = []
+        # See Richard notes pg 20, first two vectors are just all the 
+        #(+,0) and (-,0) elements respectively
+        xs.append(sum(pzs))
+        xs.append(sum(mzs))
+        # Generating the other 2^p vectors
+        loccombs = [p for p in itertools.product(range(2), repeat=num_pts)]
+        for loccomb in loccombs:
+            newvec = pzs[0].copy()
+            newvec.loc[:] = 0
+            for index, entry in enumerate(loccomb):
+                if entry == 0:
+                    newvec = newvec + zps[index]
+                elif entry == 1:
+                    newvec = newvec + zms[index]
+            xs.append(newvec)
     else:
         xs = []
     A = pd.concat(xs, axis=1)
