@@ -1299,164 +1299,169 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
 
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                         fivetheories:(str, type(None)) = None,
-                        seventheories:(str, type(None)) = None):
-    orig_matrix = (thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0])))#.reorder_levels(['Dataset name',
-									#'Experiment name',
-									#'Point'])
-    # constructing shift vectors
-    diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0])
-                                    for scalevarvector in allthx_vector[0]]
-    num_pts = len(diffs) + 1
-    indexlist = list(diffs[0].index.values)
-    procdict = {}
-    for index in indexlist:
-        name = index[0]
-        proc = _process_lookup(name)
-        if proc not in list(procdict.keys()):
-            procdict[proc] = [name]
-        elif name not in procdict[proc]:
-            procdict[proc].append(name)
-    # creating split diffs with processes separated
-    splitdiffs = []
-    for process, dslist in procdict.items():
-        alldatasets = [y for x in list(procdict.values()) for y in x]
-        otherdatasets = [x for x in alldatasets if x not in procdict[process]]
-        for diff in diffs:
-            splitdiff = diff.copy()
-            for ds in otherdatasets:
-                splitdiff.loc[ds] = 0
-            splitdiffs.append(splitdiff)
-    num_procs = len(procdict)
-    if (num_pts == 3) and (num_procs == 2):
-        N = (1/4)
-        # defining key
-        pp1 = splitdiffs[0]
-        mm1 = splitdiffs[1]
-        pp2 = splitdiffs[2]
-        mm2 = splitdiffs[3]
-        ###################
-        xs = [pp1 + pp2, pp1 + mm2, mm1 + pp2, mm1 + mm2]
-    elif (num_pts == 5) and (num_procs == 2)  and (fivetheories == "nobar"):
-        N = (1/4)
-        # defining key
-        pz1 = splitdiffs[0]
-        mz1 = splitdiffs[1]
-        zp1 = splitdiffs[2]
-        zm1 = splitdiffs[3]
-        pz2 = splitdiffs[4]
-        mz2 = splitdiffs[5]
-        zp2 = splitdiffs[6]
-        zm2 = splitdiffs[7]
-        ###################
-        xs = [pz1 + pz2, pz1 + pz2, mz1 + mz2, mz1 + mz2,
-              zp1 + zp2, zp1 + zm2, zm1 + zp2, zm1 + zm2 ]
-    elif (num_pts == 5) and (num_procs == 2) and (fivetheories == "bar"):
-        N = (1/4)
-        # defining key
-        pp1 = splitdiffs[0]
-        mm1 = splitdiffs[1]
-        pm1 = splitdiffs[2]
-        mp1 = splitdiffs[3]
-        pp2 = splitdiffs[4]
-        mm2 = splitdiffs[5]
-        pm2 = splitdiffs[6]
-        mp2 = splitdiffs[7]
-        ###################
-        xs = [pp1 + pp2, pp1 + pm2, mm1 + mp2, mm1 + mm2,
-              pm1 + pp2, pm1 + pm2, mp1 + mp2, mp1 + mm2 ]
-    elif (num_pts == 7) and (num_procs == 2) and (seventheories != "original"):
-        N = (1/6)
-        # defining key
-        pz1 = splitdiffs[0]
-        mz1 = splitdiffs[1]
-        zp1 = splitdiffs[2]
-        zm1 = splitdiffs[3]
-        pp1 = splitdiffs[4]
-        mm1 = splitdiffs[5]
-        pz2 = splitdiffs[6]
-        mz2 = splitdiffs[7]
-        zp2 = splitdiffs[8]
-        zm2 = splitdiffs[9]
-        pp2 = splitdiffs[10]
-        mm2 = splitdiffs[11]
-        ####################
-        xs = [pz1 + pz2, mz1 + mz2, zp1 + zp2, zm1 + zp2, pp1 + pp2,
-              mm1 + pp2, pz1 + pz2, mz1 + mz2, zp1 + zm2, zm1 + zm2,
-              pp1 + mm2, mm1 + mm2]
-    elif (num_pts == 9) and (num_procs == 2):
-        N = (1/24)
-        # defining key
-        pz1 = splitdiffs[0]
-        mz1 = splitdiffs[1]
-        zp1 = splitdiffs[2]
-        zm1 = splitdiffs[3]
-        pp1 = splitdiffs[4]
-        mm1 = splitdiffs[5]
-        pm1 = splitdiffs[6]
-        mp1 = splitdiffs[7]
-        pz2 = splitdiffs[8]
-        mz2 = splitdiffs[9]
-        zp2 = splitdiffs[10]
-        zm2 = splitdiffs[11]
-        pp2 = splitdiffs[12]
-        mm2 = splitdiffs[13]
-        pm2 = splitdiffs[14]
-        mp2 = splitdiffs[15]
-        ####################
-        xs = [ pz1 + pz2, pz1 + pz2, pz1 + pp2, pz1 + pp2, pz1 + pm2, pz1 + pm2,
-	       pp1 + pz2, pp1 + pz2, pp1 + pp2, pp1 + pp2, pp1 + pm2, pp1 + pm2,
-               pm1 + pz2, pm1 + pz2, pm1 + pp2, pm1 + pp2, pm1 + pm2, pm1 + pm2,
-               mz1 + mz2, mz1 + mz2, mz1 + mp2, mz1 + mp2, mz1 + mm2, mz1 + mm2,
-               mp1 + mz2, mp1 + mz2, mp1 + mp2, mp1 + mp2, mp1 + mm2, mp1 + mm2,
-               mm1 + mz2, mm1 + mz2, mm1 + mp2, mm1 + mp2, mm1 + mm2, mm1 + mm2,
-               zm1 + zp2, zm1 + zp2, zm1 + zp2, zm1 + zm2, zm1 + zm2, zm1 + zm2,
-               zp1 + zp2, zp1 + zp2, zp1 + zp2, zp1 + zm2, zp1 + zm2, zp1 + zm2]
-    elif (num_pts == 3) and (num_procs == 5):
-        xs = splitdiffs
-    elif (num_pts == 5) and (num_procs == 5) and (fivetheories == "nobar"):
-        def shuffle_list(l, shift):
-            i=0
-            newlist = l.copy()
-            while i <= (shift-1):
-                newlist.append(newlist.pop(0))
-                i = i + 1
-            return newlist
-        pzs = splitdiffs[::(num_pts-1)]
-        mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
-        zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
-        zms = shuffle_list(splitdiffs,3)[::(num_pts-1)]
-        xs = []
-        # See Richard notes pg 20, first two vectors are just all the 
-        #(+,0) and (-,0) elements respectively
-        xs.append(sum(pzs))
-        xs.append(sum(mzs))
-        # Generating the other 2^p vectors
-        loccombs = [p for p in itertools.product(range(2), repeat=num_pts)]
-        for loccomb in loccombs:
-            newvec = pzs[0].copy()
-            newvec.loc[:] = 0
-            for index, entry in enumerate(loccomb):
-                if entry == 0:
-                    newvec = newvec + zps[index]
-                elif entry == 1:
-                    newvec = newvec + zms[index]
-            xs.append(newvec)
+                        seventheories:(str, type(None)) = None,
+                        eigenvalue_cutoff:(bool, type(None)) = None):
+    if eigenvalue_cutoff == True:
+        w = None
+        v = None
     else:
-        xs = []
-    A = pd.concat(xs, axis=1)
-    if num_procs == 2:
-        covmat = N*A.dot(A.T)
-    else:
-        covmat = orig_matrix
-    P = scipy.linalg.orth(A)
-    projected_matrix = (P.T).dot(covmat.dot(P))
-    w, v_projected = la.eigh(projected_matrix)
-    v = P.dot(v_projected)
-    w_orig, v_orig = la.eigh(orig_matrix)
-    mask = np.isclose(w, w_orig[-len(w):])
-    w = w[mask]
-    v = v[:, mask] 
-    embed()
+        orig_matrix = (thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0])))#.reorder_levels(['Dataset name',
+    									#'Experiment name',
+    									#'Point'])
+        # constructing shift vectors
+        diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0])
+                                        for scalevarvector in allthx_vector[0]]
+        num_pts = len(diffs) + 1
+        indexlist = list(diffs[0].index.values)
+        procdict = {}
+        for index in indexlist:
+            name = index[0]
+            proc = _process_lookup(name)
+            if proc not in list(procdict.keys()):
+                procdict[proc] = [name]
+            elif name not in procdict[proc]:
+                procdict[proc].append(name)
+        # creating split diffs with processes separated
+        splitdiffs = []
+        for process, dslist in procdict.items():
+            alldatasets = [y for x in list(procdict.values()) for y in x]
+            otherdatasets = [x for x in alldatasets if x not in procdict[process]]
+            for diff in diffs:
+                splitdiff = diff.copy()
+                for ds in otherdatasets:
+                    splitdiff.loc[ds] = 0
+                splitdiffs.append(splitdiff)
+        num_procs = len(procdict)
+        if (num_pts == 3) and (num_procs == 2):
+            N = (1/4)
+            # defining key
+            pp1 = splitdiffs[0]
+            mm1 = splitdiffs[1]
+            pp2 = splitdiffs[2]
+            mm2 = splitdiffs[3]
+            ###################
+            xs = [pp1 + pp2, pp1 + mm2, mm1 + pp2, mm1 + mm2]
+        elif (num_pts == 5) and (num_procs == 2)  and (fivetheories == "nobar"):
+            N = (1/4)
+            # defining key
+            pz1 = splitdiffs[0]
+            mz1 = splitdiffs[1]
+            zp1 = splitdiffs[2]
+            zm1 = splitdiffs[3]
+            pz2 = splitdiffs[4]
+            mz2 = splitdiffs[5]
+            zp2 = splitdiffs[6]
+            zm2 = splitdiffs[7]
+            ###################
+            xs = [pz1 + pz2, pz1 + pz2, mz1 + mz2, mz1 + mz2,
+                  zp1 + zp2, zp1 + zm2, zm1 + zp2, zm1 + zm2 ]
+        elif (num_pts == 5) and (num_procs == 2) and (fivetheories == "bar"):
+            N = (1/4)
+            # defining key
+            pp1 = splitdiffs[0]
+            mm1 = splitdiffs[1]
+            pm1 = splitdiffs[2]
+            mp1 = splitdiffs[3]
+            pp2 = splitdiffs[4]
+            mm2 = splitdiffs[5]
+            pm2 = splitdiffs[6]
+            mp2 = splitdiffs[7]
+            ###################
+            xs = [pp1 + pp2, pp1 + pm2, mm1 + mp2, mm1 + mm2,
+                  pm1 + pp2, pm1 + pm2, mp1 + mp2, mp1 + mm2 ]
+        elif (num_pts == 7) and (num_procs == 2) and (seventheories != "original"):
+            N = (1/6)
+            # defining key
+            pz1 = splitdiffs[0]
+            mz1 = splitdiffs[1]
+            zp1 = splitdiffs[2]
+            zm1 = splitdiffs[3]
+            pp1 = splitdiffs[4]
+            mm1 = splitdiffs[5]
+            pz2 = splitdiffs[6]
+            mz2 = splitdiffs[7]
+            zp2 = splitdiffs[8]
+            zm2 = splitdiffs[9]
+            pp2 = splitdiffs[10]
+            mm2 = splitdiffs[11]
+            ####################
+            xs = [pz1 + pz2, mz1 + mz2, zp1 + zp2, zm1 + zp2, pp1 + pp2,
+                  mm1 + pp2, pz1 + pz2, mz1 + mz2, zp1 + zm2, zm1 + zm2,
+                  pp1 + mm2, mm1 + mm2]
+        elif (num_pts == 9) and (num_procs == 2):
+            N = (1/24)
+            # defining key
+            pz1 = splitdiffs[0]
+            mz1 = splitdiffs[1]
+            zp1 = splitdiffs[2]
+            zm1 = splitdiffs[3]
+            pp1 = splitdiffs[4]
+            mm1 = splitdiffs[5]
+            pm1 = splitdiffs[6]
+            mp1 = splitdiffs[7]
+            pz2 = splitdiffs[8]
+            mz2 = splitdiffs[9]
+            zp2 = splitdiffs[10]
+            zm2 = splitdiffs[11]
+            pp2 = splitdiffs[12]
+            mm2 = splitdiffs[13]
+            pm2 = splitdiffs[14]
+            mp2 = splitdiffs[15]
+            ####################
+            xs = [ pz1 + pz2, pz1 + pz2, pz1 + pp2, pz1 + pp2, pz1 + pm2, pz1 + pm2,
+    	       pp1 + pz2, pp1 + pz2, pp1 + pp2, pp1 + pp2, pp1 + pm2, pp1 + pm2,
+                   pm1 + pz2, pm1 + pz2, pm1 + pp2, pm1 + pp2, pm1 + pm2, pm1 + pm2,
+                   mz1 + mz2, mz1 + mz2, mz1 + mp2, mz1 + mp2, mz1 + mm2, mz1 + mm2,
+                   mp1 + mz2, mp1 + mz2, mp1 + mp2, mp1 + mp2, mp1 + mm2, mp1 + mm2,
+                   mm1 + mz2, mm1 + mz2, mm1 + mp2, mm1 + mp2, mm1 + mm2, mm1 + mm2,
+                   zm1 + zp2, zm1 + zp2, zm1 + zp2, zm1 + zm2, zm1 + zm2, zm1 + zm2,
+                   zp1 + zp2, zp1 + zp2, zp1 + zp2, zp1 + zm2, zp1 + zm2, zp1 + zm2]
+        elif (num_pts == 3) and (num_procs == 5):
+            xs = splitdiffs
+        elif (num_pts == 5) and (num_procs == 5) and (fivetheories == "nobar"):
+            def shuffle_list(l, shift):
+                i=0
+                newlist = l.copy()
+                while i <= (shift-1):
+                    newlist.append(newlist.pop(0))
+                    i = i + 1
+                return newlist
+            pzs = splitdiffs[::(num_pts-1)]
+            mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
+            zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
+            zms = shuffle_list(splitdiffs,3)[::(num_pts-1)]
+            xs = []
+            # See Richard notes pg 20, first two vectors are just all the
+            #(+,0) and (-,0) elements respectively
+            xs.append(sum(pzs))
+            xs.append(sum(mzs))
+            # Generating the other 2^p vectors
+            loccombs = [p for p in itertools.product(range(2), repeat=num_pts)]
+            for loccomb in loccombs:
+                newvec = pzs[0].copy()
+                newvec.loc[:] = 0
+                for index, entry in enumerate(loccomb):
+                    if entry == 0:
+                        newvec = newvec + zps[index]
+                    elif entry == 1:
+                        newvec = newvec + zms[index]
+                xs.append(newvec)
+        else:
+            xs = []
+        A = pd.concat(xs, axis=1)
+        if num_procs == 2:
+            covmat = N*A.dot(A.T)
+        else:
+            covmat = orig_matrix
+        P = scipy.linalg.orth(A)
+        projected_matrix = (P.T).dot(covmat.dot(P))
+        w, v_projected = la.eigh(projected_matrix)
+        v = P.dot(v_projected)
+        w_orig, v_orig = la.eigh(orig_matrix)
+        mask = np.isclose(w, w_orig[-len(w):])
+        w = w[mask]
+        v = v[:, mask]
+        embed()
     return w, v
 
 def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
