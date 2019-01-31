@@ -681,3 +681,34 @@ def plot_lumi2d_uncertainty(pdf, lumi_channel, lumigrid2d, sqrts:numbers.Real):
     ax.grid(False)
 
     return fig
+
+
+@figure
+def plot_pdf_correlations(pdf, xplotting_grid):
+    """Take a PDF and for each flavour combination plot the correlations in x"""
+    gv = np.array(xplotting_grid.grid_values)
+    w,h = plt.rcParams["figure.figsize"]
+    wh = max([w, h])
+    flavours = np.array(xplotting_grid.flavours)
+    fig, axes = plt.subplots(nrows=len(flavours), ncols=len(flavours), figsize=(wh, wh))
+    for i, flavi in enumerate(flavours):
+        for j, flavj in enumerate(flavours):
+            f_i = gv[:, i, :]
+            f_j = gv[:, j, :]
+            f_if_j = np.matmul(f_i.T, f_j)/f_i.shape[0]
+            mf_imf_j = np.matmul(np.mean(f_i, axis=0)[:, np.newaxis], np.mean(f_j, axis=0)[np.newaxis, :])
+            cov = f_if_j - mf_imf_j
+            sf_isf_j = np.matmul(np.std(f_i, axis=0)[:, np.newaxis], np.std(f_j, axis=0)[np.newaxis, :])
+            im = axes[i, j].imshow(cov/sf_isf_j)
+            if i == 0:
+                axes[i, j].set_title(flavj)
+            if j == 0:
+                axes[i, j].set_ylabel(flavi)
+            axes[i, j].axes.xaxis.set_visible(False)
+            axes[i, j].axes.yaxis.set_ticklabels([])
+            axes[i, j].axes.yaxis.set_ticks([])
+            im.set_clim(0, 1)
+    fig.subplots_adjust(right=0.9)
+    cbar_ax = fig.add_axes([0.95, 0.15, 0.03, 0.7])
+    fig.colorbar(im, cax=cbar_ax)
+    return fig
