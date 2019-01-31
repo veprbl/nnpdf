@@ -1449,12 +1449,12 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         elif (num_pts == 5) and (num_procs ==5) and (fivetheories == "bar"):
             pps = splitdiffs[::(num_pts-1)]
             mms = shuffle_list(splitdiffs,1)[::(num_pts-1)]
-            pms = shuffle_list(splitidffs,2)[::(num_pts-1)]
+            pms = shuffle_list(splitdiffs,2)[::(num_pts-1)]
             mps = shuffle_list(splitdiffs,3)[::(num_pts-1)]
             xs = []
             loccombs = [p for p in product(range(2), repeat=num_procs)]
             for loccomb in loccombs:
-                newvec = pzs[0].copy()
+                newvec = pps[0].copy()
                 newvec.loc[:] = 0
                 for index, entry in enumerate(loccomb):
                     if entry == 0:
@@ -1463,7 +1463,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                         newvec = newvec + pms[index]
                 xs.append(newvec)
             for loccomb in loccombs:
-                newvec = pzs[0].copy()
+                newvec = pps[0].copy()
                 newvec.loc[:] = 0
                 for index, entry in enumerate(loccomb):
                     if entry == 0:
@@ -1490,7 +1490,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                     elif entry == 1:
                         newvec = newvec + mms[index]
                 xs.append(newvec)
-            # 5pt-like part 
+            # 5pt-like part
             xs.append(sum(pzs))
             xs.append(sum(mzs))
             # Generating the other 2^p vectors
@@ -1503,7 +1503,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                         newvec = newvec + zps[index]
                     elif entry == 1:
                         newvec = newvec + zms[index]
-                xs.append(newvec)    
+                xs.append(newvec)
         elif (num_pts == 9) and (num_procs == 5):
             pzs = splitdiffs[::(num_pts-1)]
             mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
