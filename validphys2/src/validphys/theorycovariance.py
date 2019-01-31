@@ -26,7 +26,7 @@ from validphys.calcutils import calc_chi2, all_chi2_theory, central_chi2_theory
 from validphys.plotoptions import get_info
 from validphys import plotutils
 from validphys.checks import check_two_dataspecs
-import itertools
+from itertools import product
 
 from IPython import embed
 
@@ -1301,6 +1301,13 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                         fivetheories:(str, type(None)) = None,
                         seventheories:(str, type(None)) = None,
                         eigenvalue_cutoff:(bool, type(None)) = None):
+    def shuffle_list(l, shift):
+        i=0
+        newlist = l.copy()
+        while i <= (shift-1):
+            newlist.append(newlist.pop(0))
+            i = i + 1
+        return newlist
     if eigenvalue_cutoff == True:
         w = None
         v = None
@@ -1409,7 +1416,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
             mp2 = splitdiffs[15]
             ####################
             xs = [ pz1 + pz2, pz1 + pz2, pz1 + pp2, pz1 + pp2, pz1 + pm2, pz1 + pm2,
-    	       pp1 + pz2, pp1 + pz2, pp1 + pp2, pp1 + pp2, pp1 + pm2, pp1 + pm2,
+    	           pp1 + pz2, pp1 + pz2, pp1 + pp2, pp1 + pp2, pp1 + pm2, pp1 + pm2,
                    pm1 + pz2, pm1 + pz2, pm1 + pp2, pm1 + pp2, pm1 + pm2, pm1 + pm2,
                    mz1 + mz2, mz1 + mz2, mz1 + mp2, mz1 + mp2, mz1 + mm2, mz1 + mm2,
                    mp1 + mz2, mp1 + mz2, mp1 + mp2, mp1 + mp2, mp1 + mm2, mp1 + mm2,
@@ -1419,13 +1426,6 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         elif (num_pts == 3) and (num_procs == 5):
             xs = splitdiffs
         elif (num_pts == 5) and (num_procs == 5) and (fivetheories == "nobar"):
-            def shuffle_list(l, shift):
-                i=0
-                newlist = l.copy()
-                while i <= (shift-1):
-                    newlist.append(newlist.pop(0))
-                    i = i + 1
-                return newlist
             pzs = splitdiffs[::(num_pts-1)]
             mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
             zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
@@ -1436,7 +1436,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
             xs.append(sum(pzs))
             xs.append(sum(mzs))
             # Generating the other 2^p vectors
-            loccombs = [p for p in itertools.product(range(2), repeat=num_pts)]
+            loccombs = [p for p in product(range(2), repeat=num_procs)]
             for loccomb in loccombs:
                 newvec = pzs[0].copy()
                 newvec.loc[:] = 0
@@ -1446,8 +1446,109 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                     elif entry == 1:
                         newvec = newvec + zms[index]
                 xs.append(newvec)
-        else:
+        elif (num_pts == 5) and (num_procs ==5) and (fivetheories == "bar"):
+            pps = splitdiffs[::(num_pts-1)]
+            mms = shuffle_list(splitdiffs,1)[::(num_pts-1)]
+            pms = shuffle_list(splitidffs,2)[::(num_pts-1)]
+            mps = shuffle_list(splitdiffs,3)[::(num_pts-1)]
             xs = []
+            loccombs = [p for p in product(range(2), repeat=num_procs)]
+            for loccomb in loccombs:
+                newvec = pzs[0].copy()
+                newvec.loc[:] = 0
+                for index, entry in enumerate(loccomb):
+                    if entry == 0:
+                        newvec = newvec + pps[index]
+                    elif entry == 1:
+                        newvec = newvec + pms[index]
+                xs.append(newvec)
+            for loccomb in loccombs:
+                newvec = pzs[0].copy()
+                newvec.loc[:] = 0
+                for index, entry in enumerate(loccomb):
+                    if entry == 0:
+                        newvec = newvec + mps[index]
+                    elif entry == 1:
+                        newvec = newvec + mms[index]
+                xs.append(newvec)
+        elif (num_pts == 7) and (num_procs == 5) and (seventheories != "original"):
+            pzs = splitdiffs[::(num_pts-1)]
+            mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
+            zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
+            zms = shuffle_list(splitdiffs,3)[::(num_pts-1)]
+            pps = shuffle_list(splitdiffs,4)[::(num_pts-1)]
+            mms = shuffle_list(splitdiffs,5)[::(num_pts-1)]
+            xs = []
+            # 3pt-like part
+            loccombs = [p for p in product(range(2), repeat=num_procs)]
+            for loccomb in loccombs:
+                newvec = pzs[0].copy()
+                newvec.loc[:] = 0
+                for index, entry in enumerate(loccomb):
+                    if entry == 0:
+                        newvec = newvec + pps[index]
+                    elif entry == 1:
+                        newvec = newvec + mms[index]
+                xs.append(newvec)
+            # 5pt-like part 
+            xs.append(sum(pzs))
+            xs.append(sum(mzs))
+            # Generating the other 2^p vectors
+            loccombs = [p for p in product(range(2), repeat=num_procs)]
+            for loccomb in loccombs:
+                newvec = pzs[0].copy()
+                newvec.loc[:] = 0
+                for index, entry in enumerate(loccomb):
+                    if entry == 0:
+                        newvec = newvec + zps[index]
+                    elif entry == 1:
+                        newvec = newvec + zms[index]
+                xs.append(newvec)    
+        elif (num_pts == 9) and (num_procs == 5):
+            pzs = splitdiffs[::(num_pts-1)]
+            mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
+            zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
+            zms = shuffle_list(splitdiffs,3)[::(num_pts-1)]
+            pps = shuffle_list(splitdiffs,4)[::(num_pts-1)]
+            mms = shuffle_list(splitdiffs,5)[::(num_pts-1)]
+            pms = shuffle_list(splitdiffs,6)[::(num_pts-1)]
+            mps = shuffle_list(splitdiffs,7)[::(num_pts-1)]
+            xs = []
+            # Generating first 2^p vectors
+            loccombs = [p for p in product(range(2), repeat=num_procs)]
+            for loccomb in loccombs:
+                newvec = pzs[0].copy()
+                newvec.loc[:] = 0
+                for index, entry in enumerate(loccomb):
+                    if entry == 0:
+                        newvec = newvec + zps[index]
+                    elif entry == 1:
+                        newvec = newvec + zms[index]
+                xs.append(newvec)
+            loccombs2 = [p for p in product(range(3), repeat=num_procs)]
+            for loccomb2 in loccombs2:
+                newvec = pzs[0].copy()
+                newvec.loc[:] = 0
+                for index, entry in enumerate(loccomb2):
+                    if entry == 0:
+                        newvec = newvec + pzs[index]
+                    elif entry == 1:
+                        newvec = newvec + pps[index]
+                    elif entry == 2:
+                        newvec = newvec + pms[index]
+                xs.append(newvec)
+            for loccomb2 in loccombs2:
+                newvec = pzs[0].copy()
+                newvec.loc[:] = 0
+                for index, entry in enumerate(loccomb2):
+                    if entry == 0:
+                        newvec = newvec + mzs[index]
+                    elif entry == 1:
+                        newvec = newvec + mps[index]
+                    elif entry == 2:
+                        newvec = newvec + mms[index]
+                xs.append(newvec)
+        embed()
         A = pd.concat(xs, axis=1)
         if num_procs == 2:
             covmat = N*A.dot(A.T)
