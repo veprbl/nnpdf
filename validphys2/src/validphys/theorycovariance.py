@@ -1694,6 +1694,7 @@ def shift_diag_cov_comparison(shx_vector, thx_covmat, thx_vector):
     sqrtdiags = np.sqrt(np.diag(matrix))
     fig, ax = plt.subplots(figsize=(20,10))
     ax.plot(sqrtdiags*100, '.-', label="Theory", color = "red")
+    ax.plot(-sqrtdiags*100, '.-', color = "red")
     ax.plot(fnorm.values*100, '.-', label="NNLO-NLO Shift", color = "black")
     ticklocs, ticklabels = matrix_plot_labels(matrix)
     plt.xticks(ticklocs, ticklabels, rotation=45, fontsize=20)
