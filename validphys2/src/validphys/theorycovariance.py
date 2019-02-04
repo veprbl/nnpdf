@@ -1504,7 +1504,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                     elif entry == 1:
                         newvec = newvec + zms[index]
                 xs.append(newvec)
-        elif (num_pts == 9) and (num_procs == 5):
+        elif (num_pts == 9) and (num_procs != 2):
             pzs = splitdiffs[::(num_pts-1)]
             mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
             zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
@@ -1548,7 +1548,6 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                     elif entry == 2:
                         newvec = newvec + mms[index]
                 xs.append(newvec)
-        embed()
         A = pd.concat(xs, axis=1)
         if num_procs == 2:
             covmat = N*A.dot(A.T)
@@ -1701,4 +1700,28 @@ def shift_diag_cov_comparison(shx_vector, thx_covmat, thx_vector):
     ax.set_ylabel("% of central theory", fontsize=20)
     ax.legend(fontsize=20)
     return fig
+
+@figure
+def plot_shift_scaleavg_comparison(shx_vector, thx_vector,
+                                   allthx_vector, thx_covmat):
+    diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0])
+                                        for scalevarvector in allthx_vector[0]]
+ #   theoryconcat = pd.concat((pd.concat(allthx_vector[0], axis=1),
+ #                             thx_vector[0]), axis=1)
+ #   avgtheory = theoryconcat.mean(axis=1)
+    diffsconcat = pd.concat(diffs, axis=1)
+    avgdiffs = diffsconcat.mean(axis=1)
+    fig, ax = plt.subplots(figsize=(20,10))
+    ax.plot(100*avgdiffs.values, '.-',
+            label=r"Average of $\Delta$s",color = "blue")
+    ax.plot(-100*shx_vector[0].values, '.-', label="NNLO-NLO shift", color = "black")
+    ticklocs, ticklabels = matrix_plot_labels(thx_covmat[0])
+    plt.xticks(ticklocs, ticklabels, rotation=45, fontsize=20)
+    ax.set_ylabel("% of central theory", fontsize=20)
+    ax.legend(fontsize=20)
+    return fig
+
+
+
+
 
