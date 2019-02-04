@@ -1423,9 +1423,9 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                    mm1 + mz2, mm1 + mz2, mm1 + mp2, mm1 + mp2, mm1 + mm2, mm1 + mm2,
                    zm1 + zp2, zm1 + zp2, zm1 + zp2, zm1 + zm2, zm1 + zm2, zm1 + zm2,
                    zp1 + zp2, zp1 + zp2, zp1 + zp2, zp1 + zm2, zp1 + zm2, zp1 + zm2]
-        elif (num_pts == 3) and (num_procs == 5):
+        elif (num_pts == 3) and (num_procs != 2):
             xs = splitdiffs
-        elif (num_pts == 5) and (num_procs == 5) and (fivetheories == "nobar"):
+        elif (num_pts == 5) and (num_procs != 2) and (fivetheories == "nobar"):
             pzs = splitdiffs[::(num_pts-1)]
             mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
             zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
@@ -1446,7 +1446,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                     elif entry == 1:
                         newvec = newvec + zms[index]
                 xs.append(newvec)
-        elif (num_pts == 5) and (num_procs ==5) and (fivetheories == "bar"):
+        elif (num_pts == 5) and (num_procs != 2) and (fivetheories == "bar"):
             pps = splitdiffs[::(num_pts-1)]
             mms = shuffle_list(splitdiffs,1)[::(num_pts-1)]
             pms = shuffle_list(splitdiffs,2)[::(num_pts-1)]
@@ -1471,7 +1471,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                     elif entry == 1:
                         newvec = newvec + mms[index]
                 xs.append(newvec)
-        elif (num_pts == 7) and (num_procs == 5) and (seventheories != "original"):
+        elif (num_pts == 7) and (num_procs != 2) and (seventheories != "original"):
             pzs = splitdiffs[::(num_pts-1)]
             mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
             zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
