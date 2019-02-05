@@ -1557,10 +1557,6 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         projected_matrix = (P.T).dot(covmat.dot(P))
         w, v_projected = la.eigh(projected_matrix)
         v = P.dot(v_projected)
-        w_orig, v_orig = la.eigh(orig_matrix)
-        mask = np.isclose(w, w_orig[-len(w):])
-        w = w[mask]
-        v = v[:, mask]
         embed()
     return w, v
 
