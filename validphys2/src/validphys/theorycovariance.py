@@ -1553,6 +1553,21 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
             covmat = N*A.dot(A.T)
         else:
             covmat = orig_matrix
+        subxs = [xs[0]]
+        for xnum, x in enumerate(xs[1:]):
+            testlist = subxs + [x]
+            detarray = np.zeros((len(testlist),len(testlist)))
+            for i, element1 in enumerate(testlist):
+                for j, element2 in enumerate(testlist):
+                        detarray[i][j] = element1.T.dot(element2)[0]
+            det = np.linalg.det(detarray)
+            if (det > 10**(-3)) and (len(subxs) < 6):
+                subxs.append(x)
+                print(xnum)
+            else:
+                pass
+        finaldetarray = detarray[:-1,:-1]
+        A = pd.concat(xs, axis=1)
         P = scipy.linalg.orth(A)
         projected_matrix = (P.T).dot(covmat.dot(P))
         w, v_projected = la.eigh(projected_matrix)
