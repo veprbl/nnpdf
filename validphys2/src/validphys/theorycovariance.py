@@ -1586,40 +1586,80 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
             pms = shuffle_list(splitdiffs,6)[::(num_pts-1)]
             mps = shuffle_list(splitdiffs,7)[::(num_pts-1)]
             xs = []
-            # Generating first 2^p vectors
-            loccombs = [p for p in product(range(2), repeat=num_procs)]
-            for loccomb in loccombs:
-                newvec = pzs[0].copy()
-                newvec.loc[:] = 0
-                for index, entry in enumerate(loccomb):
-                    if entry == 0:
-                        newvec = newvec + zps[index]
-                    elif entry == 1:
-                        newvec = newvec + zms[index]
-                xs.append(newvec)
-            loccombs2 = [p for p in product(range(3), repeat=num_procs)]
-            for loccomb2 in loccombs2:
-                newvec = pzs[0].copy()
-                newvec.loc[:] = 0
-                for index, entry in enumerate(loccomb2):
-                    if entry == 0:
-                        newvec = newvec + pzs[index]
-                    elif entry == 1:
-                        newvec = newvec + pps[index]
-                    elif entry == 2:
-                        newvec = newvec + pms[index]
-                xs.append(newvec)
-            for loccomb2 in loccombs2:
-                newvec = pzs[0].copy()
-                newvec.loc[:] = 0
-                for index, entry in enumerate(loccomb2):
-                    if entry == 0:
-                        newvec = newvec + mzs[index]
-                    elif entry == 1:
-                        newvec = newvec + mps[index]
-                    elif entry == 2:
-                        newvec = newvec + mms[index]
-                xs.append(newvec)
+            if use_analytic == True:
+                xs.append(sum(pps))
+                xs.append(sum(mps))
+                xs.append(sum(zps))
+                for procloc, zm in enumerate(zms):
+                    newvec = zps[0].copy()
+                    newvec.loc[:] = 0
+                    subzps = zps.copy()
+                    del subzps[procloc]
+                    newvec = newvec + sum(subzps) + zm
+                    xs.append(newvec)
+                for procloc, pm in enumerate(pms):
+                    newvec = pps[0].copy()
+                    newvec.loc[:] = 0
+                    subpps = pps.copy()
+                    del subpps[procloc]
+                    newvec = newvec + sum(subpps) + pm
+                    xs.append(newvec)
+                for procloc, mm in enumerate(mms):
+                    newvec = mps[0].copy()
+                    newvec.loc[:] = 0
+                    submps = mps.copy()
+                    del submps[procloc]
+                    newvec = newvec + sum(submps) + mm
+                    xs.append(newvec)
+                for procloc, pz in enumerate(pzs):
+                    newvec = pps[0].copy()
+                    newvec.loc[:] = 0
+                    subpps = pps.copy()
+                    del subpps[procloc]
+                    newvec = newvec + sum(subpps) + pz
+                    xs.append(newvec)
+                for procloc, mz in enumerate(mzs):
+                    newvec = mps[0].copy()
+                    newvec.loc[:] = 0
+                    submps = mps.copy()
+                    del submps[procloc]
+                    newvec = newvec + sum(submps) + mz
+                    xs.append(newvec)
+            else:
+                # Generating first 2^p vectors
+                loccombs = [p for p in product(range(2), repeat=num_procs)]
+                for loccomb in loccombs:
+                    newvec = pzs[0].copy()
+                    newvec.loc[:] = 0
+                    for index, entry in enumerate(loccomb):
+                        if entry == 0:
+                            newvec = newvec + zps[index]
+                        elif entry == 1:
+                            newvec = newvec + zms[index]
+                    xs.append(newvec)
+                loccombs2 = [p for p in product(range(3), repeat=num_procs)]
+                for loccomb2 in loccombs2:
+                    newvec = pzs[0].copy()
+                    newvec.loc[:] = 0
+                    for index, entry in enumerate(loccomb2):
+                        if entry == 0:
+                            newvec = newvec + pzs[index]
+                        elif entry == 1:
+                            newvec = newvec + pps[index]
+                        elif entry == 2:
+                            newvec = newvec + pms[index]
+                    xs.append(newvec)
+                for loccomb2 in loccombs2:
+                    newvec = pzs[0].copy()
+                    newvec.loc[:] = 0
+                    for index, entry in enumerate(loccomb2):
+                        if entry == 0:
+                            newvec = newvec + mzs[index]
+                        elif entry == 1:
+                            newvec = newvec + mps[index]
+                        elif entry == 2:
+                            newvec = newvec + mms[index]
+                    xs.append(newvec)
         A = pd.concat(xs, axis=1)
         if num_procs == 2:
             covmat = N*A.dot(A.T)
