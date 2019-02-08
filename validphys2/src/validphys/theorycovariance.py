@@ -1300,7 +1300,8 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                         fivetheories:(str, type(None)) = None,
                         seventheories:(str, type(None)) = None,
-                        eigenvalue_cutoff:(bool, type(None)) = None):
+                        eigenvalue_cutoff:(bool, type(None)) = None,
+                        use_analytic:(bool, type(None)) = None):
     def shuffle_list(l, shift):
         i=0
         newlist = l.copy()
@@ -1424,53 +1425,100 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                    zm1 + zp2, zm1 + zp2, zm1 + zp2, zm1 + zm2, zm1 + zm2, zm1 + zm2,
                    zp1 + zp2, zp1 + zp2, zp1 + zp2, zp1 + zm2, zp1 + zm2, zp1 + zm2]
         elif (num_pts == 3) and (num_procs != 2):
-            xs = splitdiffs
+            if use_analytic == True:
+                xs = []
+                pps = splitdiffs[::(num_pts-1)]
+                mms = shuffle_list(splitdiffs,1)[::(num_pts-1)]
+                # the one vector with all pluses
+                xs.append(sum(pps))
+                # the p vectors with one minus
+                for procloc, mm in enumerate(mms):
+                    newvec = pps[0].copy()
+                    newvec.loc[:]=0
+                    subpps = pps.copy()
+                    del subpps[procloc]
+                    newvec = newvec + sum(subpps) + mm
+                    xs.append(newvec)
+            else:
+                xs = splitdiffs
         elif (num_pts == 5) and (num_procs != 2) and (fivetheories == "nobar"):
             pzs = splitdiffs[::(num_pts-1)]
             mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
             zps = shuffle_list(splitdiffs,2)[::(num_pts-1)]
             zms = shuffle_list(splitdiffs,3)[::(num_pts-1)]
             xs = []
-            # See Richard notes pg 20, first two vectors are just all the
-            #(+,0) and (-,0) elements respectively
-            xs.append(sum(pzs))
-            xs.append(sum(mzs))
-            # Generating the other 2^p vectors
-            loccombs = [p for p in product(range(2), repeat=num_procs)]
-            for loccomb in loccombs:
-                newvec = pzs[0].copy()
-                newvec.loc[:] = 0
-                for index, entry in enumerate(loccomb):
-                    if entry == 0:
-                        newvec = newvec + zps[index]
-                    elif entry == 1:
-                        newvec = newvec + zms[index]
-                xs.append(newvec)
+            if use_analytic == True:
+                xs.append(sum(pzs))
+                xs.append(sum(mzs))
+                xs.append(sum(zps))
+                # the p vectors with one minus
+                for procloc, zm in enumerate(zms):
+                    newvec = zps[0].copy()
+                    newvec.loc[:] = 0
+                    subzps = zps.copy()
+                    del subzps[procloc]
+                    newvec = newvec + sum(subzps) + zm
+                    xs.append(newvec)
+            else:
+                # See Richard notes pg 20, first two vectors are just all the
+                #(+,0) and (-,0) elements respectively
+                xs.append(sum(pzs))
+                xs.append(sum(mzs))
+                # Generating the other 2^p vectors
+                loccombs = [p for p in product(range(2), repeat=num_procs)]
+                for loccomb in loccombs:
+                    newvec = pzs[0].copy()
+                    newvec.loc[:] = 0
+                    for index, entry in enumerate(loccomb):
+                        if entry == 0:
+                            newvec = newvec + zps[index]
+                        elif entry == 1:
+                            newvec = newvec + zms[index]
+                    xs.append(newvec)
         elif (num_pts == 5) and (num_procs != 2) and (fivetheories == "bar"):
             pps = splitdiffs[::(num_pts-1)]
             mms = shuffle_list(splitdiffs,1)[::(num_pts-1)]
             pms = shuffle_list(splitdiffs,2)[::(num_pts-1)]
             mps = shuffle_list(splitdiffs,3)[::(num_pts-1)]
             xs = []
-            loccombs = [p for p in product(range(2), repeat=num_procs)]
-            for loccomb in loccombs:
-                newvec = pps[0].copy()
-                newvec.loc[:] = 0
-                for index, entry in enumerate(loccomb):
-                    if entry == 0:
-                        newvec = newvec + pps[index]
-                    elif entry == 1:
-                        newvec = newvec + pms[index]
-                xs.append(newvec)
-            for loccomb in loccombs:
-                newvec = pps[0].copy()
-                newvec.loc[:] = 0
-                for index, entry in enumerate(loccomb):
-                    if entry == 0:
-                        newvec = newvec + mps[index]
-                    elif entry == 1:
-                        newvec = newvec + mms[index]
-                xs.append(newvec)
+            if use_analytic == True:
+                xs.append(sum(pps))
+                xs.append(sum(mps))
+                # the 2p vectors with one minus
+                for procloc, pm in enumerate(pms):
+                    newvec = pms[0].copy()
+                    newvec.loc[:] = 0
+                    subpps = pps.copy()
+                    del subpps[procloc]
+                    newvec = newvec + sum(subpps + pm)
+                    xs.append(newvec)
+                for procloc, mm in enumerate(mms):
+                    newvec = mms[0].copy()
+                    newvec.loc[:] = 0
+                    submps = mps.copy()
+                    del submps[procloc]
+                    newvec = newvec + sum(submps + mm)
+                    xs.append(newvec)
+            else:
+                loccombs = [p for p in product(range(2), repeat=num_procs)]
+                for loccomb in loccombs:
+                    newvec = pps[0].copy()
+                    newvec.loc[:] = 0
+                    for index, entry in enumerate(loccomb):
+                        if entry == 0:
+                            newvec = newvec + pps[index]
+                        elif entry == 1:
+                            newvec = newvec + pms[index]
+                    xs.append(newvec)
+                for loccomb in loccombs:
+                    newvec = pps[0].copy()
+                    newvec.loc[:] = 0
+                    for index, entry in enumerate(loccomb):
+                        if entry == 0:
+                            newvec = newvec + mps[index]
+                        elif entry == 1:
+                            newvec = newvec + mms[index]
+                    xs.append(newvec)
         elif (num_pts == 7) and (num_procs != 2) and (seventheories != "original"):
             pzs = splitdiffs[::(num_pts-1)]
             mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
@@ -1479,31 +1527,55 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
             pps = shuffle_list(splitdiffs,4)[::(num_pts-1)]
             mms = shuffle_list(splitdiffs,5)[::(num_pts-1)]
             xs = []
-            # 3pt-like part
-            loccombs = [p for p in product(range(2), repeat=num_procs)]
-            for loccomb in loccombs:
-                newvec = pzs[0].copy()
-                newvec.loc[:] = 0
-                for index, entry in enumerate(loccomb):
-                    if entry == 0:
-                        newvec = newvec + pps[index]
-                    elif entry == 1:
-                        newvec = newvec + mms[index]
-                xs.append(newvec)
-            # 5pt-like part
-            xs.append(sum(pzs))
-            xs.append(sum(mzs))
-            # Generating the other 2^p vectors
-            loccombs = [p for p in product(range(2), repeat=num_procs)]
-            for loccomb in loccombs:
-                newvec = pzs[0].copy()
-                newvec.loc[:] = 0
-                for index, entry in enumerate(loccomb):
-                    if entry == 0:
-                        newvec = newvec + zps[index]
-                    elif entry == 1:
-                        newvec = newvec + zms[index]
-                xs.append(newvec)
+            if use_analytic == True:
+                # 3pt-like part
+                xs.append(sum(pps))
+                # the p vectors with one minus
+                for procloc, mm in enumerate(mms):
+                    newvec = pps[0].copy()
+                    newvec.loc[:]=0
+                    subpps = pps.copy()
+                    del subpps[procloc]
+                    newvec = newvec + sum(subpps) + mm
+                    xs.append(newvec)
+                # 5pt-like part
+                xs.append(sum(pzs))
+                xs.append(sum(mzs))
+                xs.append(sum(zps))
+                # the p vectors with one minus
+                for procloc, zm in enumerate(zms):
+                    newvec = zps[0].copy()
+                    newvec.loc[:] = 0
+                    subzps = zps.copy()
+                    del subzps[procloc]
+                    newvec = newvec + sum(subzps) + zm
+                    xs.append(newvec)
+            else:
+                # 3pt-like part
+                loccombs = [p for p in product(range(2), repeat=num_procs)]
+                for loccomb in loccombs:
+                    newvec = pzs[0].copy()
+                    newvec.loc[:] = 0
+                    for index, entry in enumerate(loccomb):
+                        if entry == 0:
+                            newvec = newvec + pps[index]
+                        elif entry == 1:
+                            newvec = newvec + mms[index]
+                    xs.append(newvec)
+                # 5pt-like part
+                xs.append(sum(pzs))
+                xs.append(sum(mzs))
+                # Generating the other 2^p vectors
+                loccombs = [p for p in product(range(2), repeat=num_procs)]
+                for loccomb in loccombs:
+                    newvec = pzs[0].copy()
+                    newvec.loc[:] = 0
+                    for index, entry in enumerate(loccomb):
+                        if entry == 0:
+                            newvec = newvec + zps[index]
+                        elif entry == 1:
+                            newvec = newvec + zms[index]
+                    xs.append(newvec)
         elif (num_pts == 9) and (num_procs != 2):
             pzs = splitdiffs[::(num_pts-1)]
             mzs = shuffle_list(splitdiffs,1)[::(num_pts-1)]
@@ -1553,26 +1625,25 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
             covmat = N*A.dot(A.T)
         else:
             covmat = orig_matrix
-        subxs = [xs[0]]
-        for xnum, x in enumerate(xs[1:]):
-            testlist = subxs + [x]
-            detarray = np.zeros((len(testlist),len(testlist)))
-            for i, element1 in enumerate(testlist):
-                for j, element2 in enumerate(testlist):
-                        detarray[i][j] = element1.T.dot(element2)[0]
-            det = np.linalg.det(detarray)
-            if (det > 10**(-3)) and (len(subxs) < 6):
-                subxs.append(x)
-                print(xnum)
-            else:
-                pass
-        finaldetarray = detarray[:-1,:-1]
-        A = pd.concat(xs, axis=1)
+#        subxs = [xs[0]]
+#        for xnum, x in enumerate(xs[1:]):
+#            testlist = subxs + [x]
+#            detarray = np.zeros((len(testlist),len(testlist)))
+#            for i, element1 in enumerate(testlist):
+#                for j, element2 in enumerate(testlist):
+#                        detarray[i][j] = element1.T.dot(element2)[0]
+#            det = np.linalg.det(detarray)
+#            if (det > 10**(-3)) and (len(subxs) < 6):
+#                subxs.append(x)
+#                print(xnum)
+#            else:
+#                pass
+#        finaldetarray = detarray[:-1,:-1]
+#        A = pd.concat(xs, axis=1)
         P = scipy.linalg.orth(A)
         projected_matrix = (P.T).dot(covmat.dot(P))
         w, v_projected = la.eigh(projected_matrix)
         v = P.dot(v_projected)
-        embed()
     return w, v
 
 def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
@@ -1619,11 +1690,14 @@ def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
     fmiss = f - np.sum(projected_evectors, axis=0)
     return w_nonzero, v_nonzero, projectors, f, fmiss, w_max, w, all_projectors
 
-def cutoff(theory_shift_test, eigenvalue_cutoff:(bool, type(None)) = None):
+def cutoff(theory_shift_test, eigenvalue_cutoff:(bool, type(None)) = None,
+           use_analytic:(bool, type(None)) = None):
     if eigenvalue_cutoff == True:
         cutoff = "10 times modulus of largest 'negative' eigenvalue"
     else:
-        cutoff = "Eigenvalues determined by projection onto space of non-zero eigenvalues"
+        cutoff = "Eigenvalues determined by projection onto space of non-zero eigenvalues."
+    if use_analytic == True:
+        cutoff = cutoff + "\n Linearly independent vectors determined analytically"
     print(f"cutoff = {cutoff}")
     return cutoff
 
@@ -1662,7 +1736,8 @@ def validation_theory_chi2(theory_shift_test):
     return th_chi2
 
 @figure
-def projector_eigenvalue_ratio(theory_shift_test):
+def projector_eigenvalue_ratio(theory_shift_test,
+                               eigenvalue_cutoff:(bool, type(None)) = None):
     surviving_evals = theory_shift_test[0][::-1]
     all_projectors = theory_shift_test[7][::-1]
     all_evals = theory_shift_test[6][::-1]
@@ -1678,6 +1753,12 @@ def projector_eigenvalue_ratio(theory_shift_test):
   #  evals = np.asarray(evals)[randomise]
   #  projectors = projectors[randomise]
   #  ratio = ratio[randomise]
+     # Ordering according to shift vector
+    mask = np.argsort(np.abs(all_projectors))[::-1]
+    all_evals = np.asarray(all_evals)[mask]
+    all_projectors = all_projectors[mask]
+    ratio = ratio[mask]
+    masked_evals = masked_evals[mask]
     fig, (ax1, ax2) = plt.subplots(2, figsize=(5,5))
     ax1.plot(np.abs(all_projectors), 'o', label = r'|$\delta_a$|')
     ax1.plot(np.sqrt(np.abs(all_evals)), 'o', label = r'$|s_a|$')
@@ -1687,6 +1768,9 @@ def projector_eigenvalue_ratio(theory_shift_test):
     ax1.set_xlabel("a", fontsize=20)
     ax1.set_yscale('log')
     ax2.set_yscale('log')
+    if eigenvalue_cutoff == True:
+        ax1.set_xscale('log')
+        ax2.set_xscale('log')
 #    ax1.set_ylim([all_evals[np.argmin(np.sqrt(np.abs(all_evals)))],
 #		all_evals[np.argmax(np.sqrt(np.abs(all_evals)))]])
     ax1.legend()
