@@ -28,15 +28,12 @@ from validphys import plotutils
 from validphys.checks import check_two_dataspecs
 from itertools import product
 
-from IPython import embed
-
 log = logging.getLogger(__name__)
 
 theoryids_experiments_central_values = collect(experiments_central_values,
                                                ('theoryids',))
 
-@make_argcheck
-def _check_correct_theory_combination(theoryids,
+def _check_correct_theory_combination_internal(theoryids,
                                       fivetheories:(str, type(None)) = None):
     """Checks that a valid theory combination corresponding to an existing
     prescription has been inputted"""
@@ -73,6 +70,16 @@ def _check_correct_theory_combination(theoryids,
         xifs == correct_xifs and xirs == correct_xirs,
         "Choice of input theories does not correspond to a valid "
         "prescription for theory covariance matrix calculation")
+
+collected_theoryids = collect('theoryids', 
+			['theoryconfig',])
+
+_check_correct_theory_combination = make_argcheck(_check_correct_theory_combination_internal)
+
+@make_argcheck
+def _check_correct_theory_combination_theoryconfig(collected_theoryids,
+						fivetheories:(str, type(None))=None):
+    _check_correct_theory_combination_internal(collected_theoryids[0], fivetheories)
 
 @make_argcheck
 def _check_valid_shift_matrix_threshold_method(shift_threshold:(int, float, None) = None,
@@ -1297,7 +1304,9 @@ def plot_thcorrmat_heatmap_custom_dataspecs(theory_corrmat_custom_dataspecs, the
                                f"Theory correlation matrix for {l} points")
     return fig
 
+@_check_correct_theory_combination_theoryconfig
 def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
+                        collected_theoryids,
                         fivetheories:(str, type(None)) = None,
                         seventheories:(str, type(None)) = None,
                         eigenvalue_cutoff:(bool, type(None)) = None,
@@ -1684,7 +1693,6 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         projected_matrix = (P.T).dot(covmat.dot(P))
         w, v_projected = la.eigh(projected_matrix)
         v = P.dot(v_projected)
-        embed()
     return w, v
 
 def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
