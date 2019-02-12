@@ -1490,14 +1490,14 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
                     newvec.loc[:] = 0
                     subpps = pps.copy()
                     del subpps[procloc]
-                    newvec = newvec + sum(subpps + pm)
+                    newvec = newvec + sum(subpps) + pm
                     xs.append(newvec)
                 for procloc, mm in enumerate(mms):
                     newvec = mms[0].copy()
                     newvec.loc[:] = 0
                     submps = mps.copy()
                     del submps[procloc]
-                    newvec = newvec + sum(submps + mm)
+                    newvec = newvec + sum(submps) + mm
                     xs.append(newvec)
             else:
                 loccombs = [p for p in product(range(2), repeat=num_procs)]
@@ -1684,6 +1684,7 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
         projected_matrix = (P.T).dot(covmat.dot(P))
         w, v_projected = la.eigh(projected_matrix)
         v = P.dot(v_projected)
+        embed()
     return w, v
 
 def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
