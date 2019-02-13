@@ -699,7 +699,7 @@ def plot_pdf_correlations(pdf, xplotting_grid):
             mf_imf_j = np.matmul(np.mean(f_i, axis=0)[:, np.newaxis], np.mean(f_j, axis=0)[np.newaxis, :])
             cov = f_if_j - mf_imf_j
             sf_isf_j = np.matmul(np.std(f_i, axis=0)[:, np.newaxis], np.std(f_j, axis=0)[np.newaxis, :])
-            im = axes[i, j].imshow(cov/sf_isf_j)
+            im = axes[i, j].imshow(cov/sf_isf_j, cmap=cm.Spectral_r)
             if i == 0:
                 axes[i, j].set_title(flavj)
             if j == 0:
@@ -707,7 +707,7 @@ def plot_pdf_correlations(pdf, xplotting_grid):
             axes[i, j].axes.xaxis.set_visible(False)
             axes[i, j].axes.yaxis.set_ticklabels([])
             axes[i, j].axes.yaxis.set_ticks([])
-            im.set_clim(0, 1)
+            im.set_clim(-1, 1)
     fig.subplots_adjust(right=0.9)
     cbar_ax = fig.add_axes([0.95, 0.15, 0.03, 0.7])
     fig.colorbar(im, cax=cbar_ax)
