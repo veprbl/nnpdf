@@ -1224,7 +1224,8 @@ def shift_to_theory_ratio_plot(shift_to_theory_ratio):
     matrix[((matrix==np.inf) | (matrix==-np.inf))] = 0
 #    bins = np.linspace(-1, 1, num=21)
 #    digmatrix = np.digitize(matrix, bins)
-#    symdigmatrix = np.zeros((len(digmatrix), len(digmatrix)))
+     # Initialise array of zeros and set precision to same as FK tables
+#    symdigmatrix = np.zeros((len(digmatrix), len(digmatrix)), dtype=np.float32)
 #    for binnumber in range(len(bins)):
 #        symdigmatrix[digmatrix==binnumber+1] = bins[binnumber]
     fig, ax = plt.subplots(figsize=(15,15))
@@ -1268,7 +1269,8 @@ def shift_corrmat_value_fractions(shx_corrmat):
 def theory_corrmat_value_fractions(thx_corrmat,
                                    theory_threshold:(int, float) = 0):
     mat = thx_corrmat[0].values
-    newmat = np.zeros((len(mat),len(mat)))
+    # Initialise array of zeros and set precision to same as FK tables
+    newmat = np.zeros((len(mat),len(mat)), dtype=np.float32)
     #coarse graining for comparison
     newmat[mat>=theory_threshold]=1
     newmat[mat<=-theory_threshold]=-1
@@ -1290,7 +1292,8 @@ def shift_theory_element_comparison(shx_corrmat, thx_corrmat,
                                     theory_threshold:(int, float) = 0):
     #coarse graining for comparison
     thmat = thx_corrmat[0].values
-    newthmat = np.zeros((len(thmat),len(thmat)))
+    # Initialise array of zeros and set precision to same as FK tables
+    newthmat = np.zeros((len(thmat),len(thmat)), dtype=np.float32)
     newthmat[thmat>=theory_threshold]=1
     newthmat[thmat<=-theory_threshold]=-1
 #    mask = ((thmat!=-1) & (thmat!=1))
@@ -1741,7 +1744,8 @@ def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
         if loc >=0:
             v_nonzero.append(v[:,loc])
     projectors = np.sum(f*v_nonzero, axis=1)
-    projected_evectors = np.zeros((len(projectors), (len(f))))
+    # Initialise array of zeros and set precision to same as FK tables
+    projected_evectors = np.zeros((len(projectors), (len(f))), dtype=np.float32)
     for i in range(len(projectors)):
         projected_evectors[i] = projectors[i]*v_nonzero[i]
     fmiss = f - np.sum(projected_evectors, axis=0)
@@ -1799,7 +1803,8 @@ def projector_eigenvalue_ratio(theory_shift_test,
     all_projectors = theory_shift_test[7][::-1]
     all_evals = theory_shift_test[6][::-1]
     ratio = np.abs(all_projectors)/np.sqrt(np.abs(all_evals))
-    masked_evals = np.zeros((len(all_evals)))
+    # Initialise array of zeros and set precision to same as FK tables
+    masked_evals = np.zeros((len(all_evals)), dtype=np.float32)
     for loc, eval in enumerate(all_evals):
         if eval in surviving_evals:
             masked_evals[loc] = eval
