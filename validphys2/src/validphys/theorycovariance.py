@@ -28,8 +28,6 @@ from validphys import plotutils
 from validphys.checks import check_two_dataspecs
 from itertools import product
 
-from IPython import embed
-
 log = logging.getLogger(__name__)
 
 theoryids_experiments_central_values = collect(experiments_central_values,
@@ -1689,22 +1687,13 @@ def evals_nonzero_basis(allthx_vector, thx_covmat, thx_vector,
             covmat = N*A.dot(A.T)
         else:
             covmat = orig_matrix
-#        subxs = [xs[0]]
-#        for xnum, x in enumerate(xs[1:]):
-#            testlist = subxs + [x]
-#            detarray = np.zeros((len(testlist),len(testlist)))
-#            for i, element1 in enumerate(testlist):
-#                for j, element2 in enumerate(testlist):
-#                        detarray[i][j] = element1.T.dot(element2)[0]
-#            det = np.linalg.det(detarray)
-#            if (det > 10**(-3)) and (len(subxs) < 6):
-#                subxs.append(x)
-#                print(xnum)
-#            else:
-#                pass
-#        finaldetarray = detarray[:-1,:-1]
-#        A = pd.concat(xs, axis=1)
-        P = scipy.linalg.orth(A)
+        ys = [x/np.linalg.norm(x) for x in xs]
+        for i in range(1, len(xs)):
+            for j in range(0,i):
+                ys[i] = ys[i] - (ys[i].T.dot(ys[j]))[0][0]*ys[j]/np.linalg.norm(ys[j])
+                ys[i] = ys[i]/np.linalg.norm(ys[i])
+        P = pd.concat(ys, axis=1)
+       # P = scipy.linalg.orth(A)
         projected_matrix = (P.T).dot(covmat.dot(P))
         w, v_projected = la.eigh(projected_matrix)
         v = P.dot(v_projected)
