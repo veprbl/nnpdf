@@ -349,7 +349,9 @@ bool passKinCuts(NNPDFSettings const& settings, DataSet const& set, int const& i
         //***********************************************************
         // New cuts to the fixed target Drell-Yan data
         if ( (set.GetSetName().compare(string("DYE886P")) == 0) ||
-             (set.GetSetName().compare(string("DYE605"))  == 0) )
+             (set.GetSetName().compare(string("DYE605"))  == 0) ||
+	     (set.GetSetName().compare(string("DYE605nucl"))  == 0) ||
+	     (set.GetSetName().compare(string("DYE605nuclshift"))  == 0))
           {
             const real rapidity = set.GetKinematics(idat,0);
             const real invM2 = set.GetKinematics(idat,1);

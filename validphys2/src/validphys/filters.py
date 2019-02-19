@@ -230,7 +230,7 @@ def pass_kincuts(dataset, idat, theoryid, q2min, w2min):
             return True
 
         # new cuts for the fixed target DY
-        if dataset.GetSetName() in ('DYE886P', 'DYE605'):
+        if dataset.GetSetName() in ('DYE886P', 'DYE605','DYE605nucl','DYE605nuclshift'):
             rapidity = dataset.GetKinematics(idat, 0)
             invM2 = dataset.GetKinematics(idat, 1)
             sqrts = dataset.GetKinematics(idat, 2)
