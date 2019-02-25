@@ -1938,12 +1938,12 @@ def projector_eigenvalue_ratio(theory_shift_test,
     masked_evals = masked_evals[mask]
     xvals = np.arange(1,len(masked_evals)+1,1)
     fig, (ax1, ax2) = plt.subplots(2, figsize=(5,5))
-    ax1.plot(xvals, np.abs(all_projectors), 'o', label = r'|$\delta_a$|')
+    ax1.plot(xvals, np.abs(all_projectors), 's', label = r'|$\delta_a$|')
     ax1.plot(xvals, np.sqrt(np.abs(all_evals)), 'o', label = r'$|s_a|$')
     if use_analytic == None:
         ax1.plot(xvals, np.sqrt(np.abs(masked_evals)), 'o', label = r'surviving $|s_a|$', color='k')
     ax1.plot(0, fmiss_mod, '*', label=r'$|\delta_{miss}|$', color='b')
-    ax2.plot(xvals,ratio, 'o', color="red")
+    ax2.plot(xvals,ratio, 'D', color="red")
     ax2.plot(0,0, '.', color="w")
     ax1.set_title(f"Number of surviving eigenvalues = {len(surviving_evals)}", fontsize=10)
     ax1.set_yscale('log')
@@ -1968,16 +1968,45 @@ def projector_eigenvalue_ratio(theory_shift_test,
     return fig
 
 @figure
-def shift_diag_cov_comparison(shx_vector, thx_covmat, thx_vector):
+def shift_diag_cov_comparison(shx_vector, thx_covmat, thx_vector,
+                              plotting_order):
+    procorder, dsorder = plotting_order
     matrix = thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0]))
     fnorm = -shx_vector[0]
+    indexlist = list(matrix.index.values)
+    # adding process index for plotting
+    dsnames = []
+    processnames= []
+    ids = []
+    for index in indexlist:
+        name = index[0]
+        i = index[1]
+        dsnames.append(name)
+        ids.append(i)
+        proc = _process_lookup(name)
+        processnames.append(proc)
+    tripleindex = pd.MultiIndex.from_arrays([processnames, dsnames, ids],
+                        names = ("process", "dataset", "id"))
+    matrix = pd.DataFrame(matrix.values, index=tripleindex, columns=tripleindex)
+    matrix.sort_index(0, inplace=True)
+    matrix.sort_index(1, inplace=True)
+    oldindex=matrix.index.tolist()
+    newindex = sorted(oldindex, key=lambda r: (procorder.index(r[0]),
+                                               dsorder.index(r[1]), r[2]))
+    matrix = matrix.reindex(newindex)
+    matrix = (matrix.T.reindex(newindex)).T
     sqrtdiags = np.sqrt(np.diag(matrix))
+    fnorm = pd.DataFrame(fnorm.values, index=tripleindex)
+    fnorm.sort_index(0, inplace=True)
+    fnorm = fnorm.reindex(newindex)
     fig, ax = plt.subplots(figsize=(20,10))
     ax.plot(sqrtdiags*100, '.-', label="Theory", color = "red")
     ax.plot(-sqrtdiags*100, '.-', color = "red")
     ax.plot(fnorm.values*100, '.-', label="NNLO-NLO Shift", color = "black")
     ticklocs, ticklabels, startlocs = matrix_plot_labels(matrix)
     plt.xticks(ticklocs, ticklabels, rotation=45, fontsize=20)
+    ax.vlines(startlocs, -70, 70, linestyles='dashed')
+    ax.margins(x=0, y=0)
     ax.set_ylabel("% of central theory", fontsize=20)
     ax.legend(fontsize=20)
     return fig
