@@ -1927,12 +1927,9 @@ def projector_eigenvalue_ratio(theory_shift_test,
         ax1.set_xscale('log')
         ax2.set_xscale('log')
     ax1.legend()
-    ax1labels = [item.get_text() for item in ax1.get_xticklabels()]
-    ax2labels = ax1labels.copy()
-    ax1labels[1] = "Missing"
-    ax2labels[1] = ""
-    ax1.set_xticklabels(ax1labels)
-    ax2.set_xticklabels(ax2labels)
+    labels = [item.get_text() for item in ax1.get_xticklabels()]
+    ax1.set_xticklabels(labels)
+    ax2.set_xticklabels(labels)
     ax2.axhline(y=3, color='k', label=r'|$\delta_a$/$s_a$| = 3')
     ax2.legend()
     ax2.set_ylabel(r"|$\delta_a$/$s_a$|")
