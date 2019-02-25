@@ -1945,7 +1945,7 @@ def projector_eigenvalue_ratio(theory_shift_test,
     ax1.plot(0, fmiss_mod, '*', label=r'$|\delta_{miss}|$', color='b')
     ax2.plot(xvals,ratio, 'D', color="red")
     ax2.plot(0,0, '.', color="w")
-    ax1.set_title(f"Number of surviving eigenvalues = {len(surviving_evals)}", fontsize=10)
+    ax1.set_title(f"Number of eigenvalues = {len(surviving_evals)}", fontsize=10)
     ax1.set_yscale('log')
     ax2.set_yscale('log')
     if eigenvalue_cutoff == True:
@@ -2009,6 +2009,7 @@ def shift_diag_cov_comparison(shx_vector, thx_covmat, thx_vector,
     ax.margins(x=0, y=0)
     ax.set_ylabel("% of central theory", fontsize=20)
     ax.legend(fontsize=20)
+    ax.yaxis.set_tick_params(labelsize=20)
     return fig
 
 @figure
