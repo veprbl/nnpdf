@@ -1333,12 +1333,6 @@ def shift_to_theory_ratio(thx_corrmat, shx_corrmat):
 def shift_to_theory_ratio_plot(shift_to_theory_ratio):
     matrix = shift_to_theory_ratio
     matrix[((matrix==np.inf) | (matrix==-np.inf))] = 0
-#    bins = np.linspace(-1, 1, num=21)
-#    digmatrix = np.digitize(matrix, bins)
-     # Initialise array of zeros and set precision to same as FK tables
-#    symdigmatrix = np.zeros((len(digmatrix), len(digmatrix)), dtype=np.float32)
-#    for binnumber in range(len(bins)):
-#        symdigmatrix[digmatrix==binnumber+1] = bins[binnumber]
     fig, ax = plt.subplots(figsize=(15,15))
     matrixplot = ax.matshow(matrix, cmap=cm.Spectral_r)
     fig.colorbar(matrixplot)
@@ -1385,8 +1379,6 @@ def theory_corrmat_value_fractions(thx_corrmat,
     #coarse graining for comparison
     newmat[mat>=theory_threshold]=1
     newmat[mat<=-theory_threshold]=-1
-#    mask = ((mat!=-1) & (mat!=1))
-#    mat[mask]=0
     matsize = np.size(mat)
     fracplus = 100*np.size(np.where(newmat>0))/(2*matsize)
     fracminus = 100*np.size(np.where(newmat<0))/(2*matsize)
@@ -1407,8 +1399,6 @@ def shift_theory_element_comparison(shx_corrmat, thx_corrmat,
     newthmat = np.zeros((len(thmat),len(thmat)), dtype=np.float32)
     newthmat[thmat>=theory_threshold]=1
     newthmat[thmat<=-theory_threshold]=-1
-#    mask = ((thmat!=-1) & (thmat!=1))
-#    thmat[mask]=0
     shmat = shx_corrmat[0].fillna(0).values
     num_non_zero = np.size(np.where(shmat!=0))/2
     fracsame = 100*np.size(np.where((shmat==newthmat) & (shmat!=0)))/(2*num_non_zero)
@@ -1833,12 +1823,6 @@ def theory_shift_test(thx_covmat, shx_vector, thx_vector, evals_nonzero_basis,
     w_max = w[np.argmax(w)]
     f = -shx_vector[0].values.T[0]
     all_projectors = np.sum(f*v.T, axis=1)
-#    if num_evals is not None:
-#        w_nonzero = w[-num_evals:]
-#        nonzero_locs = range(len(w)-num_evals, len(w))
-#    elif evalue_cutoff is not None:
-#        w_nonzero = w[w>evalue_cutoff*w_max]
-#        nonzero_locs = np.nonzero(w>evalue_cutoff*w_max)[0]
     if eigenvalue_cutoff == True:
         mod_larg_neg_eval = np.abs(w[0])
         nonzero_locs = np.nonzero(w>10*mod_larg_neg_eval)[0]
@@ -1923,13 +1907,6 @@ def projector_eigenvalue_ratio(theory_shift_test,
     for loc, eval in enumerate(all_evals):
         if eval in surviving_evals:
             masked_evals[loc] = eval
-  #  num_evals_ignored = len(all_evals)-len(surviving_evals)
-  #  # Ordering eigenvalues and their projectors at random
-  #  randomise = np.arange(len(evals))
-  #  np.random.shuffle(randomise)
-  #  evals = np.asarray(evals)[randomise]
-  #  projectors = projectors[randomise]
-  #  ratio = ratio[randomise]
      # Ordering according to shift vector
     mask = np.argsort(np.abs(all_projectors))[::-1]
     all_evals = np.asarray(all_evals)[mask]
@@ -1951,8 +1928,6 @@ def projector_eigenvalue_ratio(theory_shift_test,
     if eigenvalue_cutoff == True:
         ax1.set_xscale('log')
         ax2.set_xscale('log')
-#    ax1.set_ylim([all_evals[np.argmin(np.sqrt(np.abs(all_evals)))],
-#		all_evals[np.argmax(np.sqrt(np.abs(all_evals)))]])
     ax1.legend()
     ax1labels = [item.get_text() for item in ax1.get_xticklabels()]
     ax2labels = ax1labels.copy()
@@ -1960,7 +1935,6 @@ def projector_eigenvalue_ratio(theory_shift_test,
     ax2labels[1] = ""
     ax1.set_xticklabels(ax1labels)
     ax2.set_xticklabels(ax2labels)
-  #  ax1.axvline(x=num_evals_ignored, color='k')
     ax2.axhline(y=3, color='k', label=r'|$\delta_a$/$s_a$| = 3')
     ax2.legend()
     ax2.set_ylabel(r"|$\delta_a$/$s_a$|")
@@ -2017,9 +1991,6 @@ def plot_shift_scaleavg_comparison(shx_vector, thx_vector,
                                    allthx_vector, thx_covmat):
     diffs = [((thx_vector[0] - scalevarvector)/thx_vector[0])
                                         for scalevarvector in allthx_vector[0]]
- #   theoryconcat = pd.concat((pd.concat(allthx_vector[0], axis=1),
- #                             thx_vector[0]), axis=1)
- #   avgtheory = theoryconcat.mean(axis=1)
     diffsconcat = pd.concat(diffs, axis=1)
     avgdiffs = diffsconcat.mean(axis=1)
     fig, ax = plt.subplots(figsize=(20,10))
