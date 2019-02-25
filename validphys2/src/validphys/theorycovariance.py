@@ -13,7 +13,6 @@ import scipy.linalg as la
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors as mcolors
 import pandas as pd
-import scipy
 
 from reportengine.figure import figure
 from reportengine.checks import make_argcheck, check
@@ -26,6 +25,8 @@ from validphys.calcutils import calc_chi2, all_chi2_theory, central_chi2_theory
 from validphys import plotutils
 from validphys.checks import check_two_dataspecs
 from itertools import product
+
+from IPython import embed
 
 log = logging.getLogger(__name__)
 
@@ -70,7 +71,7 @@ def _check_correct_theory_combination_internal(theoryids,
         "Choice of input theories does not correspond to a valid "
         "prescription for theory covariance matrix calculation")
 
-collected_theoryids = collect('theoryids', 
+collected_theoryids = collect('theoryids',
 			['theoryconfig',])
 
 _check_correct_theory_combination = make_argcheck(_check_correct_theory_combination_internal)
@@ -778,7 +779,7 @@ def plotting_order():
                'ATLASTTBARTOT', 'ATLASTOPDIFF8TEVTRAPNORM', 'CMSTTBARTOT',
                'CMSTOPDIFF8TEVTTRAPNORM')
     return procorder, dsorder
-    
+
 @figure
 def plot_corrmat_heatmap(corrmat, title, dataset_index_byprocess, plotting_order):
     """Matrix plot of a correlation matrix"""
@@ -876,7 +877,7 @@ def plot_normexpplusblockthcovmat_heatmap(experimentsplusblocktheory_normcovmat,
 
 @figure
 def plot_normexpplusthcovmat_heatmap_custom(experimentsplustheory_normcovmat_custom,
-					theoryids, dataset_index_byprocess, 
+					theoryids, dataset_index_byprocess,
 					plotting_order):
     """Matrix plot of the exp + theory covariance matrix normalised to data"""
     l = len(theoryids)
@@ -1879,7 +1880,8 @@ def theory_covmat_eigenvalues(theory_shift_test):
     projectors_scrambled = np.ndarray.tolist(projectors)
     ratio_scrambled = projectors_scrambled/s_scrambled
     table = pd.DataFrame([s_scrambled[::-1], projectors_scrambled[::-1], ratio_scrambled[::-1]],
-         		index = [r'$s_a$', r'$\delta_a$', r'$\delta_a/s_a$'])
+         		index = [r'$s_a$', r'$\delta_a$', r'$\delta_a/s_a$'],
+                 columns = np.arange(1,len(s_scrambled)+1,1))
     return table
 
 def efficiency(theory_shift_test):
@@ -1908,10 +1910,13 @@ def validation_theory_chi2(theory_shift_test):
 
 @figure
 def projector_eigenvalue_ratio(theory_shift_test,
-                               eigenvalue_cutoff:(bool, type(None)) = None):
+                               eigenvalue_cutoff:(bool, type(None)) = None,
+                               use_analytic:(bool, type(None)) = None):
     surviving_evals = theory_shift_test[0][::-1]
     all_projectors = theory_shift_test[7][::-1]
     all_evals = theory_shift_test[6][::-1]
+    fmiss = theory_shift_test[4]
+    fmiss_mod = np.sqrt(np.sum(fmiss**2))
     ratio = np.abs(all_projectors)/np.sqrt(np.abs(all_evals))
     # Initialise array of zeros and set precision to same as FK tables
     masked_evals = np.zeros((len(all_evals)), dtype=np.float32)
@@ -1931,13 +1936,16 @@ def projector_eigenvalue_ratio(theory_shift_test,
     all_projectors = all_projectors[mask]
     ratio = ratio[mask]
     masked_evals = masked_evals[mask]
+    xvals = np.arange(1,len(masked_evals)+1,1)
     fig, (ax1, ax2) = plt.subplots(2, figsize=(5,5))
-    ax1.plot(np.abs(all_projectors), 'o', label = r'|$\delta_a$|')
-    ax1.plot(np.sqrt(np.abs(all_evals)), 'o', label = r'$|s_a|$')
-    ax1.plot(np.sqrt(np.abs(masked_evals)), 'o', label = r'surviving $|s_a|$', color='k')
-    ax2.plot(ratio, 'o', color="red")
+    ax1.plot(xvals, np.abs(all_projectors), 'o', label = r'|$\delta_a$|')
+    ax1.plot(xvals, np.sqrt(np.abs(all_evals)), 'o', label = r'$|s_a|$')
+    if use_analytic == None:
+        ax1.plot(xvals, np.sqrt(np.abs(masked_evals)), 'o', label = r'surviving $|s_a|$', color='k')
+    ax1.plot(0, fmiss_mod, '*', label=r'$|\delta_{miss}|$', color='b')
+    ax2.plot(xvals,ratio, 'o', color="red")
+    ax2.plot(0,0, '.', color="w")
     ax1.set_title(f"Number of surviving eigenvalues = {len(surviving_evals)}", fontsize=10)
-    ax1.set_xlabel("a", fontsize=20)
     ax1.set_yscale('log')
     ax2.set_yscale('log')
     if eigenvalue_cutoff == True:
@@ -1946,6 +1954,12 @@ def projector_eigenvalue_ratio(theory_shift_test,
 #    ax1.set_ylim([all_evals[np.argmin(np.sqrt(np.abs(all_evals)))],
 #		all_evals[np.argmax(np.sqrt(np.abs(all_evals)))]])
     ax1.legend()
+    ax1labels = [item.get_text() for item in ax1.get_xticklabels()]
+    ax2labels = ax1labels.copy()
+    ax1labels[1] = "Missing"
+    ax2labels[1] = ""
+    ax1.set_xticklabels(ax1labels)
+    ax2.set_xticklabels(ax2labels)
   #  ax1.axvline(x=num_evals_ignored, color='k')
     ax2.axhline(y=3, color='k', label=r'|$\delta_a$/$s_a$| = 3')
     ax2.legend()
