@@ -272,4 +272,10 @@ def pass_kincuts(dataset, idat, theoryid, q2min, w2min):
             Q2cut1_f2c = 8
             if Q2 <= Q2cut1_f2c:
                 return False
+
+        ##Remove data points where we might have positivity issues
+        if dataset.GetSetName() in ('SHIPNU', 'SHIPNB', 'SHIPNUnucl', 'SHIPNBnucl'):
+            if dataset.GetKinematics(idat, 0) > 0.35:
+                return False
+
     return True
