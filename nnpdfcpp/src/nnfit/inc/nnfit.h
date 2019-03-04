@@ -48,7 +48,8 @@ void CreateResultsFolder(const NNPDFSettings &settings, const int replica)
 void LoadAllDataAndSplit(NNPDFSettings const& settings,
                          vector<Experiment*> & training,
                          vector<Experiment*> & validation,
-                         vector<PositivitySet> & pos);
+                         vector<PositivitySet> & pos,
+                         int replica_number);
 
 void TrainValidSplit(const NNPDFSettings &settings, Experiment* const& exp, Experiment *&tr, Experiment *&val);
 

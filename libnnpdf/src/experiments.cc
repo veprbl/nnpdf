@@ -455,6 +455,30 @@ void Experiment::ExportCovMat(string filename)
   return;
 }
 
+void Experiment::ExportPseudodata(string filename)
+{
+  // Perhaps if I made new file per experiment and saved per dataset here
+  std::ofstream outPseudoData(filename.c_str());
+  // Arbitrary 8 here, perhaps should think more about this (at least 1s.f more than bin precision)
+  outPseudoData << setprecision(8);
+  outPseudoData << scientific;
+  outPseudoData << "{\n";
+  for (int j = 0; j < GetNSet(); j++)
+  {
+    DataSet& dataset =  fSets[j];
+    std::cout << dataset.GetSetName() << std::endl;
+    outPseudoData << dataset.GetSetName() << ": [" << dataset.GetData(0);
+    for (int i = 1; i < dataset.GetNData(); i++)
+    {
+      outPseudoData << ", " << dataset.GetData(i);
+    }
+    outPseudoData << "],\n";
+  }
+  outPseudoData << "}\n";
+  outPseudoData.close();
+  return;
+}
+
 void Experiment::ExportSqrtCov(string filename)
 {
   ofstream outCovMat(filename.c_str());

@@ -117,7 +117,7 @@ int main(int argc, char **argv)
       vector<Experiment*> training;
       vector<Experiment*> validation;
       vector<PositivitySet> pos;
-      LoadAllDataAndSplit(settings, training, validation, pos);
+      LoadAllDataAndSplit(settings, training, validation, pos, replica);
 
       // Fit Basis
       std::unique_ptr<FitBasis> fitbasis(getFitBasis(settings, NNPDFSettings::getFitBasisType(settings.Get("fitting","fitbasis").as<string>()), replica));
@@ -377,7 +377,8 @@ int main(int argc, char **argv)
 void LoadAllDataAndSplit(NNPDFSettings const& settings,
                          vector<Experiment*> & training,
                          vector<Experiment*> & validation,
-                         vector<PositivitySet> & pos)
+                         vector<PositivitySet> & pos,
+                         int replica_number=0)
 {
   auto T0Set = std::make_unique<LHAPDFSet>(settings.Get("datacuts","t0pdfset").as<string>(), PDFSet::erType::ER_MCT0);
   for (int i = 0; i < settings.GetNExp(); i++)
@@ -398,9 +399,16 @@ void LoadAllDataAndSplit(NNPDFSettings const& settings,
       if (settings.Get("fitting","genrep").as<bool>())
         exp->MakeReplica();
 
+      // Settings.get_results_dir, experiment_name.pdat, Export_experiment
+      if (replica_number != 0)
+      {
+       stringstream pseudofile;
+       pseudofile << settings.GetResultsDirectory() << "/nnfit/replica_" << replica_number << "/" << exp->GetExpName() << ".pdat";
+       std::cout << pseudofile.str() << std::endl;
+       exp->ExportPseudodata(pseudofile.str());
+      }
       training.push_back(NULL);
       validation.push_back(NULL);
-
       TrainValidSplit(settings, exp.get(), training.back(), validation.back());
     }
 
