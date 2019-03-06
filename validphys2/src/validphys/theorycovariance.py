@@ -1940,9 +1940,7 @@ def projector_eigenvalue_ratio(theory_shift_test,
     return fig
 
 @figure
-def shift_diag_cov_comparison(shx_vector, thx_covmat, thx_vector,
-                              plotting_order):
-    procorder, dsorder = plotting_order
+def shift_diag_cov_comparison(shx_vector, thx_covmat, thx_vector):
     matrix = thx_covmat[0]/(np.outer(thx_vector[0], thx_vector[0]))
     fnorm = -shx_vector[0]
     indexlist = list(matrix.index.values)
@@ -1963,8 +1961,7 @@ def shift_diag_cov_comparison(shx_vector, thx_covmat, thx_vector,
     matrix.sort_index(0, inplace=True)
     matrix.sort_index(1, inplace=True)
     oldindex=matrix.index.tolist()
-    newindex = sorted(oldindex, key=lambda r: (procorder.index(r[0]),
-                                               dsorder.index(r[1]), r[2]))
+    newindex = sorted(oldindex, key=_get_key)
     matrix = matrix.reindex(newindex)
     matrix = (matrix.T.reindex(newindex)).T
     sqrtdiags = np.sqrt(np.diag(matrix))
