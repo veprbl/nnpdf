@@ -99,8 +99,16 @@ def filter_replicas(postfit_path, nnfit_path, fitname):
     passing_paths = list(itertools.compress(valid_paths, fit_vetoes["Total"]))
     return passing_paths
 
+def all_valid_paths(nnfit_path, fitname):
+    all_replicas = glob(f"{nnfit_path}/replica_*/")
+    valid_paths = [path for path in all_replicas if fitdata.check_replica_files(path, fitname)]
+    log.info(f"{len(all_replicas)} total replicas found")
+    log.info(f"{len(valid_paths)} valid replicas found")
+    if len(valid_paths) == 0:
+        raise PostfitError("No valid replicas found")
+    return valid_paths
 
-def postfit(results: str, nrep: int):
+def postfit(results: str, nrep: int, keep_all:bool=False):
     result_path = pathlib.Path(results).resolve()
     fitname = result_path.name
 
@@ -131,8 +139,11 @@ def postfit(results: str, nrep: int):
     postfitlog = logging.FileHandler(postfit_path/'postfit.log', mode='w')
     log.addHandler(postfitlog)
 
-    # Perform postfit selection
-    passing_paths = filter_replicas(postfit_path, nnfit_path, fitname)
+    if keep_all:
+        passing_paths = all_valid_paths(nnfit_path, fitname)
+    else:
+        # Perform postfit selection
+        passing_paths = filter_replicas(postfit_path, nnfit_path, fitname)
     if len(passing_paths) < nrep:
         raise PostfitError("Number of requested replicas is too large")
     # Select the first nrep passing replicas
@@ -187,6 +198,7 @@ def main():
     parser.add_argument('nrep', type=int, help="Number of desired replicas")
     parser.add_argument('result_path', help="Folder containig the "
                                             "results of the fit")
+    parser.add_argument('--keepall', action='store_true', help='don`t perform filtering of data')
     parser.add_argument('-d', '--debug', action='store_true', help='show debug messages')
     args = parser.parse_args()
     if args.debug:
@@ -194,7 +206,7 @@ def main():
     else:
         log.setLevel(logging.INFO)
     try:
-        postfit(args.result_path, args.nrep)
+        postfit(args.result_path, args.nrep, args.keepall)
     except PostfitError as e:
         log.error(f"Error in postfit:\n{e}")
         sys.exit(1)
