@@ -683,32 +683,51 @@ def plot_lumi2d_uncertainty(pdf, lumi_channel, lumigrid2d, sqrts:numbers.Real):
     return fig
 
 
+def pdf_matrix_ticks(flindex, xindex):
+    ticklocs, ticklabels = [], []
+    for i, label in enumerate(flindex):
+        ticklocs.append(i*xindex.max() + xindex.max()/2)
+        ticklabels.append(label)
+    return ticklocs, ticklabels
+
 @figure
-def plot_pdf_correlations(pdf, xplotting_grid):
-    """Take a PDF and for each flavour combination plot the correlations in x"""
-    gv = np.array(xplotting_grid.grid_values)
-    w,h = plt.rcParams["figure.figsize"]
-    wh = max([w, h])
-    flavours = np.array(xplotting_grid.flavours)
-    fig, axes = plt.subplots(nrows=len(flavours), ncols=len(flavours), figsize=(wh, wh))
-    for i, flavi in enumerate(flavours):
-        for j, flavj in enumerate(flavours):
-            f_i = gv[:, i, :]
-            f_j = gv[:, j, :]
-            f_if_j = np.matmul(f_i.T, f_j)/f_i.shape[0]
-            mf_imf_j = np.matmul(np.mean(f_i, axis=0)[:, np.newaxis], np.mean(f_j, axis=0)[np.newaxis, :])
-            cov = f_if_j - mf_imf_j
-            sf_isf_j = np.matmul(np.std(f_i, axis=0)[:, np.newaxis], np.std(f_j, axis=0)[np.newaxis, :])
-            im = axes[i, j].imshow(cov/sf_isf_j, cmap=cm.Spectral_r)
-            if i == 0:
-                axes[i, j].set_title(flavj)
-            if j == 0:
-                axes[i, j].set_ylabel(flavi)
-            axes[i, j].axes.xaxis.set_visible(False)
-            axes[i, j].axes.yaxis.set_ticklabels([])
-            axes[i, j].axes.yaxis.set_ticks([])
-            im.set_clim(-1, 1)
-    fig.subplots_adjust(right=0.9)
-    cbar_ax = fig.add_axes([0.95, 0.15, 0.03, 0.7])
-    fig.colorbar(im, cax=cbar_ax)
+def plot_pdf_covariances(pdf_covariance_matrix, xplotting_grid):
+    df = pdf_covariance_matrix
+    matrix = df.values
+    fig,ax = plt.subplots(figsize=(15,15))
+    matrixplot = ax.matshow(matrix,
+                            cmap=cm.Spectral_r,
+                            vmin=-0.01,
+                            vmax=0.01)
+    fig.colorbar(matrixplot)
+    flindex = df.index.get_level_values(0).unique()
+    flindex = [f'${xplotting_grid.basis.elementlabel(i)}$' for i in flindex]
+    xindex = df.index.get_level_values(1).unique()
+    ticklocs, ticklabels = pdf_matrix_ticks(flindex, xindex)
+    plt.xticks(ticklocs, ticklabels, fontsize=20)
+    plt.yticks(ticklocs, ticklabels, fontsize=20)
+    plt.tick_params(
+        axis='both', which='both', bottom=False, top=False, left=False, right=False,
+        labelbottom=True, labeltop=True, labelleft=True, labelright=True)
+    return fig
+
+@figure
+def plot_pdf_correlations(pdf_correlation_matrix, xplotting_grid):
+    df = pdf_correlation_matrix
+    matrix = df.values
+    fig,ax = plt.subplots(figsize=(15,15))
+    matrixplot = ax.matshow(matrix,
+                            cmap=cm.Spectral_r,
+                            vmin=-1,
+                            vmax=1)
+    fig.colorbar(matrixplot)
+    flindex = df.index.get_level_values(0).unique()
+    flindex = [f'${xplotting_grid.basis.elementlabel(i)}$' for i in flindex]
+    xindex = df.index.get_level_values(1).unique()
+    ticklocs, ticklabels = pdf_matrix_ticks(flindex, xindex)
+    plt.xticks(ticklocs, ticklabels, fontsize=20)
+    plt.yticks(ticklocs, ticklabels, fontsize=20)
+    plt.tick_params(
+        axis='both', which='both', bottom=False, top=False, left=False, right=False,
+        labelbottom=True, labeltop=True, labelleft=True, labelright=True)
     return fig

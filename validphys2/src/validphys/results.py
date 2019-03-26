@@ -858,6 +858,37 @@ def experiments_central_values(experiment_result_table):
     central_theory_values = experiment_result_table["theory_central"]
     return central_theory_values
 
+@table
+def pdf_covariance_matrix(xplotting_grid, rcrep):
+    """Calculates the correlations between different flavours in x
+    outputs result as a big matrix with multiindex levels as flavour, xpoint
+    """
+    f = np.array(xplotting_grid.grid_values)[:rcrep, ...]
+    N_rep = f.shape[0]
+    f2 = f.reshape((N_rep, -1))
+    flavours = xplotting_grid.flavours
+    cov = np.cov(f2, rowvar=False)
+    x_index = np.arange(f.shape[2])
+    index = pd.MultiIndex.from_product([flavours, x_index])
+    df = pd.DataFrame(cov, index=index, columns=index)
+    return df
+
+@table
+def pdf_correlation_matrix(xplotting_grid, rcrep):
+    """Calculates the correlations between different flavours in x
+    outputs result as a big matrix with multiindex levels as flavour, xpoint
+    """
+    f = np.array(xplotting_grid.grid_values)[:rcrep, ...]
+    N_rep = f.shape[0]
+    f2 = f.reshape((N_rep, -1))
+    flavours = xplotting_grid.flavours
+    cov = np.corrcoef(f2, rowvar=False)
+    x_index = np.arange(f.shape[2])
+    index = pd.MultiIndex.from_product([flavours, x_index])
+    df = pd.DataFrame(cov, index=index, columns=index)
+    return df
+
+
 experiments_chi2 = collect(abs_chi2_data_experiment, ('experiments',))
 each_dataset_chi2 = collect(abs_chi2_data, ('experiments', 'experiment'))
 
