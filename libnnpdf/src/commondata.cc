@@ -50,7 +50,8 @@ namespace NNPDF
     { "HQP_YQ",     {"$y^Q$","$\\mu^2 (GeV^2)$","$\\sqrt{s} (GeV)$"}},
     { "HQP_PTQ",    {"$p_T^Q (GeV)$","$\\mu^2 (GeV^2)$","$\\sqrt{s} (GeV)$"}},
     { "HIG_RAP",    {"$y$","$M_H^2 (GeV^2)$","$\\sqrt{s} (GeV)$"}},
-    { "SIA" ,       {"$z$", "$Q^2 (GeV^2)$", "$y$"}}
+    { "SIA" ,       {"$z$", "$Q^2 (GeV^2)$", "$y$"}},
+    { "QPDF",       {"$z$", "$P_z^2 (GeV^2)$", "$\\mu_R^2 (GeV^2)$"}}
   };
 
 
@@ -328,7 +329,8 @@ namespace NNPDF
       "HQP_PTQQ",
       "HQP_YQ",
       "HQP_PTQ",
-      "SIA"
+      "SIA",
+      "QPDF"
     };
 
     bool foundString = false;
