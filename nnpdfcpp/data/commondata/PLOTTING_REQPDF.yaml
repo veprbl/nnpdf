@@ -1,0 +1,12 @@
+dataset_label: "REQPDF"
+x: k1
+y_label: '$Re[h(z)]$'
+kinematics_override: dis_sqrt_scale
+
+x_scale: linear
+y_scale: linear
+
+line_by:
+  - k2
+
+experiment: "LATTICE"
