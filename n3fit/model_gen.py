@@ -9,6 +9,7 @@
 from layers import DIS
 from layers import DY
 from layers import Mask
+from layers import ObsRotation
 from layers import Preprocessing, Rotation
 
 from backends import operations
@@ -104,12 +105,19 @@ def observable_generator(
     # Now generate the mask layers to be applied to training and validation
     out_tr_mask = Mask(bool_mask=spec_dict["trmask"], name=spec_name)
     out_vl_mask = Mask(bool_mask=spec_dict["vlmask"], name=spec_name + "_val")
+    if spec_dict.get('data_transformation') is not None:
+        obsrot = ObsRotation(spec_dict.get('data_transformation'))
+        def out_tr(pdf_layer):
+            return out_tr_mask(obsrot(final_obs(pdf_layer)))
 
-    def out_tr(pdf_layer):
-        return out_tr_mask(final_obs(pdf_layer))
+        def out_vl(pdf_layer):
+            return out_vl_mask(obsrot(final_obs(pdf_layer)))
+    else:
+        def out_tr(pdf_layer):
+            return out_tr_mask(final_obs(pdf_layer))
 
-    def out_vl(pdf_layer):
-        return out_vl_mask(final_obs(pdf_layer))
+        def out_vl(pdf_layer):
+            return out_vl_mask(final_obs(pdf_layer))
 
     # Generate the loss function as usual
     invcovmat = spec_dict["invcovmat_true"]
