@@ -112,6 +112,13 @@ def observable_generator(
 
         def out_vl(pdf_layer):
             return out_vl_mask(obsrot(final_obs(pdf_layer)))
+
+        invcovmat_tr = spec_dict["invcovmat"]
+        loss_tr = losses.l_diaginvcovmat(invcovmat_tr)
+
+        invcovmat_vl = spec_dict["invcovmat_vl"]
+        loss_vl = losses.l_diaginvcovmat(invcovmat_vl)
+
     else:
         def out_tr(pdf_layer):
             return out_tr_mask(final_obs(pdf_layer))
@@ -119,15 +126,17 @@ def observable_generator(
         def out_vl(pdf_layer):
             return out_vl_mask(final_obs(pdf_layer))
 
+        invcovmat_tr = spec_dict["invcovmat"]
+        loss_tr = losses.l_invcovmat(invcovmat_tr)
+
+        invcovmat_vl = spec_dict["invcovmat_vl"]
+        loss_vl = losses.l_invcovmat(invcovmat_vl)
+
     # Generate the loss function as usual
     invcovmat = spec_dict["invcovmat_true"]
     loss = losses.l_invcovmat(invcovmat)
 
-    invcovmat_tr = spec_dict["invcovmat"]
-    loss_tr = losses.l_invcovmat(invcovmat_tr)
 
-    invcovmat_vl = spec_dict["invcovmat_vl"]
-    loss_vl = losses.l_invcovmat(invcovmat_vl)
 
     layer_info = {
         "inputs": model_inputs,

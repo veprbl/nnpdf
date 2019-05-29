@@ -208,15 +208,24 @@ def common_data_reader(spec, t0pdfset, replica_seeds=None, trval_seeds=None, rot
         tr_mask, vl_mask = make_tr_val_mask(datasets, exp_name, seed=trval_seed)
         if rotate_diagonal:
             expdata = np.matmul(dt_trans, expdata)
-        covmat_tr = covmat[tr_mask].T[tr_mask]
+            # make a 1d array of the diagonal
+            covmat_tr = np.diagonal(covmat[tr_mask].T[tr_mask])
+            invcovmat_tr = 1./covmat_tr
+
+            covmat_vl = np.diagonal(covmat[vl_mask].T[vl_mask])
+            invcovmat_vl = 1./covmat_vl
+        else:
+            covmat_tr = covmat[tr_mask].T[tr_mask]
+            invcovmat_tr = np.linalg.inv(covmat_tr)
+
+            covmat_vl = covmat[vl_mask].T[vl_mask]
+            invcovmat_vl = np.linalg.inv(covmat_vl)
+
         ndata_tr = np.count_nonzero(tr_mask)
         expdata_tr = expdata[tr_mask].reshape(1, ndata_tr)
-        invcovmat_tr = np.linalg.inv(covmat_tr)
 
-        covmat_vl = covmat[vl_mask].T[vl_mask]
         ndata_vl = np.count_nonzero(vl_mask)
         expdata_vl = expdata[vl_mask].reshape(1, ndata_vl)
-        invcovmat_vl = np.linalg.inv(covmat_vl)
 
         dict_out = {
                 'datasets' : datasets,
