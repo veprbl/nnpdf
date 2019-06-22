@@ -1,0 +1,7 @@
+dataset_label: "STAR $W^+/W^-$ 500 GeV"
+
+x_label: $\eta^e$
+
+y_label: $\sigma^{W^+}/\sigma{W^-}$ 
+
+experiment: "STAR"
