@@ -15,7 +15,7 @@ from layers import Preprocessing, Rotation
 from backends import operations
 from backends import losses
 from backends import MetaLayer
-from backends import base_layer_selector, concatenate, Lambda
+from backends import base_layer_selector, regularizer_selector, concatenate, Lambda
 
 
 def observable_generator(
@@ -161,6 +161,8 @@ def pdfNN_layer_generator(
     out=14,
     seed=None,
     dropout=0.0,
+    regularizer=None,
+    regularizer_args={}
 ):
     """
     Generates a NN that takes as input the xgrid value and outputs the basis of 14 PDFs
@@ -189,13 +191,18 @@ def pdfNN_layer_generator(
     # Layer generation
     dl = []
     pre = inp
+    reg = regularizer_selector(regularizer, **regularizer_args)
+
     for i, (units, activation) in enumerate(zip(nodes, activations)):
         if i == dropme and i != 0:
             dl.append(base_layer_selector("dropout", rate=dropout))
 
         init = MetaLayer.select_initializer(initializer_name, seed=seed + i)
 
-        arguments = {"kernel_initializer": init, "units": int(units), "activation": activation, "input_shape": (pre,)}
+        arguments = {
+            "kernel_initializer": init, "units": int(units),
+            "activation": activation, "input_shape": (pre,),
+            "kernel_regularizer": reg}
         # Arguments that are not used by a given layer are just dropped
         tmpl = base_layer_selector(layer_type, **arguments)
 

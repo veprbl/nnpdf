@@ -6,6 +6,7 @@
 """
 
 from keras.layers import Dense, Lambda, LSTM, Dropout, concatenate
+from keras.regularizers import l1_l2
 from keras.backend import expand_dims
 
 
@@ -34,6 +35,7 @@ layers = {
             'kernel_initializer' : 'glorot_normal',
             'units' : 5,
             'activation' : 'sigmoid',
+            'kernel_regularizer': None
             }),
         'LSTM' : (LSTM_modified, {
             'kernel_initializer' : 'glorot_normal',
@@ -45,6 +47,9 @@ layers = {
             }),
         }
 
+regularizers = {
+    'l1_l2': (l1_l2, {'l1': 0., 'l2': 0.})
+}
 
 
 def base_layer_selector(layer_name, **kwargs):
@@ -61,3 +66,21 @@ def base_layer_selector(layer_name, **kwargs):
             layer_args[key] = value
 
     return layer_class(**layer_args)
+
+def regularizer_selector(reg_name, **kwargs):
+    if reg_name is None:
+        return None
+
+    try:
+        reg_tuple = regularizers[reg_name]
+    except KeyError:
+        raise Exception("Regularizer not implemented in keras_backend/base_layers.py: {0}".format(reg_name))
+
+    reg_class = reg_tuple[0]
+    reg_args = reg_tuple[1]
+
+    for key, value in kwargs.items():
+        if key in reg_args.keys():
+            reg_args[key] = value
+
+    return reg_class(**reg_args)
