@@ -192,6 +192,7 @@ def pdfNN_layer_generator(
     dl = []
     pre = inp
     reg = regularizer_selector(regularizer, **regularizer_args)
+    print(reg)
 
     for i, (units, activation) in enumerate(zip(nodes, activations)):
         if i == dropme and i != 0:
