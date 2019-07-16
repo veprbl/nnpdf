@@ -795,7 +795,7 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
 
     if x_label == 'idat':
         ax.set_xlabel(str(ds2_label) + " [data point]")
-        y_tot_rounded = [x.astype(int) for x in x_tot]
+        x_tot_rounded = [x.astype(int) for x in x_tot]
     else:
         ax.set_xlabel(str(ds2_label) + " [" + str(x_label) + "]")
         x_tot_rounded = []
