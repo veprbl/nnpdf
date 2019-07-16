@@ -699,12 +699,15 @@ def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
         w,h = plt.rcParams["figure.figsize"]
         h*=2.5
         fig,axes = plt.subplots(nrows=nf ,sharex=True, figsize=(w,h), sharey=True)
-        fig.suptitle(title)
+#        fig.suptitle(title)
         colors = sm.to_rgba(info.get_xcol(fb))
         for flindex, (ax, fl) in enumerate(zip(axes, fls)):
             for i,color in enumerate(colors):
                 ax.plot(x, grid[i,flindex,:].T, color=color)
 
+#                if flindex == 5:
+#                    u_d_grid = [x/y for x, y in zip(grid[i,flindex,:].T, grid[i,4,:].T)]
+#                    ax.plot(x, u_d_grid, color=color)
 
             flmask = mark_mask[flindex,:]
             ranges = split_ranges(x, flmask, filter_falses=True)
@@ -712,17 +715,22 @@ def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
                 ax.axvspan(r[0], r[-1], color='#eeeeff')
 
             ax.set_ylabel("$%s$"%basis.elementlabel(fl))
+#            if info.x_scale == 'log':
+#                ax.set_xscale(scale_from_grid(obs_pdf_correlations))
             ax.set_xscale(scale_from_grid(obs_pdf_correlations))
             ax.set_ylim(-1,1)
-            ax.set_xlim(x[0], x[-1])
+            ax.set_xlim(0.001, x[-1])
         ax.set_xlabel('$x$')
-        #fig.subplots_adjust(hspace=0)
 
-        fig.colorbar(sm, ax=axes.ravel().tolist(), label=info.xlabel,
-                     aspect=100)
+#        plt.colorbar(sm, ax=axes.ravel().tolist(), label=info.xlabel,
+#                     aspect=100)
         #TODO: Fix title for this
         #fig.tight_layout()
         yield fig
+
+from IPython import embed
+from matplotlib.ticker import FormatStrFormatter
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 @figure
 def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
@@ -730,13 +738,88 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
     fig, ax = plt.subplots()
 
     ds1, ds2 = corrpair_datasets
-    #in1,in2 = get_info(ds1), get_info(ds2)
+    in1,in2 = get_info(ds1), get_info(ds2)
+    ds1_label, ds2_label = in1.dataset_label, in2.dataset_label
+    tab1 = kitable(ds1, in1)
+    figby1 = sane_groupby_iter(tab1, in1.figure_by)
+    y_tot = np.array([])
+    for samefig_vals1, fig_data1 in figby1:
+        lineby1 = sane_groupby_iter(fig_data1, in1.line_by)
+        for (sameline_vals1, line_data1) in lineby1:
+            y = in1.get_xcol(line_data1)
+            y = np.asanyarray(y, np.float)
+            y_label = in1.xlabel
+            y_tot = np.concatenate([y_tot, y])
+    tab2 = kitable(ds2, in2)
+    figby2 = sane_groupby_iter(tab2, in2.figure_by)
+    x_tot = np.array([]) 
+    for samefig_vals2, fig_data2 in figby2:
+        lineby2 = sane_groupby_iter(fig_data2, in2.line_by)
+        for (sameline_vals2, line_data2) in lineby2:
+            x = in2.get_xcol(line_data2)
+            x = np.asanyarray(x, np.float)
+            x_label = in2.xlabel
+            x_tot = np.concatenate([x_tot, x])
+#            extra = in2.extra_labels
+   
+#    embed()
+#    x_test = []
+#    x_rifled = [x_test.append( + extra[i])]   
 
+    len_y = len(y_tot)
+    ax.yaxis.set_ticks(np.arange(0, len(y_tot), 1))
+    len_x = len(x_tot)
+    ax.xaxis.set_ticks(np.arange(0, len(x_tot), 1))
+    for tick in ax.get_xticklabels():
+                tick.set_rotation(45)
+    ax.tick_params(axis='both', which='major', labelsize=8)
+ 
+    for label in ax.xaxis.get_ticklabels()[1::2]:
+        label.set_visible(False)
+#        label.set_horizontalalignment('left')
+
+#    ax.xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
     im = ax.imshow(obs_obs_correlations, cmap=cm.Spectral_r, vmin=-1, vmax=1)
 
-    ax.set_ylabel(str(ds1))
-    ax.set_xlabel(str(ds2))
-    fig.colorbar(im, [ax])
+    if y_label == 'idat':
+        ax.set_ylabel(str(ds1_label) + " [data point]")
+        y_tot_rounded = [y.astype(int) for y in y_tot]
+    else:
+        ax.set_ylabel(str(ds1_label) + " [" + str(y_label) + "]")
+        y_tot_rounded = []
+        for y in y_tot:
+            if (y).is_integer():
+                y_tot_rounded.append(y.astype(int)) 
+            else:
+                y_tot_rounded.append(round(y,1))
+
+    if x_label == 'idat':
+        ax.set_xlabel(str(ds2_label) + " [data point]")
+        y_tot_rounded = [x.astype(int) for x in x_tot]
+    else:
+        ax.set_xlabel(str(ds2_label) + " [" + str(x_label) + "]")
+        x_tot_rounded = []
+        for x in x_tot:
+            if (x).is_integer():
+                x_tot_rounded.append(x.astype(int))
+            else:
+                x_tot_rounded.append(round(x,1))
+
+    ax.set_yticklabels(y_tot_rounded)
+    ax.set_xticklabels(x_tot_rounded)
+### Use below if you don't want decimal places
+#    ax.set_xticklabels(x_tot.astype(int))
+#    fig.colorbar(im, [ax])
+#    divider = make_axes_locatable(ax)
+#    plt.figure(figsize=(20,6))
+#    cax = divider.append_axes("right", size="5%", pad=0.05)
+#    cax = divider.append_axes("right", size="5%", pad=0.2)
+    fig.colorbar(im)
+#    fig.colorbar(im, cax=cax)
+#    fig.colorbar(im, cax = fig.add_axes([0.78, 0.5, 0.03, 0.38]))
+#    fig.colorbar(im, aspect=20)
+#    fig.colorbar(im,fraction=0.046, pad=0.04)
+
     return fig
 
 @figure
