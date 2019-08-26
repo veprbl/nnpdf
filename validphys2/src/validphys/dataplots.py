@@ -647,8 +647,17 @@ def plot_replica_sum_rules(pdf, sum_rules, Q):
     fig.suptitle(f'Sum rules for {pdf} at Q={Q} GeV')
     return fig
 
+import validphys.pdfgrids as pdfgrids
+from validphys.correlations import _basic_obs_pdf_correlation
+
 @figuregen
-def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
+def plot_smpdf_up_down(pdf, dataset, obs_pdf_correlations):
+    xGrid = obs_pdf_correlations.xgrid
+    pdfGrid = pdfgrids.xplotting_grid(
+        pdf, Q, xgrid=xGrid, basis=basis, flavours=flavours)
+
+@figuregen
+def plot_smpdf(pdf, results, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
     """
     Plot the correlations between the change in the observable and the change
     in the PDF in (x,fl) space.
@@ -667,8 +676,18 @@ def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
     fullgrid = obs_pdf_correlations.grid_values
 
     fls = obs_pdf_correlations.flavours
+#    x = pdfgrids.xgrid(1e-5, 1, 'log', 500)[1]
+#    embed()
     x = obs_pdf_correlations.xgrid
     nf = len(fls)
+
+    grid_gluon = pdfgrids.xplotting_grid(pdf, 172.5, x, basis, [0])
+    grid_up = pdfgrids.xplotting_grid(pdf, 172.5, x, basis, [2])
+    grid_down = pdfgrids.xplotting_grid(pdf, 172.5, x, basis, [1])
+    array_ratio = grid_up.grid_values / grid_down.grid_values
+    _, th = results
+#    corrs_gluon = _basic_obs_pdf_correlation(grid_gluon.grid_values, th._rawdata)
+    corrs = _basic_obs_pdf_correlation(array_ratio, th._rawdata)
 
     plotting_var = info.get_xcol(table)
 
@@ -683,8 +702,8 @@ def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
     sm._A = []
 
     for same_vals, fb in figby:
-        grid = fullgrid[ np.asarray(fb.index),...]
-
+#        grid = fullgrid[ np.asarray(fb.index),...]
+        grid = array_ratio[ np.asarray(fb.index),...]
 
         #Use the maximum absolute correlation for plotting purposes
         absgrid = np.max(np.abs(grid), axis=0)
@@ -698,28 +717,45 @@ def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
         #Start plotting
         w,h = plt.rcParams["figure.figsize"]
         h*=2.5
-        fig,axes = plt.subplots(nrows=nf ,sharex=True, figsize=(w,h), sharey=True)
+#        fig,axes = plt.subplots(nrows=nf, sharex=True, figsize=(w,h), sharey=True)
+        fig,ax = plt.subplots()
+
 #        fig.suptitle(title)
         colors = sm.to_rgba(info.get_xcol(fb))
-        for flindex, (ax, fl) in enumerate(zip(axes, fls)):
-            for i,color in enumerate(colors):
-                ax.plot(x, grid[i,flindex,:].T, color=color)
+#        corr_grids = [corrs_gluon, corrs]
+#        for i in range(len(fls)):
+        for flindex, fl in enumerate(fls):
+            for i, color in enumerate(colors):
+#                ax.plot(x, grid[i,flindex,:].T, color=color)
+                ax.plot(x, corrs[i].ravel(), color=color)
+       
+#         ax.plot(x, corrs.ravel())
 
+#        axes.set_ylabel("$u/d$") 
+#        axes.set_ylim(-1,1)
+#        axes.set_xlim(x[0], x[-1])
 #                if flindex == 5:
 #                    u_d_grid = [x/y for x, y in zip(grid[i,flindex,:].T, grid[i,4,:].T)]
 #                    ax.plot(x, u_d_grid, color=color)
 
-            flmask = mark_mask[flindex,:]
-            ranges = split_ranges(x, flmask, filter_falses=True)
-            for r in ranges:
-                ax.axvspan(r[0], r[-1], color='#eeeeff')
+# Put next five lines back in later
+#            embed()
+#            flmask = mark_mask[flindex,:]
+#####            flmask = mark_mask[0]
+#####            ranges = split_ranges(x, flmask, filter_falses=True)
+#####            for r in ranges:
+#####                ax.axvspan(r[0], r[-1], color='#eeeeff')
 
-            ax.set_ylabel("$%s$"%basis.elementlabel(fl))
+####            ax.set_ylabel("$%s$"%basis.elementlabel(fl))
+        ax.set_ylabel("$u/d$")
+
 #            if info.x_scale == 'log':
 #                ax.set_xscale(scale_from_grid(obs_pdf_correlations))
-            ax.set_xscale(scale_from_grid(obs_pdf_correlations))
-            ax.set_ylim(-1,1)
-            ax.set_xlim(0.001, x[-1])
+        ax.set_xscale(scale_from_grid(obs_pdf_correlations))
+        ax.set_ylim(-1,1)
+        ax.set_xlim(0.001, 0.5)
+#        ax.set_xlim(x[0], 0.5)
+#        ax.set_xlim(0.001, x[-1])
         ax.set_xlabel('$x$')
 
 #        plt.colorbar(sm, ax=axes.ravel().tolist(), label=info.xlabel,
