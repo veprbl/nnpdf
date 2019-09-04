@@ -5,6 +5,6 @@ Theory
    :maxdepth: 1
 
    ./collinear
-   ./dglap
+   ./PTevol
    ./theoryparamsinfo
    ./FastInterface
