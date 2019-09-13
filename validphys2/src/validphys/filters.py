@@ -157,44 +157,44 @@ def pass_kincuts(dataset, idat, theoryid, q2min, w2min):
     vfns = theoryid.get_description().get('FNS')
     ic = theoryid.get_description().get('IC')
 
-    if dataset.GetSetName() == 'ATLAS1JET11':
+    if dataset.GetSetName().startswith('ATLAS1JET11'):
         # allow only first rapidity bin of ATLAS1JET11
         return dataset.GetKinematics(idat, 0) < 0.3
 
-    if dataset.GetSetName() in ('LHCBWZMU8TEV', 'LHCBWZMU7TEV'):
+    if dataset.GetSetName().startswith('LHCBWZMU'):
         if pto == 2:
             return dataset.GetKinematics(idat, 0) >= 2.25
 
-    if dataset.GetSetName() in ('D0WMASY', 'D0WEASY'):
+    if dataset.GetSetName().startswith('D0W'):
         if pto == 2:
             return dataset.GetData(idat) >= 0.03
 
-    if dataset.GetSetName() == 'ATLASZPT7TEV':
+    if dataset.GetSetName().startswith('ATLASZPT7TEV'):
         pt = np.sqrt(dataset.GetKinematics(idat, 1))
         if pt < 30 or pt > 500:
             return False
         return True
 
-    if dataset.GetSetName() == 'ATLASZPT8TEVMDIST':
+    if dataset.GetSetName().startswith('ATLASZPT8TEVMDIST'):
         return dataset.GetKinematics(idat, 0) >= 30
 
-    if dataset.GetSetName() == 'ATLASZPT8TEVYDIST':
+    if dataset.GetSetName().startswith('ATLASZPT8TEVYDIST'):
         pt = np.sqrt(dataset.GetKinematics(idat, 1))
         if pt < 30 or pt > 150:
             return False
         return True
 
-    if dataset.GetSetName() == 'CMSZDIFF12':
+    if dataset.GetSetName().startswith('CMSZDIFF12'):
         pt = np.sqrt(dataset.GetKinematics(idat, 1))
         y = dataset.GetKinematics(idat, 0)
         if pt < 30 or pt > 170 or y > 1.6:
             return False
         return True
 
-    if dataset.GetSetName() == 'ATLASWPT31PB':
+    if dataset.GetSetName().startswith('ATLASWPT31PB'):
         return dataset.GetKinematics(idat, 0) > 30
 
-    if dataset.GetSetName() == 'CMS_1JET_8TEV':
+    if dataset.GetSetName().startswith('CMS_1JET_8TEV'):
         return dataset.GetKinematics(idat, 1) > 5476 #GeV2
 
     if dataset.GetProc(idat)[0:3] in ('EWK', 'DYP'):
@@ -209,7 +209,7 @@ def pass_kincuts(dataset, idat, theoryid, q2min, w2min):
         maxTau = 0.080
         maxY = 0.663
 
-        if dataset.GetSetName() in ('CMSDY2D11', 'CMSDY2D12'):
+        if dataset.GetSetName().startswith('CMSDY2D'):
             if pto == 0 or pto == 1:
                 if pTmv > maxCMSDY2Dminv or pTmv < minCMSDY2Dminv or y > maxCMSDY2Dy:
                     return False
@@ -218,25 +218,41 @@ def pass_kincuts(dataset, idat, theoryid, q2min, w2min):
                     return False
             return True
 
-        if dataset.GetSetName() in ('ATLASZHIGHMASS49FB', 'LHCBLOWMASS37PB'):
+        if dataset.GetSetName().startswith('ATLASZHIGHMASS49FB'):
             if pTmv > maxCMSDY2Dminv:
                 return False
             return True
 
-        if dataset.GetSetName() == 'ATLASLOMASSDY11':
+        if dataset.GetSetName().startswith('LHCBLOWMASS37PB'):
+            if pTmv > maxCMSDY2Dminv:
+                return False
+            return True
+
+        if dataset.GetSetName().startswith('ATLASLOMASSDY11'):
             if pto == 0 or pto == 1:
                 if idat < 6:
                     return False
             return True
 
-        if dataset.GetSetName() == 'ATLASLOMASSDY11EXT':
+        if dataset.GetSetName().startswith('ATLASLOMASSDY11EXT'):
             if pto == 0 or pto == 1:
                 if idat < 2:
                     return False
             return True
 
         # new cuts for the fixed target DY
-        if dataset.GetSetName() in ('DYE886P', 'DYE605'):
+        if dataset.GetSetName().startswith('DYE886P'):
+            rapidity = dataset.GetKinematics(idat, 0)
+            invM2 = dataset.GetKinematics(idat, 1)
+            sqrts = dataset.GetKinematics(idat, 2)
+            tau = invM2 / sqrts**2
+            ymax = -0.5 * np.log(tau)
+
+            if tau > maxTau or np.fabs(rapidity / ymax) > maxY:
+                return False
+            return True
+
+        if dataset.GetSetName().startswith('DYE605'):
             rapidity = dataset.GetKinematics(idat, 0)
             invM2 = dataset.GetKinematics(idat, 1)
             sqrts = dataset.GetKinematics(idat, 2)
@@ -258,7 +274,7 @@ def pass_kincuts(dataset, idat, theoryid, q2min, w2min):
         if W2 <= w2min or Q2 <= q2min:
             return False
 
-        if dataset.GetSetName() in ('EMCF2P', 'EMCF2D'):
+        if dataset.GetSetName().startswith('EMC'):
             return x > 0.1
 
         # additional F2C cuts in case of FONLL-A
