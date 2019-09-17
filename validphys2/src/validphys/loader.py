@@ -211,7 +211,14 @@ class Loader(LoaderBase):
         return self.datapath / 'commondata'
 
     def check_commondata(self, setname, sysnum=None, use_fitcommondata=False,
+                         variant=None,
                          fit=None):
+
+        if variant is not None:
+            filename = f'DATA_{setname}_{variant}.dat'
+        else:
+            filename = f'DATA_{setname}.dat'
+
         if use_fitcommondata:
             if not fit:
                 raise LoadFailedError(
@@ -219,7 +226,7 @@ class Loader(LoaderBase):
             datafilefolder = (fit.path/'filter')/setname
             newpath = datafilefolder/f'FILTER_{setname}.dat'
             if not newpath.exists():
-                oldpath = datafilefolder/f'DATA_{setname}.dat'
+                oldpath = datafilefolder/filename
                 if not oldpath.exists():
                     raise DataNotFoundError(f"Either {newpath} or {oldpath} "
                         "are needed with `use_fitcommondata`")
@@ -241,11 +248,11 @@ class Loader(LoaderBase):
                 rebuild_commondata_without_cuts(oldpath, cuts, basedata, newpath)
             datafile = newpath
         else:
-            datafile = self.commondata_folder / f'DATA_{setname}.dat'
+            datafile = self.commondata_folder / filename
         if not datafile.exists():
-            raise DataNotFoundError(("Could not find Commondata set: '%s'. "
-                  "File '%s' does not exist.")
-                 % (setname, datafile))
+            variantstr = f"(variant {'variant'})" if variant else ''
+            raise DataNotFoundError(f"Could not find Commondata set: '{setname}'{variantstr}. "
+                  f"File '{datafile}' does not exist.")
         if sysnum is None:
             sysnum = 'DEFAULT'
         sysfile = (self.commondata_folder / 'systypes' /
