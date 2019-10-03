@@ -7,6 +7,7 @@ higher level functions in results.py
 from typing import Callable
 import numpy as np
 import scipy.linalg as la
+from scipy import optimize
 import pandas as pd
 
 def calc_chi2(sqrtcov, diffs):
@@ -216,3 +217,108 @@ def regularize_covmat(covmat: np.array, cond_num_threshold=500):
     new_e_val = np.clip(e_val, a_min=max(e_val)/cond_num_threshold, a_max=None)
     new_corr = (new_e_val*e_vec)@e_vec.T
     return (new_corr*d)*d[:, np.newaxis]
+
+
+
+
+def fro_l2_cond(s):
+    r"""Return the Frobenius-L2 condition number from an array collection of
+    singular values sorted in decreasing order.
+
+    In terms of the matrix :math:`A` with the corresponding singular values,
+    this number is
+
+    .. math::
+
+        \left\Vert A\right\Vert_F\left\Vert A^{-1}\right\Vert_2
+
+
+    Parameters
+    ----------
+    s : 1d array
+        Sorted singular values, as returned by linalg.svd.
+
+    Returns
+    -------
+    float
+        The condition number.
+    """
+    return np.sqrt(np.sum(s ** 2)) / s[-1]
+
+
+def regularize_singular_values(s, norm_threshold):
+    """Clip from below an of singular values sorted in decreasing order so that
+    the Frobenius-L2 condition number (see  :func:`fro_l2_cond`) of the
+    corresponding matrix is not bigger than `norm_threshold`.
+
+    Parameters
+    ----------
+    s : 1d array
+        Sorted singular calues as returnd by linalg.svd.
+    noorm_threshold : float
+        The value of the threshold
+
+    Returns
+    -------
+    snew : array
+       The values of `s` clipped from below, so that `:func:`fro_l2_cond`(s) <=
+       `norm_threshold`.
+    """
+    if fro_l2_cond(s) <= norm_threshold:
+        return s
+
+    def target(smin):
+        stest = np.clip(s, a_min=smin, a_max=None)
+        return fro_l2_cond(stest) - norm_threshold
+
+    smin0 = np.sqrt(np.sum(s ** 2)) / norm_threshold
+
+    smin = optimize.fsolve(target, smin0)
+    return np.clip(s, a_min=smin, a_max=None)
+
+
+def regularize_fro_l2(sqrtcov, threshold):
+    r"""Return a regularized version of `sqrtcov`.
+
+    Given `sqrtcov` an (N, nsys) matrix, such as it's
+    gram matrix is the covariance matrix (`covmat = sqrtcov@sqrtcov.T`), first
+    decompose it like ``sqrtcov = D@A``, where `D` is a positive diagonal matrix
+    of standard deviations and `A` is the "square root" of the correlation
+    matrix, ``corrmat = A@A.T``. Then produce a new version of `A` which removes
+    the unstable behaviour and ensable a new square root covariance matrix,
+    which is returned.
+
+    The stability condition is controlled by `threshold`. It is
+
+    .. math::
+
+        \left\Vert A\right\Vert_F\left\Vert A^{-1}\right\Vert_2
+        \leq \frac{t}{\sqrt{N}}
+
+    `threshold` roughly corresponds to the maximimum relative uncertainty in any systematic.
+
+    Parameters
+    ----------
+
+    sqrtcov : 2d array
+        An (N, nsys) matrix specifying the uncertainties.
+    threshold : float
+        The tolerance for the regularization.
+
+    Returns
+    -------
+
+    newsqrtcov : 2d array
+        A regularized version of `sqrtcov`.
+    """
+
+
+    norm_threshold = threshold * np.sqrt(sqrtcov.shape[0])
+
+    d = np.sqrt(np.sum(sqrtcov ** 2, axis=1))[:, np.newaxis]
+    sqrtcorr = sqrtcov / d
+    u, s, vt = la.svd(sqrtcorr, full_matrices=True)
+    if fro_l2_cond(s) <= norm_threshold:
+        return sqrtcov
+    snew = regularize_singular_values(s, norm_threshold)
+    return u * (snew * d) @ vt
