@@ -42,6 +42,8 @@ class DataNotFoundError(LoadFailedError): pass
 
 class SysNotFoundError(LoadFailedError): pass
 
+class VariantNotFoundError(LoadFailedError): pass
+
 class FKTableNotFound(LoadFailedError): pass
 
 class CfactorNotFound(LoadFailedError): pass
@@ -244,7 +246,23 @@ class Loader(LoaderBase):
     def check_commondata(
         self, setname, sysnum=None, use_fitcommondata=False, variant=None, fit=None
     ):
+        plotfiles = []
+        data_plotting_root = self.commondata_folder / f'PLOTTING_{setname}'
+        data_plotting = (
+            data_plotting_root.with_suffix('.yml'),
+            data_plotting_root.with_suffix('.yaml'),
+        )
+        # TODO: What do we do when both .yml and .yaml exist?
+        # First check only the files for this set, which are going to be metadata.
+        for p in data_plotting:
+            if p.is_file():
+                plotfiles.append(p)
 
+        if not plotfiles:
+            raise DataNotFoundError(
+                f"Could not find metadata for Commondata set {setname}: "
+                f"File '{data_plotting[1]}' not found"
+            )
         if variant is not None:
             filename = f'DATA_{setname}-{variant}.dat'
         else:
@@ -256,8 +274,8 @@ class Loader(LoaderBase):
             datafile = self.commondata_folder / filename
         if not datafile.exists():
             variantstr = f" (variant '{variant}')" if variant else ""
-            raise DataNotFoundError(
-                f"Could not find Commondata set: '{setname}'{variantstr}. "
+            raise VariantNotFoundError(
+                f"Could not find Commondata variant: '{setname}'{variantstr}. "
                 f"File '{datafile}' does not exist."
             )
         if sysnum is None:
@@ -272,7 +290,6 @@ class Loader(LoaderBase):
                 f"dataset {setname}. File {sysfile} does not exist."
             )
 
-        plotfiles = []
 
         metadata = peek_commondata_metadata(datafile)
         process_plotting_root = (
@@ -282,18 +299,10 @@ class Loader(LoaderBase):
             process_plotting_root.with_suffix('.yml'),
             process_plotting_root.with_suffix('.yaml'),
         )
+        for p in type_plotting:
+            if p.is_file():
+                plotfiles.append(p)
 
-        data_plotting_root = self.commondata_folder / f'PLOTTING_{setname}'
-
-        data_plotting = (
-            data_plotting_root.with_suffix('.yml'),
-            data_plotting_root.with_suffix('.yaml'),
-        )
-        # TODO: What do we do when both .yml and .yaml exist?
-        for tp in (type_plotting, data_plotting):
-            for p in tp:
-                if p.exists():
-                    plotfiles.append(p)
         if setname != metadata.name:
             raise InconsistentMetaDataError(
                 f"The name found in the CommonData file, {metadata.name}, did "
