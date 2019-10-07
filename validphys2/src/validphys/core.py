@@ -249,13 +249,16 @@ def peek_commondata_metadata(commondatafilename):
 
 
 class CommonDataSpec(TupleComp):
-    def __init__(self, datafile, sysfile, plotfiles, name=None, metadata=None):
+    def __init__(
+        self, datafile, sysfile, plotfiles, name=None, metadata=None, variant=None
+    ):
         self.datafile = datafile
         self.sysfile = sysfile
         self.plotfiles = tuple(plotfiles)
-        self._name=name
+        self._name = name
         self._metadata = metadata
-        super().__init__(datafile, sysfile, self.plotfiles)
+        self.variant = variant
+        super().__init__(datafile, sysfile, self.plotfiles, variant)
 
     @property
     def name(self):
@@ -294,13 +297,15 @@ class CommonDataSpec(TupleComp):
 class DataSetInput(TupleComp):
     """Represents whatever the user enters in the YAML to specidy a
     dataset."""
-    def __init__(self, *, name, sys, cfac, frac, weight):
-        self.name=name
-        self.sys=sys
+
+    def __init__(self, *, name, sys, cfac, frac, weight, variant):
+        self.name = name
+        self.sys = sys
         self.cfac = cfac
         self.frac = frac
         self.weight = weight
-        super().__init__(name, sys, cfac, frac, weight)
+        self.variant = variant
+        super().__init__(name, sys, cfac, frac, weight, variant)
 
     def __str__(self):
         return self.name

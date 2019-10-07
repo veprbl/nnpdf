@@ -233,61 +233,65 @@ class CoreConfig(configparser.Config):
         return {'pdf': pdf, 'basis':basis}
 
     @element_of('dataset_inputs')
-    def parse_dataset_input(self, dataset:Mapping):
+    def parse_dataset_input(self, dataset: Mapping):
         """The mapping that corresponds to the dataset specifications in the
         fit files"""
-        known_keys = {'dataset', 'sys', 'cfac', 'frac', 'weight'}
+        known_keys = {'dataset', 'sys', 'cfac', 'frac', 'weight', 'variant'}
         try:
             name = dataset['dataset']
             if not isinstance(name, str):
                 raise ConfigError(f"'dataset' must be a string, not {type(name)}")
         except KeyError:
-            raise ConfigError("'dataset' must be a mapping with "
-                              "'dataset' and 'sysnum'")
-
+            raise ConfigError(
+                "Must be a mapping with 'dataset'"
+            )
 
         sysnum = dataset.get('sys')
         cfac = dataset.get('cfac', tuple())
         frac = dataset.get('frac', 1)
-        if  not isinstance(frac, numbers.Real):
+        variant = dataset.get('variant')
+        weight = dataset.get('weight', 1)
+        if not isinstance(frac, numbers.Real):
             raise ConfigError(f"'frac' must be a number, not '{frac}'")
         if frac < 0 or frac > 1:
             raise ConfigError(f"'frac' must be between 0 and 1 not '{frac}'")
-        weight = dataset.get('weight', 1)
-        if  not isinstance(weight, numbers.Real):
+        if not isinstance(weight, numbers.Real):
             raise ConfigError(f"'weight' must be a number, not '{weight}'")
         if weight < 0:
             raise ConfigError(f"'weight' must be greater than zero not '{weight}'")
+        if not isinstance(variant, (type(None), str)):
+            raise ConfigError("'variant' must be None or a string, not {type(variant)}")
         kdiff = dataset.keys() - known_keys
         for k in kdiff:
-            #Abuse ConfigError to get the suggestions.
-            log.warning(ConfigError(f"Key '{k}' in dataset_input not known.", k, known_keys))
-        return DataSetInput(name=name, sys=sysnum, cfac=cfac, frac=frac,
-                weight=weight)
+            # Abuse ConfigError to get the suggestions.
+            log.warning(
+                ConfigError(f"Key '{k}' in dataset_input not known.", k, known_keys)
+            )
+        return DataSetInput(
+            name=name, sys=sysnum, cfac=cfac, frac=frac, weight=weight, variant=variant
+        )
 
     def parse_use_fitcommondata(self, do_use: bool):
         """Use the commondata files in the fit instead of those in the data
         directory."""
         return do_use
 
-    def produce_commondata(self,
-                           *,
-                           dataset_input,
-                           use_fitcommondata=False,
-                           fit=None):
+    def produce_commondata(self, *, dataset_input, use_fitcommondata=False, fit=None):
         """Produce a CommondataSpec from a dataset input"""
 
         name = dataset_input.name
         sysnum = dataset_input.sys
+        variant = dataset_input.variant
         try:
             return self.loader.check_commondata(
                 setname=name,
                 sysnum=sysnum,
+                variant=variant,
                 use_fitcommondata=use_fitcommondata,
-                fit=fit)
+                fit=fit,
+            )
         except DataNotFoundError as e:
-            raise ConfigError(str(e), name,
-                              self.loader.available_datasets) from e
+            raise ConfigError(str(e), name, self.loader.available_datasets) from e
         except LoadFailedError as e:
             raise ConfigError(e) from e
         except InconsistentMetaDataError as e:
@@ -361,6 +365,7 @@ class CoreConfig(configparser.Config):
         sysnum = dataset_input.sys
         cfac = dataset_input.cfac
         frac = dataset_input.frac
+        variant = dataset_input.variant
         weight = dataset_input.weight
 
         try:
@@ -371,6 +376,7 @@ class CoreConfig(configparser.Config):
                 cfac=cfac,
                 cuts=cuts,
                 frac=frac,
+                variant=variant,
                 use_fitcommondata=use_fitcommondata,
                 fit=fit,
                 weight=weight)

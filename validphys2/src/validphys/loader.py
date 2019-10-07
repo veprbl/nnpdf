@@ -210,73 +210,87 @@ class Loader(LoaderBase):
     def commondata_folder(self):
         return self.datapath / 'commondata'
 
-    def check_commondata(self, setname, sysnum=None, use_fitcommondata=False,
-                         variant=None,
-                         fit=None):
+    def _find_fit_commondata(self, fit, setname, sysnum):
+        if not fit:
+            raise LoadFailedError(
+                "Must specify a fit when setting use_fitcommondata"
+            )
+        datafilefolder = (fit.path / 'filter') / setname
+        newpath = datafilefolder / f'FILTER_{setname}.dat'
+        if not newpath.exists():
+            oldpath = datafilefolder / filename
+            if not oldpath.exists():
+                raise DataNotFoundError(
+                    f"Either {newpath} or {oldpath} "
+                    "are needed with `use_fitcommondata`"
+                )
+            # This is to not repeat all the error handling stuff
+            basedata = self.check_commondata(setname, sysnum=sysnum).datafile
+            cuts = self.check_fit_cuts(setname, fit=fit)
+
+            if fit not in self._old_commondata_fits:
+                self._old_commondata_fits.add(fit)
+                log.warning(
+                    f"Found fit using old commondata export settings: "
+                    f"'{fit}'. The commondata that are used in this run "
+                    "will be updated now."
+                    "Please consider re-uploading it."
+                )
+                log.warning(f"Points that do not pass the cuts are set to zero!")
+
+            log.info(f"Upgrading filtered commondata. Writing {newpath}")
+            rebuild_commondata_without_cuts(oldpath, cuts, basedata, newpath)
+        return newpath
+
+    def check_commondata(
+        self, setname, sysnum=None, use_fitcommondata=False, variant=None, fit=None
+    ):
 
         if variant is not None:
-            filename = f'DATA_{setname}_{variant}.dat'
+            filename = f'DATA_{setname}-{variant}.dat'
         else:
             filename = f'DATA_{setname}.dat'
 
         if use_fitcommondata:
-            if not fit:
-                raise LoadFailedError(
-                        "Must specify a fit when setting use_fitcommondata")
-            datafilefolder = (fit.path/'filter')/setname
-            newpath = datafilefolder/f'FILTER_{setname}.dat'
-            if not newpath.exists():
-                oldpath = datafilefolder/filename
-                if not oldpath.exists():
-                    raise DataNotFoundError(f"Either {newpath} or {oldpath} "
-                        "are needed with `use_fitcommondata`")
-                #This is to not repeat all the error handling stuff
-                basedata = self.check_commondata(setname, sysnum=sysnum).datafile
-                cuts = self.check_fit_cuts(setname, fit=fit)
-
-                if fit not in self._old_commondata_fits:
-                    self._old_commondata_fits.add(fit)
-                    log.warning(
-                        f"Found fit using old commondata export settings: "
-                        f"'{fit}'. The commondata that are used in this run "
-                        "will be updated now."
-                        "Please consider re-uploading it.")
-                    log.warning(
-                        f"Points that do not pass the cuts are set to zero!")
-
-                log.info(f"Upgrading filtered commondata. Writing {newpath}")
-                rebuild_commondata_without_cuts(oldpath, cuts, basedata, newpath)
-            datafile = newpath
+            datafile = self._find_fit_commondata(fit)
         else:
             datafile = self.commondata_folder / filename
         if not datafile.exists():
-            variantstr = f"(variant {'variant'})" if variant else ''
-            raise DataNotFoundError(f"Could not find Commondata set: '{setname}'{variantstr}. "
-                  f"File '{datafile}' does not exist.")
+            variantstr = f" (variant '{variant}')" if variant else ""
+            raise DataNotFoundError(
+                f"Could not find Commondata set: '{setname}'{variantstr}. "
+                f"File '{datafile}' does not exist."
+            )
         if sysnum is None:
             sysnum = 'DEFAULT'
-        sysfile = (self.commondata_folder / 'systypes' /
-                   ('SYSTYPE_%s_%s.dat' % (setname, sysnum)))
+        sysfile = (
+            self.commondata_folder / 'systypes' / f'SYSTYPE_{setname}_{sysnum}.dat'
+        )
 
         if not sysfile.exists():
-            raise SysNotFoundError(("Could not find systype %s for "
-                 "dataset '%s'. File %s does not exist.") % (sysnum, setname,
-                  sysfile))
+            raise SysNotFoundError(
+                f"Could not find systype {sysnum} for "
+                f"dataset {setname}. File {sysfile} does not exist."
+            )
 
         plotfiles = []
 
-
         metadata = peek_commondata_metadata(datafile)
-        process_plotting_root = self.commondata_folder/f'PLOTTINGTYPE_{metadata.process_type}'
-        type_plotting = (process_plotting_root.with_suffix('.yml'),
-                         process_plotting_root.with_suffix('.yaml'),)
+        process_plotting_root = (
+            self.commondata_folder / f'PLOTTINGTYPE_{metadata.process_type}'
+        )
+        type_plotting = (
+            process_plotting_root.with_suffix('.yml'),
+            process_plotting_root.with_suffix('.yaml'),
+        )
 
-        data_plotting_root = self.commondata_folder/f'PLOTTING_{setname}'
+        data_plotting_root = self.commondata_folder / f'PLOTTING_{setname}'
 
-        data_plotting = (data_plotting_root.with_suffix('.yml'),
-                         data_plotting_root.with_suffix('.yaml'),
-                        )
-        #TODO: What do we do when both .yml and .yaml exist?
+        data_plotting = (
+            data_plotting_root.with_suffix('.yml'),
+            data_plotting_root.with_suffix('.yaml'),
+        )
+        # TODO: What do we do when both .yml and .yaml exist?
         for tp in (type_plotting, data_plotting):
             for p in tp:
                 if p.exists():
@@ -286,7 +300,14 @@ class Loader(LoaderBase):
                 f"The name found in the CommonData file, {metadata.name}, did "
                 f"not match the dataset name, {setname}."
             )
-        return CommonDataSpec(datafile, sysfile, plotfiles, name=setname, metadata=metadata)
+        return CommonDataSpec(
+            datafile,
+            sysfile,
+            plotfiles,
+            name=setname,
+            metadata=metadata,
+            variant=variant,
+        )
 
     @functools.lru_cache()
     def check_theoryID(self, theoryID):
@@ -306,9 +327,9 @@ class Loader(LoaderBase):
             raise TheoryDataBaseNotFound(f"could not find theory.db. File not found at {dbpath}")
         return dbpath
 
-    def get_commondata(self, setname, sysnum):
+    def get_commondata(self, setname, sysnum, variant=None):
         """Get a Commondata from the set name and number."""
-        cd = self.check_commondata(setname, sysnum)
+        cd = self.check_commondata(setname, sysnum, variant=variant)
         return cd.load()
 
     #   @functools.lru_cache()
@@ -392,19 +413,22 @@ class Loader(LoaderBase):
                    "'{p}' must be a folder").format(**locals())
         raise FitNotFound(msg)
 
-    def check_dataset(self,
-                      name,
-                      *,
-                      sysnum=None,
-                      theoryid,
-                      cfac=(),
-                      frac=1,
-                      cuts=CutsPolicy.INTERNAL,
-                      use_fitcommondata=False,
-                      fit=None,
-                      weight=1,
-                      q2min=None,
-                      w2min=None):
+    def check_dataset(
+        self,
+        name,
+        *,
+        sysnum=None,
+        theoryid,
+        cfac=(),
+        frac=1,
+        cuts=CutsPolicy.INTERNAL,
+        variant=None,
+        use_fitcommondata=False,
+        fit=None,
+        weight=1,
+        q2min=None,
+        w2min=None
+    ):
 
         if not isinstance(theoryid, TheoryIDSpec):
             theoryid = self.check_theoryID(theoryid)
@@ -412,7 +436,8 @@ class Loader(LoaderBase):
         theoryno, _ = theoryid
 
         commondata = self.check_commondata(
-            name, sysnum, use_fitcommondata=use_fitcommondata, fit=fit)
+            name, sysnum, use_fitcommondata=use_fitcommondata, fit=fit, variant=variant
+        )
         try:
             fkspec, op = self.check_compound(theoryno, name, cfac)
         except CompoundNotFound:
