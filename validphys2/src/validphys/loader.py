@@ -193,12 +193,11 @@ class Loader(LoaderBase):
     @functools.lru_cache()
     def available_datasets(self):
 
-        data_str = "DATA_"
+        data_str = 'PLOTTING_'
         # We filter out the positivity sets here
         return {
             file.stem[len(data_str) :]
-            for file in self.commondata_folder.glob(f'{data_str}*.dat')
-            if not file.stem.startswith(f"{data_str}POS")
+            for file in self.commondata_folder.glob(f'{data_str}*.y*ml')
         }
 
     @property
