@@ -317,7 +317,7 @@ def regularize_fro_l2(sqrtcov, threshold):
 
     d = np.sqrt(np.sum(sqrtcov ** 2, axis=1))[:, np.newaxis]
     sqrtcorr = sqrtcov / d
-    u, s, vt = la.svd(sqrtcorr, full_matrices=True)
+    u, s, vt = la.svd(sqrtcorr, full_matrices=False)
     if fro_l2_cond(s) <= norm_threshold:
         return sqrtcov
     snew = regularize_singular_values(s, norm_threshold)
