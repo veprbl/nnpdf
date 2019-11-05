@@ -647,12 +647,20 @@ def plot_replica_sum_rules(pdf, sum_rules, Q):
     fig.suptitle(f'Sum rules for {pdf} at Q={Q} GeV')
     return fig
 
+import validphys.pdfgrids as pdfgrids
+from validphys.correlations import _basic_obs_pdf_correlation
+
+@figuregen
+def plot_smpdf_up_down(pdf, dataset, obs_pdf_correlations):
+    xGrid = obs_pdf_correlations.xgrid
+    pdfGrid = pdfgrids.xplotting_grid(
+        pdf, Q, xgrid=xGrid, basis=basis, flavours=flavours)
+
 @figuregen
 def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
     """
     Plot the correlations between the change in the observable and the change
     in the PDF in (x,fl) space.
-
     mark_threshold is the proportion of the maximum absolute correlation
     that will be used to mark the corresponding area in x in the
     background of the plot. The maximum absolute values are used for
@@ -698,28 +706,145 @@ def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
         #Start plotting
         w,h = plt.rcParams["figure.figsize"]
         h*=2.5
-        fig,axes = plt.subplots(nrows=nf ,sharex=True, figsize=(w,h), sharey=True)
+#        fig,axes = plt.subplots(nrows=nf ,sharex=True, figsize=(w,h), sharey=True)
+        fig,ax = plt.subplots()
 #        fig.suptitle(title)
         colors = sm.to_rgba(info.get_xcol(fb))
-        for flindex, (ax, fl) in enumerate(zip(axes, fls)):
-            for i,color in enumerate(colors):
-                ax.plot(x, grid[i,flindex,:].T, color=color)
+#        embed()
+#        for flindex, (ax, fl) in enumerate(zip(axes, fls)):
+#            for i,color in enumerate(colors):
+#                ax.plot(x, grid[i,flindex,:].T, color=color)
 
+        lines = ["-","--","-.",":","-"]
+#        lines = ["-","--","-.","-"]
+        labels = ["[0, 45]", "[45, 75]", "[75, 110]", "[110, 150]", "[150, 500]"]
+#        labels = ["[0, 0.2]", "[0.2, 0.6]", "[0.6, 1.1]", "[1.1, 3.0]"]
+        for flindex, fl in enumerate(fls):
+            for i, color in enumerate(colors):
+                ax.plot(x, grid[i,flindex,:].T, color=color, linestyle=lines[i], label=labels[i])
+
+#            flmask = mark_mask[flindex,:]
+#            ranges = split_ranges(x, flmask, filter_falses=True)
+#            for r in ranges:
+#                ax.axvspan(r[0], r[-1], color='#eeeeff')
+
+            ax.set_ylabel("$%s$"%basis.elementlabel(fl))
+            ax.set_xscale(scale_from_grid(obs_pdf_correlations))
+            ax.set_ylim(-1,1)
+            ax.set_xlim(x[0], x[-1])
+        ax.set_xlabel('$x$')
+        ax.legend(title=r"$p_T$ [GeV]")
+#        ax.legend(title=r"|y|")
+
+        #fig.subplots_adjust(hspace=0)
+
+#        fig.colorbar(sm, ax=axes.ravel().tolist(), label=info.xlabel,
+#                     aspect=100)
+        #TODO: Fix title for this
+        #fig.tight_layout()
+        yield fig
+
+
+@figuregen
+def plot_smpdf_up_down(pdf, results, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
+    """
+    Plot the correlations between the change in the observable and the change
+    in the PDF in (x,fl) space.
+
+    mark_threshold is the proportion of the maximum absolute correlation
+    that will be used to mark the corresponding area in x in the
+    background of the plot. The maximum absolute values are used for
+    the comparison."""
+    info = get_info(dataset)
+
+    table = kitable(dataset, info)
+    figby = sane_groupby_iter(table, info.figure_by)
+
+    basis = obs_pdf_correlations.basis
+
+    fullgrid = obs_pdf_correlations.grid_values
+
+    fls = obs_pdf_correlations.flavours
+#    x = pdfgrids.xgrid(1e-5, 1, 'log', 500)[1]
+#    embed()
+    x = obs_pdf_correlations.xgrid
+    nf = len(fls)
+
+    grid_gluon = pdfgrids.xplotting_grid(pdf, 172.5, x, basis, [0])
+    grid_up = pdfgrids.xplotting_grid(pdf, 172.5, x, basis, [2])
+    grid_down = pdfgrids.xplotting_grid(pdf, 172.5, x, basis, [1])
+    array_ratio = grid_up.grid_values / grid_down.grid_values
+    _, th = results
+#    corrs_gluon = _basic_obs_pdf_correlation(grid_gluon.grid_values, th._rawdata)
+    corrs = _basic_obs_pdf_correlation(array_ratio, th._rawdata)
+
+    plotting_var = info.get_xcol(table)
+
+    #TODO: vmin vmax should be global or by figure?
+    vmin,vmax = min(plotting_var), max(plotting_var)
+    if info.x_scale == 'log':
+        norm = mcolors.LogNorm(vmin, vmax)
+    else:
+        norm = mcolors.Normalize(vmin, vmax)
+    #http://stackoverflow.com/a/11558629/1007990
+    sm = cm.ScalarMappable(cmap=cm.viridis, norm=norm)
+    sm._A = []
+
+    for same_vals, fb in figby:
+#        grid = fullgrid[ np.asarray(fb.index),...]
+        grid = array_ratio[ np.asarray(fb.index),...]
+
+        #Use the maximum absolute correlation for plotting purposes
+        absgrid = np.max(np.abs(grid), axis=0)
+        mark_mask = absgrid > np.max(absgrid)*mark_threshold
+
+        label = info.group_label(same_vals, info.figure_by)
+        #TODO: PY36ScalarMappable
+        #TODO Improve title?
+        title = "%s %s\n[%s]" % (info.dataset_label, '(%s)'%label if label else '' ,pdf.label)
+
+        #Start plotting
+        w,h = plt.rcParams["figure.figsize"]
+        h*=2.5
+#        fig,axes = plt.subplots(nrows=nf, sharex=True, figsize=(w,h), sharey=True)
+        fig,ax = plt.subplots()
+
+#        fig.suptitle(title)
+        colors = sm.to_rgba(info.get_xcol(fb))
+#        corr_grids = [corrs_gluon, corrs]
+#        for i in range(len(fls)):
+        for flindex, fl in enumerate(fls):
+            for i, color in enumerate(colors):
+#                ax.plot(x, grid[i,flindex,:].T, color=color)
+                ax.plot(x, corrs[i].ravel(), color=color)
+       
+#         ax.plot(x, corrs.ravel())
+
+#        axes.set_ylabel("$u/d$") 
+#        axes.set_ylim(-1,1)
+#        axes.set_xlim(x[0], x[-1])
 #                if flindex == 5:
 #                    u_d_grid = [x/y for x, y in zip(grid[i,flindex,:].T, grid[i,4,:].T)]
 #                    ax.plot(x, u_d_grid, color=color)
 
-            flmask = mark_mask[flindex,:]
-            ranges = split_ranges(x, flmask, filter_falses=True)
-            for r in ranges:
-                ax.axvspan(r[0], r[-1], color='#eeeeff')
+# Put next five lines back in later
+#            embed()
+#            flmask = mark_mask[flindex,:]
+#####            flmask = mark_mask[0]
+#####            ranges = split_ranges(x, flmask, filter_falses=True)
+#####            for r in ranges:
+#####                ax.axvspan(r[0], r[-1], color='#eeeeff')
 
-            ax.set_ylabel("$%s$"%basis.elementlabel(fl))
+####            ax.set_ylabel("$%s$"%basis.elementlabel(fl))
+        ax.set_ylabel("$u/d$")
+
 #            if info.x_scale == 'log':
 #                ax.set_xscale(scale_from_grid(obs_pdf_correlations))
-            ax.set_xscale(scale_from_grid(obs_pdf_correlations))
-            ax.set_ylim(-1,1)
-            ax.set_xlim(0.001, x[-1])
+        ax.set_xscale(scale_from_grid(obs_pdf_correlations))
+        ax.set_ylim(-1,1)
+        ax.set_xlim(0.001, 0.5)
+#        ax.set_xlim(x[0], 0.5)
+#        ax.set_xlim(0.001, x[-1])
         ax.set_xlabel('$x$')
 
 #        plt.colorbar(sm, ax=axes.ravel().tolist(), label=info.xlabel,
@@ -743,6 +868,7 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
     tab1 = kitable(ds1, in1)
     figby1 = sane_groupby_iter(tab1, in1.figure_by)
     y_tot = np.array([])
+#    embed()
     for samefig_vals1, fig_data1 in figby1:
         lineby1 = sane_groupby_iter(fig_data1, in1.line_by)
         for (sameline_vals1, line_data1) in lineby1:
@@ -760,6 +886,7 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
             x = np.asanyarray(x, np.float)
             x_label = in2.xlabel
             x_tot = np.concatenate([x_tot, x])
+            break
 #            extra = in2.extra_labels
    
 #    embed()
@@ -774,12 +901,18 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
                 tick.set_rotation(45)
     ax.tick_params(axis='both', which='major', labelsize=8)
  
-    for label in ax.xaxis.get_ticklabels()[1::2]:
-        label.set_visible(False)
+# Uncomment two lines below to show every other tick label
+###    for label in ax.xaxis.get_ticklabels()[1::2]:
+###       label.set_visible(False)
 #        label.set_horizontalalignment('left')
 
 #    ax.xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-    im = ax.imshow(obs_obs_correlations, cmap=cm.Spectral_r, vmin=-1, vmax=1)
+#    im = ax.imshow(obs_obs_correlations, cmap=cm.Spectral_r, vmin=-1, vmax=1)
+    ### To plot only first bin
+    obs_obs_correlations_new = [item[:len(x_tot)] for item in obs_obs_correlations]
+#    obs_obs_correlations_new = [obs_obs_correlations[0][:len(x_tot)]]
+    im = ax.imshow(obs_obs_correlations_new, cmap=cm.Spectral_r, vmin=-1, vmax=1)
+
 
     if y_label == 'idat':
         ax.set_ylabel(str(ds1_label) + " [data point]")

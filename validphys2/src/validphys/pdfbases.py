@@ -292,7 +292,6 @@ class Basis():
         rotated_gv = np.einsum('bc,acde->abde', transformation, gv)
         return rotated_gv
 
-
     @classmethod
     def from_mapping(cls, mapping, *, aliases=None, default_elements=None):
         """Construct a basus from a mapping of the form
