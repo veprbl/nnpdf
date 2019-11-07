@@ -214,6 +214,23 @@ fits_bs_ratio = collect('bootstrap_bias_variance_ratio', ('fits', 'fitpdf'))
 exps_fits_bs_ratio = collect('fits_bs_ratio', ('fits', 'fitcontext', 'experiments'))
 
 @table
+def boot_fits_ratio_exp(
+    fits_bs_ratio,
+    experiment,
+):
+    """bootstrap over level 1 and replicas"""
+    ratios_np = np.array(fits_bs_ratio)
+    ratio_bs = ratios_np[:, np.random.randint(ratios_np.shape[1], size=50)].mean(axis=0)
+    res = np.array([ratio_bs.mean(), ratio_bs.std()])[np.newaxis, :]
+    del ratio_bs, ratios_np
+    df = pd.DataFrame(
+        res,
+        columns=["ratio", "ratio error"],
+        index=[str(experiment)]
+    )
+    return df
+
+@table
 def boot_fits_ratio_table(
     exps_fits_bs_ratio,
     fits_experiments,
