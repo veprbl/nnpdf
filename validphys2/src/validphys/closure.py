@@ -20,7 +20,7 @@ from validphys.results import experiment_results, total_experiments_chi2data
 from validphys.dataplots import plot_phi_scatter_dataspecs
 from validphys.checks import check_pdf_is_montecarlo
 from validphys import plotutils
-from validphys.calcutils import calc_chi2, bootstrap_values
+from validphys.calcutils import calc_chi2, bootstrap_values, calc_phi
 
 log = logging.getLogger(__name__)
 
@@ -185,6 +185,58 @@ def fits_bootstrap_phi_table(
         df.columns = pd.MultiIndex.from_product(([str(fit)], col))
         dfs.append(df)
     return pd.concat(dfs, axis=1, sort=True)
+
+def bootstrap_bias_variance_ratio(
+    experiment_results, exp_result_underlying, bootstrap_samples=30,
+):
+    """Calculate the ratio of bias over variance with a bootstrap resample"""
+    seed_state = np.random.RandomState(None)
+    seed = seed_state.randint(np.iinfo(np.int32).max, dtype=np.int32)
+
+    dt_ct, th_ct = experiment_results
+    _, th_ul = exp_result_underlying[0]
+
+    diff = np.array(th_ct._rawdata - dt_ct.central_value[:, np.newaxis])
+    phi_resample = bootstrap_values(
+        diff, bootstrap_samples, boot_seed=seed,
+        apply_func=(lambda x, y: calc_phi(y, x)),
+        args=[dt_ct.sqrtcovmat]
+    )
+    var_resample = phi_resample**2
+    dt_ct, th_ct = experiment_results
+
+    th_ct_boot_cv = bootstrap_values(th_ct._rawdata, bootstrap_samples, boot_seed=seed)
+    boot_diffs = th_ct_boot_cv - th_ul.central_value[:, np.newaxis]
+    boot_bias = calc_chi2(dt_ct.sqrtcovmat, boot_diffs)/len(dt_ct)
+    return boot_bias/var_resample
+
+fits_bs_ratio = collect('bootstrap_bias_variance_ratio', ('fits', 'fitpdf'))
+exps_fits_bs_ratio = collect('fits_bs_ratio', ('fits', 'fitcontext', 'experiments'))
+
+@table
+def boot_fits_ratio_table(
+    exps_fits_bs_ratio,
+    fits_experiments,
+):
+    """bootstrap over level 1 and replicas"""
+    records = []
+    cols = ['ratio', 'ratio std. dev']
+    for exp, fits_ratios in zip(fits_experiments[0], exps_fits_bs_ratio):
+        ratios_np = np.array(fits_ratios)
+        ratio_bs = ratios_np[:, np.random.randint(ratios_np.shape[1], size=50)].mean(axis=0)
+        records.append(dict(
+                    experiment=str(exp),
+                    ratio=ratio_bs.mean(),
+                    ratio_std=ratio_bs.std()
+            ))
+    df = pd.DataFrame.from_records(records,
+        columns=('experiment','ratio', 'ratio_std'),
+        index = ('experiment')
+    )
+    df.columns = cols
+    print(df)
+    return df
+
 
 fits_exps_bootstrap_chi2_central = collect('experiments_bootstrap_chi2_central',
                                            ('fits', 'fitcontext',))
