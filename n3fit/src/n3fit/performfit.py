@@ -27,6 +27,7 @@ def performfit(
     hyperopt=None,
     debug=False,
     create_test_card=None,
+    use_lookback=True,
 ):
     """
         This action will (upon having read a validcard) process a full PDF fit for a given replica.
@@ -145,7 +146,7 @@ def performfit(
     for exp in experiments:
         log.info("Loading experiment: %s", exp)
         all_exp_dicts = reader.common_data_reader(
-            exp, t0pdfset, replica_seeds=mcseeds, trval_seeds=trvalseeds
+            exp, t0pdfset, replica_seeds=mcseeds, trval_seeds=trvalseeds, use_lookback=use_lookback
         )
         for i, exp_dict in enumerate(all_exp_dicts):
             all_exp_infos[i].append(exp_dict)

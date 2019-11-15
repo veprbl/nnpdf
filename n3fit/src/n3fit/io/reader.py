@@ -172,7 +172,7 @@ def common_data_reader_experiment(experiment_c, experiment_spec):
     return parsed_datasets
 
 
-def common_data_reader(spec, t0pdfset, replica_seeds=None, trval_seeds=None):
+def common_data_reader(spec, t0pdfset, replica_seeds=None, trval_seeds=None, use_lookback=True):
     """
     Wrapper to read the information from validphys object
     This function receives either a validphyis experiment or dataset objects
@@ -251,7 +251,11 @@ def common_data_reader(spec, t0pdfset, replica_seeds=None, trval_seeds=None):
     # Now it is time to build the masks for the training validation split
     all_dict_out = []
     for expdata, trval_seed in zip(all_expdatas, trval_seeds):
-        tr_mask, vl_mask = make_tr_val_mask(datasets, exp_name, seed=trval_seed)
+        if use_lookback:
+            tr_mask, vl_mask = make_tr_val_mask(datasets, exp_name, seed=trval_seed)
+        else:
+            # put all data into both training and validation
+            tr_mask, vl_mask = np.ones(ndata, dtype=np.bool), np.ones(ndata, dtype=np.bool)
 
         covmat_tr = covmat[tr_mask].T[tr_mask]
         ndata_tr = np.count_nonzero(tr_mask)
