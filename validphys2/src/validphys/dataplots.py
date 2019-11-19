@@ -853,7 +853,6 @@ def plot_smpdf_up_down(pdf, results, dataset, obs_pdf_correlations, mark_thresho
         #fig.tight_layout()
         yield fig
 
-from IPython import embed
 from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 

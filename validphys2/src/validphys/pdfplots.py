@@ -20,13 +20,15 @@ from reportengine.figure import figure, figuregen
 from reportengine.checks import make_argcheck
 
 from validphys import plotutils
-from validphys.core import MCStats
+from validphys.core import MCStats, PDF
 from validphys.gridvalues import LUMI_CHANNELS
 from validphys.utils import scale_from_grid
 from validphys.checks import check_pdf_normalize_to, check_scale, check_have_two_pdfs
 from validphys.checks import check_pdfs_noband
 
 log = logging.getLogger(__name__)
+
+plt.rcParams.update({'font.size': 16})
 
 class FlavourState(SimpleNamespace):
     """This is the namespace for the pats specific for each flavour"""
@@ -232,6 +234,58 @@ class UncertaintyPDFPlotter(PDFPlotter):
         res = stats.std_error()
 
         ax.plot(grid.xgrid, res, label=pdf.label)
+        from matplotlib.ticker import FormatStrFormatter
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%0.3f'))
+        start, end = ax.get_ylim()
+        ax.yaxis.set_ticks(np.arange(0.010, 0.050, 0.005))
+        return res
+
+class UncertaintyPDFPlotter_up_down(PDFPlotter):
+
+    def get_ylabel(self, parton_name):
+        if self.normalize_to is not None:
+            return r"$\sigma($%s$)$" % super().get_ylabel(parton_name)
+        return r"$\sigma/\sigma_{ref}$"
+
+    def draw(self, pdf, grid, flstate):
+        ax = flstate.ax
+#        flindex = flstate.flindex
+#        gv = grid.grid_values[:,flindex,:]
+#        stats = pdf.stats_class(gv)
+
+        xgrid = grid.xgrid
+        basis = grid.basis
+
+        pdf_to_normalize_to = PDF(name='190529-cv-nnlo-global-stop-1')
+        grid_up_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [2])
+        grid_down_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [1])
+        array_ratio_norm = grid_up_for_norm.grid_values / grid_down_for_norm.grid_values
+        xgrid_norm = grid_up_for_norm.xgrid
+        stats_norm = pdf.stats_class(array_ratio_norm)
+        cv_norm = stats_norm.central_value()
+
+        grid_up = pdfgrids.xplotting_grid(pdf, 172.5, xgrid, basis, [2])
+        grid_down = pdfgrids.xplotting_grid(pdf, 172.5, xgrid, basis, [1])
+        array_ratio = grid_up.grid_values / grid_down.grid_values
+#        xgrid = grid_up.xgrid
+#        stats = pdf.stats_class(array_ratio)
+#        cv = stats.central_value()
+        array_norm = []
+        for x in range(len(array_ratio)):
+            array_norm.append(array_ratio[x].ravel() / cv_norm.ravel())
+        stats_norm2 = pdf.stats_class(array_norm)
+
+        res = stats_norm2.std_error()
+
+        ax.plot(xgrid, res, label=pdf.label)
+        from matplotlib.ticker import FormatStrFormatter
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%0.3f'))
+        start, end = ax.get_ylim()
+#        ax.yaxis.set_ticks(np.arange(0.010, 0.030, 0.005))
+        ax.yaxis.set_ticks(np.arange(0.005, 0.050, 0.005))
+
+        ax.set_title("$u/d$ at 172.5 GeV")
+        ax.set_xlim(0.00001, 0.5)
 
         return res
 
@@ -245,6 +299,15 @@ def plot_pdf_uncertainties(pdfs, xplotting_grids, xscale:(str,type(None))=None,
     PDF's central value is plotted. Otherwise it is the absolute values."""
     yield from UncertaintyPDFPlotter(pdfs, xplotting_grids, xscale, normalize_to, ymin, ymax)
 
+@figuregen
+@check_pdf_normalize_to
+@check_scale('xscale', allow_none=True)
+def plot_pdf_uncertainties_up_down(pdfs, xplotting_grids, xscale:(str,type(None))=None,
+                      normalize_to:(int,str,type(None))=None, ymin=None, ymax=None):
+    """Plot the PDF standard deviations as a function of x.
+    If normalize_to is set, the ratio to that
+    PDF's central value is plotted. Otherwise it is the absolute values."""
+    yield from UncertaintyPDFPlotter_up_down(pdfs, xplotting_grids, xscale, normalize_to, ymin, ymax)
 
 class AllFlavoursPlotter(PDFPlotter):
     """Auxiliary class which groups multiple PDF flavours in one plot."""
@@ -377,7 +440,9 @@ def plot_pdfvardistances(pdfs, variance_distance_grids, *,
     return FlavoursVarDistancePlotter(pdfs, variance_distance_grids, xscale, normalize_to, ymin, ymax)()
 
 
+from IPython import embed
 class BandPDFPlotter(PDFPlotter):
+#    plt.rcParams.update({'font.size': 30})
     def __init__(self, *args,  pdfs_noband=None ,**kwargs):
         if pdfs_noband is None:
             pdfs_noband = []
@@ -447,6 +512,103 @@ class BandPDFPlotter(PDFPlotter):
                                              }
                                  )
 
+import validphys.pdfgrids as pdfgrids
+class BandPDFPlotter_up_down(PDFPlotter):
+#    plt.rcParams.update({'font.size': 30})
+    def __init__(self, *args,  pdfs_noband=None ,**kwargs):
+        if pdfs_noband is None:
+            pdfs_noband = []
+        self.pdfs_noband = pdfs_noband
+        super().__init__( *args, **kwargs)
+
+    def setup_flavour(self, flstate):
+        flstate.handles=[]
+        flstate.labels=[]
+        flstate.hatchit=plotutils.hatch_iter()
+
+    def draw(self, pdf, grid, flstate):
+        ax = flstate.ax
+        flindex = flstate.flindex
+        hatchit = flstate.hatchit
+        labels = flstate.labels
+        handles = flstate.handles
+        stats = pdf.stats_class(grid.grid_values[:,flindex,:])
+        pcycler = ax._get_lines.prop_cycler
+        #This is ugly but can't think of anything better
+
+        next_prop = next(pcycler)
+        cv = stats.central_value()
+        xgrid = grid.xgrid
+        
+        basis = grid.basis
+        pdf_to_normalize_to = PDF(name='190529-cv-nnlo-global-stop-1')
+        grid_up_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [2])
+        grid_down_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [1])
+        array_ratio_norm = grid_up_for_norm.grid_values / grid_down_for_norm.grid_values
+        xgrid_norm = grid_up_for_norm.xgrid
+        stats_norm = pdf.stats_class(array_ratio_norm)
+        cv_norm = stats_norm.central_value() 
+
+#        basis = grid.basis
+        grid_up = pdfgrids.xplotting_grid(pdf, 172.5, xgrid, basis, [2])
+        grid_down = pdfgrids.xplotting_grid(pdf, 172.5, xgrid, basis, [1])
+        array_ratio = grid_up.grid_values / grid_down.grid_values
+        xgrid = grid_up.xgrid
+        stats = pdf.stats_class(array_ratio)  
+        cv = stats.central_value()
+        array_norm = []
+        for x in range(len(array_ratio)):
+            array_norm.append(array_ratio[x].ravel() / cv_norm.ravel())
+        stats = pdf.stats_class(array_norm)  
+        cv = stats.central_value()
+
+        #Ignore spurious normalization warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            err68down, err68up = stats.errorbar68()
+
+        #http://stackoverflow.com/questions/5195466/matplotlib-does-not-display-hatching-when-rendering-to-pdf
+        hatch = next(hatchit)
+        color = next_prop['color']
+        cvline, = ax.plot(xgrid, cv.ravel(), color=color)
+        if pdf in self.pdfs_noband:
+            labels.append(pdf.label)
+            handles.append(cvline)
+            return [cv, cv]
+        alpha = 0.5
+        ax.fill_between(xgrid, err68up.ravel(), err68down.ravel(), color=color, alpha=alpha,
+                        zorder=1)
+
+        ax.fill_between(xgrid, err68up.ravel(), err68down.ravel(), facecolor='None', alpha=alpha,
+                        edgecolor=color,
+                        hatch=hatch,
+                        zorder=1)
+        if isinstance(stats, MCStats):
+            errorstdup, errorstddown = stats.errorbarstd()
+            ax.plot(xgrid, errorstdup.ravel(), linestyle='--', color=color)
+            ax.plot(xgrid, errorstddown.ravel(), linestyle='--', color=color)
+            label  = rf"{pdf.label} ($68%$ c.l.+$1\sigma$)"
+            outer = True
+        else:
+            outer = False
+            label = rf"{pdf.label} ($68\%$ c.l.)"
+        handle = plotutils.HandlerSpec(color=color, alpha=alpha,
+                                               hatch=hatch,
+                                               outer=outer)
+        handles.append(handle)
+        labels.append(label)
+
+        ax.set_title("$u/d$ at 172.5 GeV")
+        ax.set_xlim(0.00001, 0.5)
+
+        return [err68down.ravel(), err68up.ravel()]
+
+    def legend(self, flstate):
+        return flstate.ax.legend(flstate.handles, flstate.labels,
+                                 handler_map={plotutils.HandlerSpec:
+                                             plotutils.ComposedHandler()
+                                             }
+                                 )
 
 @figuregen
 @check_pdf_normalize_to
@@ -488,6 +650,30 @@ def plot_pdfs(
         ymax,
         pdfs_noband=pdfs_noband,
     )
+
+@figuregen
+@check_pdf_normalize_to
+@check_pdfs_noband
+@check_scale("xscale", allow_none=True)
+def plot_pdfs_up_down(
+    pdfs,
+    xplotting_grids,
+    xscale: (str, type(None)) = None,
+    normalize_to: (int, str, type(None)) = None,
+    ymin=None,
+    ymax=None,
+    pdfs_noband: (list, type(None)) = None,
+):
+    yield from BandPDFPlotter_up_down(
+        pdfs,
+        xplotting_grids,
+        xscale,
+        normalize_to,
+        ymin,
+        ymax,
+        pdfs_noband=pdfs_noband,
+    )
+
 
 class FlavoursPlotter(AllFlavoursPlotter, BandPDFPlotter):
     def get_title(self, parton_name):
