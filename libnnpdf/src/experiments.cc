@@ -234,7 +234,7 @@ void Experiment::MakeReplica()
               // If it's negative and not an assymmetry, continue the loop
               const bool is_asymmetry = proctype[i].find("ASY") != std::string::npos;
               // If it's negative and not a lattice point, continue the loop
-              const bool is_lattice = proctype[i].find("QPDF") != std::string::npos;
+              const bool is_lattice = proctype[i].find("LATTICE") != std::string::npos;
               if (!is_asymmetry && !is_lattice)
               {
                 isArtNegative = true;
