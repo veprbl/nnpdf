@@ -1,4 +1,4 @@
-dataset_label: "IMPPDF"
+dataset_label: "IMPPDF_fine"
 x: k1
 y_label: '$Im[h(z)]$'
 kinematics_override: dis_sqrt_scale
