@@ -223,7 +223,8 @@ class UncertaintyPDFPlotter(PDFPlotter):
     def get_ylabel(self, parton_name):
         if self.normalize_to is not None:
             return r"$\sigma($%s$)$" % super().get_ylabel(parton_name)
-        return r"$\sigma/\sigma_{ref}$"
+#        return r"$\sigma/\sigma_{ref}$"
+        return "Relative uncertainty"
 
     def draw(self, pdf, grid, flstate):
         ax = flstate.ax
@@ -232,20 +233,36 @@ class UncertaintyPDFPlotter(PDFPlotter):
         stats = pdf.stats_class(gv)
 
         res = stats.std_error()
+#        cv = pdf.stats_class(grid.grid_values[:,0,:]).central_value()
+        cv = stats.central_value() 
+        res_norm = [x/y for x,y in zip(res,cv)]
 
-        ax.plot(grid.xgrid, res, label=pdf.label)
+#        ax.plot(grid.xgrid, res, label=pdf.label)
+        ax.plot(grid.xgrid, res_norm, label=pdf.label)
         from matplotlib.ticker import FormatStrFormatter
         ax.yaxis.set_major_formatter(FormatStrFormatter('%0.3f'))
         start, end = ax.get_ylim()
-        ax.yaxis.set_ticks(np.arange(0.010, 0.050, 0.005))
+#        from IPython import embed
+#        embed()
+#        ax.set_ylim(0.0050, 0.0275)
+#        ax.yaxis.set_ticks(np.arange(0.010, 0.050, 0.005))
+#        ax.set_ylim(0.0050, 0.0275)
+        if flstate.fl == 21:
+          ax.set_ylim(0.006, 0.0275)
+        elif flstate.fl == 1:
+           ax.set_ylim(0.01, 0.04)
+        elif flstate.fl == 2:
+           ax.set_ylim(0.006, 0.0275)
+        ax.set_xlim(right=0.5)
         return res
 
 class UncertaintyPDFPlotter_up_down(PDFPlotter):
 
     def get_ylabel(self, parton_name):
-        if self.normalize_to is not None:
-            return r"$\sigma($%s$)$" % super().get_ylabel(parton_name)
-        return r"$\sigma/\sigma_{ref}$"
+#        if self.normalize_to is not None:
+#            return r"$\sigma($%s$)$" % super().get_ylabel(parton_name)
+#        return r"$\sigma/\sigma_{ref}$"
+        return "Relative uncertainty"
 
     def draw(self, pdf, grid, flstate):
         ax = flstate.ax
@@ -256,9 +273,14 @@ class UncertaintyPDFPlotter_up_down(PDFPlotter):
         xgrid = grid.xgrid
         basis = grid.basis
 
-        pdf_to_normalize_to = PDF(name='190529-cv-nnlo-global-stop-1')
-        grid_up_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [2])
-        grid_down_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [1])
+#        pdf_to_normalize_to = PDF(name='190529-cv-nnlo-global-stop-1')
+#        pdf_to_normalize_to = PDF(name='191115-cv-nnlo-global-stop-6')
+#        embed()
+#        grid_up_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [2])
+#        grid_down_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [1])
+        grid_up_for_norm = pdfgrids.xplotting_grid(pdf, 172.5, xgrid, basis, [2])
+        grid_down_for_norm = pdfgrids.xplotting_grid(pdf, 172.5, xgrid, basis, [1])
+
         array_ratio_norm = grid_up_for_norm.grid_values / grid_down_for_norm.grid_values
         xgrid_norm = grid_up_for_norm.xgrid
         stats_norm = pdf.stats_class(array_ratio_norm)
@@ -285,7 +307,9 @@ class UncertaintyPDFPlotter_up_down(PDFPlotter):
         ax.yaxis.set_ticks(np.arange(0.005, 0.050, 0.005))
 
         ax.set_title("$u/d$ at 172.5 GeV")
-        ax.set_xlim(0.00001, 0.5)
+#        ax.set_xlim(right=0.5)
+#        ax.set_xlim(left=0.1)
+        plt.xlim(left=0.1, right=0.5)
 
         return res
 
@@ -503,6 +527,7 @@ class BandPDFPlotter(PDFPlotter):
         handles.append(handle)
         labels.append(label)
 
+        ax.set_xlim(right=1.0)
         return [err68down, err68up]
 
     def legend(self, flstate):
@@ -539,8 +564,8 @@ class BandPDFPlotter_up_down(PDFPlotter):
         next_prop = next(pcycler)
         cv = stats.central_value()
         xgrid = grid.xgrid
-        
         basis = grid.basis
+
         pdf_to_normalize_to = PDF(name='190529-cv-nnlo-global-stop-1')
         grid_up_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [2])
         grid_down_for_norm = pdfgrids.xplotting_grid(pdf_to_normalize_to, 172.5, xgrid, basis, [1])
@@ -583,10 +608,13 @@ class BandPDFPlotter_up_down(PDFPlotter):
                         edgecolor=color,
                         hatch=hatch,
                         zorder=1)
+#        ax.set_xlim(left=0.001, right=0.5)
+        plt.xlim(left=0.1)
         if isinstance(stats, MCStats):
             errorstdup, errorstddown = stats.errorbarstd()
             ax.plot(xgrid, errorstdup.ravel(), linestyle='--', color=color)
             ax.plot(xgrid, errorstddown.ravel(), linestyle='--', color=color)
+            ax.set_xlim(left=0.001, right=0.5)
             label  = rf"{pdf.label} ($68%$ c.l.+$1\sigma$)"
             outer = True
         else:
@@ -599,8 +627,7 @@ class BandPDFPlotter_up_down(PDFPlotter):
         labels.append(label)
 
         ax.set_title("$u/d$ at 172.5 GeV")
-        ax.set_xlim(0.00001, 0.5)
-
+        ax.set_xlim(left=0.001, right=0.5)
         return [err68down.ravel(), err68up.ravel()]
 
     def legend(self, flstate):
@@ -891,9 +918,12 @@ def plot_lumi2d_uncertainty(pdf, lumi_channel, lumigrid2d, sqrts:numbers.Real):
     fig.colorbar(mesh, label="Relative uncertainty (%)",
         ticks=[1,5,10,25,50], format='%.0f', extend=extend)
     ax.set_yscale('log')
+#    ax.set_title("Relative uncertainty for $%s$-luminosity\n%s - "
+#                 "$\\sqrt{s}=%.1f$ GeV" % (LUMI_CHANNELS[channel],
+#                         pdf.label, sqrts))
     ax.set_title("Relative uncertainty for $%s$-luminosity\n%s - "
-                 "$\\sqrt{s}=%.1f$ GeV" % (LUMI_CHANNELS[channel],
-                         pdf.label, sqrts))
+                 "$\\sqrt{s}=%.0f$ GeV" % (LUMI_CHANNELS[channel],
+                         "Baseline (Fit 1)", sqrts))
     ax.set_ylabel('$M_{X}$ (GeV)')
     ax.set_xlabel('y')
     ax.grid(False)
