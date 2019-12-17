@@ -27,6 +27,19 @@ from validphys.utils import sane_groupby_iter, split_ranges, scale_from_grid
 
 log = logging.getLogger(__name__)
 
+#plt.rcParams.update({'font.size': 17})
+#plt.rcParams.update({'font.size': 16})
+plt.rcParams.update({'font.size': 12})
+#plt.rc('axes', labelsize=18)
+
+#plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=17)     # fontsize of the axes title
+plt.rc('axes', labelsize=17)    # fontsize of the x and y labels
+#plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+#plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+#plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+#plt.rc('figure', titlesize=BIGGER_SIZE)
+
 @figure
 def plot_chi2dist(results, dataset, abs_chi2_data, chi2_stats, pdf):
     """Plot the distribution of chi²s of the members of the pdfset."""
@@ -650,11 +663,11 @@ def plot_replica_sum_rules(pdf, sum_rules, Q):
 import validphys.pdfgrids as pdfgrids
 from validphys.correlations import _basic_obs_pdf_correlation
 
-@figuregen
-def plot_smpdf_up_down(pdf, dataset, obs_pdf_correlations):
-    xGrid = obs_pdf_correlations.xgrid
-    pdfGrid = pdfgrids.xplotting_grid(
-        pdf, Q, xgrid=xGrid, basis=basis, flavours=flavours)
+#@figuregen
+#def plot_smpdf_up_down(pdf, dataset, obs_pdf_correlations):
+#    xGrid = obs_pdf_correlations.xgrid
+#    pdfGrid = pdfgrids.xplotting_grid(
+#        pdf, Q, xgrid=xGrid, basis=basis, flavours=flavours)
 
 @figuregen
 def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
@@ -728,13 +741,16 @@ def plot_smpdf(pdf, dataset, obs_pdf_correlations, mark_threshold:float=0.9):
 #            for r in ranges:
 #                ax.axvspan(r[0], r[-1], color='#eeeeff')
 
-            ax.set_ylabel("$%s$"%basis.elementlabel(fl))
+#            ax.set_ylabel(r"$\rho \left( \frac{d\sigma}{dp_{T}(t)} \, , \, g \right)$")
+#            ax.set_ylabel(r"$\rho \left( \frac{d\sigma}{d|y(t)|} \, , \, g \right)$")
+            ax.set_ylabel(r"$\rho(\sigma_{t} + \sigma_{\bar{t}} \, , \, g)$")
+#            ax.set_ylabel("$%s$"%basis.elementlabel(fl))
             ax.set_xscale(scale_from_grid(obs_pdf_correlations))
             ax.set_ylim(-1,1)
             ax.set_xlim(x[0], x[-1])
         ax.set_xlabel('$x$')
-        ax.legend(title=r"$p_T$ [GeV]")
-#        ax.legend(title=r"|y|")
+#        ax.legend(title=r"$p_T$ [GeV]", frameon=False, borderaxespad=2.5)
+#        ax.legend(title=r"|y|", frameon=False, borderaxespad=2.5)
 
         #fig.subplots_adjust(hspace=0)
 
@@ -836,13 +852,14 @@ def plot_smpdf_up_down(pdf, results, dataset, obs_pdf_correlations, mark_thresho
 #####                ax.axvspan(r[0], r[-1], color='#eeeeff')
 
 ####            ax.set_ylabel("$%s$"%basis.elementlabel(fl))
-        ax.set_ylabel("$u/d$")
+#        ax.set_ylabel(r"$\rho(\sigma_{t}/\sigma_{\bar{t}}, u/d)$")
+        ax.set_ylabel(r"$\rho \left( \frac{\sigma_{t}}{\sigma_{\bar{t}}} \, , \, \frac{u}{d} \right)$")
 
 #            if info.x_scale == 'log':
 #                ax.set_xscale(scale_from_grid(obs_pdf_correlations))
         ax.set_xscale(scale_from_grid(obs_pdf_correlations))
         ax.set_ylim(-1,1)
-        ax.set_xlim(0.001, 0.5)
+        ax.set_xlim(0.00001, 0.5)
 #        ax.set_xlim(x[0], 0.5)
 #        ax.set_xlim(0.001, x[-1])
         ax.set_xlabel('$x$')
@@ -867,7 +884,7 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
     tab1 = kitable(ds1, in1)
     figby1 = sane_groupby_iter(tab1, in1.figure_by)
     y_tot = np.array([])
-#    embed()
+
     for samefig_vals1, fig_data1 in figby1:
         lineby1 = sane_groupby_iter(fig_data1, in1.line_by)
         for (sameline_vals1, line_data1) in lineby1:
@@ -885,10 +902,10 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
             x = np.asanyarray(x, np.float)
             x_label = in2.xlabel
             x_tot = np.concatenate([x_tot, x])
-            break
+### For top, uncomment line below. For HERA, leave it uncommented
+#            break
 #            extra = in2.extra_labels
    
-#    embed()
 #    x_test = []
 #    x_rifled = [x_test.append( + extra[i])]   
 
@@ -897,9 +914,10 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
     len_x = len(x_tot)
     ax.xaxis.set_ticks(np.arange(0, len(x_tot), 1))
     for tick in ax.get_xticklabels():
-                tick.set_rotation(45)
-    ax.tick_params(axis='both', which='major', labelsize=8)
- 
+                tick.set_rotation(90)
+    ax.tick_params(axis='both', which='major')
+#    ax.tick_params(axis='both', which='major')
+
 # Uncomment two lines below to show every other tick label
 ###    for label in ax.xaxis.get_ticklabels()[1::2]:
 ###       label.set_visible(False)
@@ -907,17 +925,20 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
 
 #    ax.xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
 #    im = ax.imshow(obs_obs_correlations, cmap=cm.Spectral_r, vmin=-1, vmax=1)
-    ### To plot only first bin
-    obs_obs_correlations_new = [item[:len(x_tot)] for item in obs_obs_correlations]
+    ### To plot only first bin (for e.g. top uncomment line below)
+#    obs_obs_correlations_new = [item[:len(x_tot)] for item in obs_obs_correlations]
 #    obs_obs_correlations_new = [obs_obs_correlations[0][:len(x_tot)]]
-    im = ax.imshow(obs_obs_correlations_new, cmap=cm.Spectral_r, vmin=-1, vmax=1)
+### For HERA plot
+    obs_obs_correlations_new = obs_obs_correlations
+    im = ax.imshow(obs_obs_correlations_new, cmap=cm.Spectral_r, vmin=-1, vmax=1, aspect='auto')
 
 
     if y_label == 'idat':
         ax.set_ylabel(str(ds1_label) + " [data point]")
         y_tot_rounded = [y.astype(int) for y in y_tot]
     else:
-        ax.set_ylabel(str(ds1_label) + " [" + str(y_label) + "]")
+#        ax.set_ylabel(str(ds1_label) + " [" + str(y_label) + "]")
+        ax.set_ylabel(r"ATLAS single top 7 TeV $\frac{d\sigma}{dp_T(t)}$ [$p_T$ (GeV)]") 
         y_tot_rounded = []
         for y in y_tot:
             if (y).is_integer():
@@ -929,16 +950,31 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
         ax.set_xlabel(str(ds2_label) + " [data point]")
         x_tot_rounded = [x.astype(int) for x in x_tot]
     else:
-        ax.set_xlabel(str(ds2_label) + " [" + str(x_label) + "]")
+        ax.set_xlabel(r"HERA I+II inclusive CC $e^-p$ $\frac{d\sigma}{dx}$ [$x$]")
         x_tot_rounded = []
         for x in x_tot:
             if (x).is_integer():
                 x_tot_rounded.append(x.astype(int))
             else:
-                x_tot_rounded.append(round(x,1))
+#                x_tot_rounded.append(round(x,1))
+                x_tot_rounded.append(round(x,3))
+
+#    from IPython import embed
+#    embed()
+
+#    x_string = []
+#    for i in range(len(x_tot_rounded)):
+#       if i%2 == 0:
+#          x_string.append(str(x_tot_rounded[i]))
+#       else:
+#          x_string.append('\n' + str(x_tot_rounded[i]))
 
     ax.set_yticklabels(y_tot_rounded)
     ax.set_xticklabels(x_tot_rounded)
+#    ax.set_xticklabels(x_string)
+
+#    ax.set_aspect(2)
+
 ### Use below if you don't want decimal places
 #    ax.set_xticklabels(x_tot.astype(int))
 #    fig.colorbar(im, [ax])
@@ -946,7 +982,245 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
 #    plt.figure(figsize=(20,6))
 #    cax = divider.append_axes("right", size="5%", pad=0.05)
 #    cax = divider.append_axes("right", size="5%", pad=0.2)
-    fig.colorbar(im)
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    divider = make_axes_locatable(ax)
+#    cax = divider.append_axes("right", size="2.5%", pad=0.05)
+    cax = divider.append_axes("right", size="3%", pad=0.1)
+    fig.colorbar(im, cax=cax)
+
+##    fig.colorbar(im, orientation='horizontal', pad=0.25)
+#    fig.colorbar(im, cax=cax)
+#    fig.colorbar(im, cax = fig.add_axes([0.78, 0.5, 0.03, 0.38]))
+#    fig.colorbar(im, aspect=20)
+#    fig.colorbar(im,fraction=0.046, pad=0.04)
+
+    return fig
+
+@figure
+def plot_obscorrs_jets(corrpair_datasets, obs_obs_correlations, pdf):
+    """NOTE: EXPERIMENTAL. Plot the correlation matrix between a pair of datasets."""
+    fig, ax = plt.subplots()
+
+    ds1, ds2 = corrpair_datasets
+    in1,in2 = get_info(ds1), get_info(ds2)
+    ds1_label, ds2_label = in1.dataset_label, in2.dataset_label
+    tab1 = kitable(ds1, in1)
+    figby1 = sane_groupby_iter(tab1, in1.figure_by)
+    y_tot = np.array([])
+
+    for samefig_vals1, fig_data1 in figby1:
+        lineby1 = sane_groupby_iter(fig_data1, in1.line_by)
+        for (sameline_vals1, line_data1) in lineby1:
+            y = in1.get_xcol(line_data1)
+            y = np.asanyarray(y, np.float)
+            y_label = in1.xlabel
+            y_tot = np.concatenate([y_tot, y])
+    tab2 = kitable(ds2, in2)
+    figby2 = sane_groupby_iter(tab2, in2.figure_by)
+    x_tot = np.array([]) 
+    for samefig_vals2, fig_data2 in figby2:
+        lineby2 = sane_groupby_iter(fig_data2, in2.line_by)
+        for (sameline_vals2, line_data2) in lineby2:
+            x = in2.get_xcol(line_data2)
+            x = np.asanyarray(x, np.float)
+            x_label = in2.xlabel
+            x_tot = np.concatenate([x_tot, x])
+### For top, uncomment line below. For HERA, leave it uncommented
+            break
+#            extra = in2.extra_labels
+   
+    len_y = len(y_tot)
+    ax.yaxis.set_ticks(np.arange(0, len(y_tot), 1))
+    len_x = len(x_tot)
+    ax.xaxis.set_ticks(np.arange(0, len(x_tot), 1))
+    for tick in ax.get_xticklabels():
+                tick.set_rotation(90)
+    ax.tick_params(axis='both', which='major')
+
+# Uncomment two lines below to show every other tick label
+###    for label in ax.xaxis.get_ticklabels()[1::2]:
+###       label.set_visible(False)
+#        label.set_horizontalalignment('left')
+
+#    ax.xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+#    im = ax.imshow(obs_obs_correlations, cmap=cm.Spectral_r, vmin=-1, vmax=1)
+    ### To plot only first bin (for e.g. top uncomment line below)
+    obs_obs_correlations_new = [item[:len(x_tot)] for item in obs_obs_correlations]
+#    obs_obs_correlations_new = [obs_obs_correlations[0][:len(x_tot)]]
+### For HERA plot
+#    obs_obs_correlations_new = obs_obs_correlations
+    im = ax.imshow(obs_obs_correlations_new, cmap=cm.Spectral_r, vmin=-1, vmax=1, aspect='auto')
+
+
+    if y_label == 'idat':
+        ax.set_ylabel(str(ds1_label) + " [data point]")
+        y_tot_rounded = [y.astype(int) for y in y_tot]
+    else:
+#        ax.set_ylabel(str(ds1_label) + " [" + str(y_label) + "]")
+        ax.set_ylabel(r"ATLAS single top 7 TeV $\frac{d\sigma}{dp_T(t)}$ [$p_T$ (GeV)]")
+#        ax.set_ylabel(r"ATLAS single top 7 TeV $\frac{1}{\sigma} \, \frac{d\sigma}{dp_T(t)}$ [$p_T$ (GeV)]")
+        y_tot_rounded = []
+        for y in y_tot:
+            if (y).is_integer():
+                y_tot_rounded.append(y.astype(int)) 
+            else:
+                y_tot_rounded.append(round(y,1))
+
+    if x_label == 'idat':
+        ax.set_xlabel(str(ds2_label) + " [data point]")
+        x_tot_rounded = [x.astype(int) for x in x_tot]
+    else:
+#        ax.set_xlabel(str(ds2_label) + " [" + str(x_label) + "]")
+        ax.set_xlabel(r"CMS jets 7 TeV $\frac{d\sigma}{dp_T}$ [$p_T$ (GeV)]")
+        x_tot_rounded = []
+        for x in x_tot:
+            if (x).is_integer():
+                x_tot_rounded.append(x.astype(int))
+            else:
+#                x_tot_rounded.append(round(x,1))
+                x_tot_rounded.append(round(x,3))
+
+#    x_string = []
+#    for i in range(len(x_tot_rounded)):
+#       if i%2 == 0:
+#          x_string.append(str(x_tot_rounded[i]))
+#       else:
+#          x_string.append('\n' + str(x_tot_rounded[i]))
+
+    ax.set_yticklabels(y_tot_rounded)
+    ax.set_xticklabels(x_tot_rounded)
+#    ax.set_xticklabels(x_string)
+
+### Use below if you don't want decimal places
+#    ax.set_xticklabels(x_tot.astype(int))
+#    fig.colorbar(im, [ax])
+#    divider = make_axes_locatable(ax)
+#    plt.figure(figsize=(20,6))
+#    cax = divider.append_axes("right", size="5%", pad=0.05)
+#    cax = divider.append_axes("right", size="5%", pad=0.2)
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    divider = make_axes_locatable(ax)
+#    cax = divider.append_axes("right", size="2.5%", pad=0.05)
+    cax = divider.append_axes("right", size="3%", pad=0.1)
+    fig.colorbar(im, cax=cax)
+
+##    fig.colorbar(im, orientation='horizontal', pad=0.25)
+#    fig.colorbar(im, cax=cax)
+#    fig.colorbar(im, cax = fig.add_axes([0.78, 0.5, 0.03, 0.38]))
+#    fig.colorbar(im, aspect=20)
+#    fig.colorbar(im,fraction=0.046, pad=0.04)
+
+    return fig
+
+@figure
+def plot_obscorrs_top(corrpair_datasets, obs_obs_correlations, pdf):
+    """NOTE: EXPERIMENTAL. Plot the correlation matrix between a pair of datasets."""
+    fig, ax = plt.subplots()
+
+    ds1, ds2 = corrpair_datasets
+    in1,in2 = get_info(ds1), get_info(ds2)
+    ds1_label, ds2_label = in1.dataset_label, in2.dataset_label
+    tab1 = kitable(ds1, in1)
+    figby1 = sane_groupby_iter(tab1, in1.figure_by)
+    y_tot = np.array([])
+
+    for samefig_vals1, fig_data1 in figby1:
+        lineby1 = sane_groupby_iter(fig_data1, in1.line_by)
+        for (sameline_vals1, line_data1) in lineby1:
+            y = in1.get_xcol(line_data1)
+            y = np.asanyarray(y, np.float)
+            y_label = in1.xlabel
+            y_tot = np.concatenate([y_tot, y])
+    tab2 = kitable(ds2, in2)
+    figby2 = sane_groupby_iter(tab2, in2.figure_by)
+    x_tot = np.array([]) 
+    for samefig_vals2, fig_data2 in figby2:
+        lineby2 = sane_groupby_iter(fig_data2, in2.line_by)
+        for (sameline_vals2, line_data2) in lineby2:
+            x = in2.get_xcol(line_data2)
+            x = np.asanyarray(x, np.float)
+            x_label = in2.xlabel
+            x_tot = np.concatenate([x_tot, x])
+### For top, uncomment line below. For HERA, leave it uncommented
+            break
+#            extra = in2.extra_labels
+   
+    len_y = len(y_tot)
+    ax.yaxis.set_ticks(np.arange(0, len(y_tot), 1))
+    len_x = len(x_tot)
+    ax.xaxis.set_ticks(np.arange(0, len(x_tot), 1))
+    for tick in ax.get_xticklabels():
+                tick.set_rotation(90)
+    ax.tick_params(axis='both', which='major')
+
+# Uncomment two lines below to show every other tick label
+###    for label in ax.xaxis.get_ticklabels()[1::2]:
+###       label.set_visible(False)
+#        label.set_horizontalalignment('left')
+
+#    ax.xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+#    im = ax.imshow(obs_obs_correlations, cmap=cm.Spectral_r, vmin=-1, vmax=1)
+    ### To plot only first bin (for e.g. top uncomment line below)
+#    obs_obs_correlations_new = [item[:len(x_tot)] for item in obs_obs_correlations]
+#    obs_obs_correlations_new = [obs_obs_correlations[0][:len(x_tot)]]
+### For HERA plot
+    obs_obs_correlations_new = obs_obs_correlations
+    im = ax.imshow(obs_obs_correlations_new, cmap=cm.Spectral_r, vmin=-1, vmax=1, aspect='auto')
+
+
+    if y_label == 'idat':
+        ax.set_ylabel(str(ds1_label) + " [data point]")
+        y_tot_rounded = [y.astype(int) for y in y_tot]
+    else:
+#        ax.set_ylabel(str(ds1_label) + " [" + str(y_label) + "]")
+        ax.set_ylabel(r"ATLAS single top 7 TeV $\frac{d\sigma}{d|y(t)|}$ [$|y|$]")
+        y_tot_rounded = []
+        for y in y_tot:
+            if (y).is_integer():
+                y_tot_rounded.append(y.astype(int)) 
+            else:
+                y_tot_rounded.append(round(y,1))
+
+    if x_label == 'idat':
+        ax.set_xlabel(str(ds2_label) + " [data point]")
+        x_tot_rounded = [x.astype(int) for x in x_tot]
+    else:
+#        ax.set_xlabel(str(ds2_label) + " [" + str(x_label) + "]")
+        ax.set_xlabel(r"ATLAS $t\bar{t}$ 8 TeV $\frac{d\sigma}{dy(t)}$ [$y$]")
+        x_tot_rounded = []
+        for x in x_tot:
+            if (x).is_integer():
+                x_tot_rounded.append(x.astype(int))
+            else:
+                x_tot_rounded.append(round(x,1))
+
+#    x_string = []
+#    for i in range(len(x_tot_rounded)):
+#       if i%2 == 0:
+#          x_string.append(str(x_tot_rounded[i]))
+#       else:
+#          x_string.append('\n' + str(x_tot_rounded[i]))
+
+    ax.set_yticklabels(y_tot_rounded)
+    ax.set_xticklabels(x_tot_rounded)
+#    ax.set_xticklabels(x_string)
+
+#    ax.set_aspect(2)
+
+### Use below if you don't want decimal places
+#    ax.set_xticklabels(x_tot.astype(int))
+#    fig.colorbar(im, [ax])
+#    divider = make_axes_locatable(ax)
+#    plt.figure(figsize=(20,6))
+#    cax = divider.append_axes("right", size="5%", pad=0.05)
+#    cax = divider.append_axes("right", size="5%", pad=0.2)
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    divider = make_axes_locatable(ax)
+#    cax = divider.append_axes("right", size="2.5%", pad=0.05)
+    cax = divider.append_axes("right", size="3%", pad=0.1)
+    fig.colorbar(im, cax=cax)
+
+##    fig.colorbar(im, orientation='horizontal', pad=0.25)
 #    fig.colorbar(im, cax=cax)
 #    fig.colorbar(im, cax = fig.add_axes([0.78, 0.5, 0.03, 0.38]))
 #    fig.colorbar(im, aspect=20)

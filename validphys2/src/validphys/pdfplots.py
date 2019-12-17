@@ -28,7 +28,7 @@ from validphys.checks import check_pdfs_noband
 
 log = logging.getLogger(__name__)
 
-plt.rcParams.update({'font.size': 16})
+#plt.rcParams.update({'font.size': 16})
 
 class FlavourState(SimpleNamespace):
     """This is the namespace for the pats specific for each flavour"""
@@ -516,7 +516,8 @@ class BandPDFPlotter(PDFPlotter):
             errorstdup, errorstddown = stats.errorbarstd()
             ax.plot(xgrid, errorstdup, linestyle='--', color=color)
             ax.plot(xgrid, errorstddown, linestyle='--', color=color)
-            label  = rf"{pdf.label} ($68%$ c.l.+$1\sigma$)"
+            label  = rf"{pdf.label}"
+#            label  = rf"{pdf.label} ($68%$ c.l.+$1\sigma$)"
             outer = True
         else:
             outer = False
@@ -615,7 +616,8 @@ class BandPDFPlotter_up_down(PDFPlotter):
             ax.plot(xgrid, errorstdup.ravel(), linestyle='--', color=color)
             ax.plot(xgrid, errorstddown.ravel(), linestyle='--', color=color)
             ax.set_xlim(left=0.001, right=0.5)
-            label  = rf"{pdf.label} ($68%$ c.l.+$1\sigma$)"
+            label  = rf"{pdf.label}" 
+#            label  = rf"{pdf.label} ($68%$ c.l.+$1\sigma$)"
             outer = True
         else:
             outer = False
