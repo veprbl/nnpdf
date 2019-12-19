@@ -959,6 +959,10 @@ def plot_obscorrs(corrpair_datasets, obs_obs_correlations, pdf):
 #                x_tot_rounded.append(round(x,1))
                 x_tot_rounded.append(round(x,3))
 
+    xposition = [4.5, 8.5, 13.5, 18.5, 22.5, 27.5, 32.5, 36.5, 39.5]
+    for xc in xposition:
+        plt.axvline(x=xc, color='black', linestyle='-')
+
 #    from IPython import embed
 #    embed()
 

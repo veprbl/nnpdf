@@ -28,7 +28,8 @@ from validphys.checks import check_pdfs_noband
 
 log = logging.getLogger(__name__)
 
-#plt.rcParams.update({'font.size': 16})
+# For single top PDF plots uncomment line below and comment lines in dataplots.py
+#plt.rcParams.update({'font.size': 17})
 
 class FlavourState(SimpleNamespace):
     """This is the namespace for the pats specific for each flavour"""
@@ -245,7 +246,7 @@ class UncertaintyPDFPlotter(PDFPlotter):
 #        from IPython import embed
 #        embed()
 #        ax.set_ylim(0.0050, 0.0275)
-#        ax.yaxis.set_ticks(np.arange(0.010, 0.050, 0.005))
+        ax.yaxis.set_ticks(np.arange(0.010, 0.050, 0.005))
 #        ax.set_ylim(0.0050, 0.0275)
         if flstate.fl == 21:
           ax.set_ylim(0.006, 0.0275)
