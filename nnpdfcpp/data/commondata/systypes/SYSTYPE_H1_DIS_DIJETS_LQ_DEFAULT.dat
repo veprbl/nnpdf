@@ -1,0 +1,18 @@
+17
+1    MULT    UNCORR
+2    MULT    H1_DIS_JETS
+3    MULT    LArNCORRLQ
+4    MULT    UNCORR
+5    MULT    UNCORR
+6    MULT    UNCORR
+7    MULT    MCCORRLQ
+8    MULT    UNCORR
+9    MULT    MCRWCORRLQ
+10    MULT    Elept1LQ
+11    MULT    Elept2LQ
+12    MULT    Eang1LQ
+13    MULT    Eang2LQ
+14    MULT    UNCORR
+15    MULT    JES
+16    MULT    UNCORR
+17    MULT    RCES
