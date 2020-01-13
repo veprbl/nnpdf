@@ -16,3 +16,7 @@ normalize:
     figure_by:
         - k3
         - k1
+
+experiment: "NMC"
+
+nnpdf31_process: DIS NC

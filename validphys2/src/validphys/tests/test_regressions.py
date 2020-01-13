@@ -17,6 +17,7 @@ from reportengine.table import savetable
 
 import NNPDF
 from validphys import results
+from validphys.api import API
 from validphys.tableloader import (parse_exp_mat, load_perreplica_chi2_table,
                                    sane_load, load_fits_chi2_table)
 
@@ -51,12 +52,10 @@ def make_table_comp(loader_func):
     return decorator
 
 @make_table_comp(parse_exp_mat)
-def test_expcovmat(data):
-    pdf, exps = data
-    eindex = results.experiments_index(exps)
-    mat = results.experiments_covmat(exps, eindex, t0set=None)
+def test_expcovmat(data_config):
+    mat = API.experiments_covmat_no_table(**data_config)
     covmats = []
-    for exp in exps:
+    for exp in API.experiments(**data_config):
         cd = exp.datasets[0].commondata.load()
         covmats.append(NNPDF.ComputeCovMat(cd, cd.get_cv()))
     othermat = la.block_diag(*covmats)
@@ -64,61 +63,49 @@ def test_expcovmat(data):
     return mat
 
 @make_table_comp(parse_exp_mat)
-def test_t0covmat(data):
-    pdf, exps = data
-    eindex = results.experiments_index(exps)
-    return results.experiments_covmat(exps, eindex, pdf)
+def test_t0covmat(data_witht0_config):
+    return API.experiments_covmat_no_table(**data_witht0_config)
 
 @make_table_comp(parse_exp_mat)
-def test_expsqrtcovmat(data):
-    pdf, exps = data
-    eindex = results.experiments_index(exps)
-    return results.experiments_sqrtcovmat(exps, eindex, t0set=None)
+def test_expsqrtcovmat(data_config):
+    return API.experiments_sqrtcovmat(**data_config)
 
 @make_table_comp(parse_exp_mat)
-def test_t0sqrtcovmat(data):
-    pdf, exps = data
-    eindex = results.experiments_index(exps)
-    return results.experiments_sqrtcovmat(exps, eindex, pdf)
+def test_t0sqrtcovmat(data_witht0_config):
+    return API.experiments_sqrtcovmat(**data_witht0_config)
 
 
 @make_table_comp(sane_load)
-def test_predictions(convolution_results):
-    ths = []
-    for convolution_result in convolution_results:
-        dt, th = convolution_result
-        ths.append(th._rawdata.astype(float))
-    th = np.concatenate(ths)
-    return pd.DataFrame(th,
-        columns=map(str,
-        range(th.shape[1])))
+def test_predictions(data_config):
+    # TODO: ideally we would change the baseline to just be corresponding columns
+    # of `experiment_result_table`, however sane_load expects just a single level
+    # of column and index - if we use a different format like parquet this could
+    # be changed.
+    exp_res_tab = API.experiment_result_table_no_table(**data_config)
+    th = exp_res_tab.iloc[:, 2:].values
+    return pd.DataFrame(th, columns=map(str, range(th.shape[1])))
 
 @make_table_comp(sane_load)
-def test_dataset_t0_predictions(dataset_t0_convolution_results):
-    ths = []
-    for convolution_result in dataset_t0_convolution_results:
-        dt, th = convolution_result
-        ths.append(th._rawdata.astype(float))
-    th = np.concatenate(ths)
-    return pd.DataFrame(th,
-        columns=map(str,
-        range(th.shape[1])))
+def test_dataset_t0_predictions(data_witht0_config):
+    # TODO: As in `test_predictions`
+    exp_res_tab = API.experiment_result_table_no_table(**data_witht0_config)
+    th = exp_res_tab.iloc[:, 2:].values
+    return pd.DataFrame(th, columns=map(str, range(th.shape[1])))
 
 @make_table_comp(sane_load)
-def test_cv(convolution_results):
-    cvs = []
-    for convolution_result in convolution_results:
-        dt, _ = convolution_result
-        cvs.append(dt.central_value)
-    data_values = np.concatenate(cvs)
+def test_cv(data_config):
+    # TODO: As in `test_predictions`
+    exp_res_tab = API.experiment_result_table_no_table(**data_config)
+    data_values = exp_res_tab.iloc[:, 0].values[:, np.newaxis]
     return pd.DataFrame(data_values, columns=['CV'])
 
 @make_table_comp(load_perreplica_chi2_table)
-def test_replicachi2data(data, chi2data):
-    pdf, exps = data
-    return results.perreplica_chi2_table(exps, chi2data)
+def test_replicachi2data(data_witht0_config):
+    return API.perreplica_chi2_table(**data_witht0_config)
 
 @make_table_comp(load_fits_chi2_table)
-def test_datasetchi2(single_exp_data, dataset_chi2data):
-    _, exp = single_exp_data
-    return results.fits_datasets_chi2_table(['test'], [[exp]], dataset_chi2data)
+def test_datasetchi2(data_singleexp_witht0_config):
+    # This is a bit hacky but avoids requiring a fit
+    exps = API.experiments(**data_singleexp_witht0_config)
+    chi2s = API.each_dataset_chi2(**data_singleexp_witht0_config)
+    return results.fits_datasets_chi2_table(['test'], [exps], chi2s)

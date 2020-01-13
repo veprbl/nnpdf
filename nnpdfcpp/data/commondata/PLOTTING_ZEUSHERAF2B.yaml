@@ -10,3 +10,7 @@ normalize:
     figure_by:
         - two_Q2_bins
     y_scale: linear
+
+experiment: "F2BOTTOM"
+
+nnpdf31_process: DIS NC

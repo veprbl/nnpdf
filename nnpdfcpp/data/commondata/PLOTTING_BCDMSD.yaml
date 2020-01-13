@@ -16,3 +16,7 @@ normalize:
     figure_by:
         - k1
         - k3
+
+experiment: "BCDMS"
+
+nnpdf31_process: DIS NC

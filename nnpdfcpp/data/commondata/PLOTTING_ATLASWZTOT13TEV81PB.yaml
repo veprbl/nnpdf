@@ -14,3 +14,7 @@ extra_labels:
         - W
         - W
         - Z
+
+experiment: "ATLAS"
+
+nnpdf31_process: DY

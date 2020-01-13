@@ -9,3 +9,7 @@ line_by:
 
 extra_labels:
    Boson:  ["$W^+$","$W^+$","$W^+$","$W^+$","$W^+$","$W^-$","$W^-$","$W^-$","$W^-$","$W^-$"]
+
+experiment: "LHCb"
+
+nnpdf31_process: DY

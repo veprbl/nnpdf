@@ -35,3 +35,7 @@ extra_labels:
   1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1
   ]
+
+experiment: "HERACOMB"
+
+nnpdf31_process: DIS NC

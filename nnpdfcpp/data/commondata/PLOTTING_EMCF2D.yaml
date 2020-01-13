@@ -6,3 +6,7 @@ dataset_label: "EMC $F^2_d^{\\rm NC}$"
 x_scale: log
 #result_transform: qbinEMC
 
+
+experiment: "EMC"
+
+nnpdf31_process: DIS NC

@@ -12,3 +12,7 @@ normalize:
     line_by: []
     figure_by:
         - k2
+
+experiment: "HERAF2CHARM"
+
+nnpdf31_process: DIS NC

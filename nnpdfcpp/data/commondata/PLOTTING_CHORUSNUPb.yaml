@@ -15,3 +15,7 @@ normalize:
     line_by: []
     figure_by:
         - k1
+
+experiment: "CHORUS"
+
+nnpdf31_process: DIS CC

@@ -10,6 +10,7 @@ import functools
 import inspect
 import numbers
 import copy
+import os
 
 from collections import ChainMap
 from collections.abc import Mapping, Sequence
@@ -21,24 +22,25 @@ from reportengine.helputils import get_parser_type
 from reportengine import report
 
 from validphys.core import (ExperimentSpec, DataSetInput, ExperimentInput,
-                            CutsPolicy, MatchedCuts)
+                            CutsPolicy, MatchedCuts, ThCovMatSpec)
 from validphys.loader import (Loader, LoaderError ,LoadFailedError, DataNotFoundError,
-                              PDFNotFound, FallbackLoader)
+                              PDFNotFound, FallbackLoader, InconsistentMetaDataError)
 from validphys.gridvalues import LUMI_CHANNELS
 
 from validphys.paramfits.config import ParamfitsConfig
 
+from validphys.theorycovariance.theorycovarianceutils import process_lookup
+from validphys.plotoptions import get_info
+
 log = logging.getLogger(__name__)
-
-
 
 class Environment(Environment):
     """Container for information to be filled at run time"""
 
-    def __init__(self,*, datapath=None, resultspath=None, this_folder, net=True,
+    def __init__(self,*, datapath=None, resultspath=None, this_folder=None, net=True,
                  upload=False, **kwargs):
-
-        self.this_folder = pathlib.Path(this_folder)
+        if this_folder:
+            self.this_folder = pathlib.Path(this_folder)
 
         if net:
             loader_class = FallbackLoader
@@ -259,7 +261,7 @@ class CoreConfig(configparser.Config):
         kdiff = dataset.keys() - known_keys
         for k in kdiff:
             #Abuse ConfigError to get the suggestions.
-            log.warninig(ConfigError(f"Key '{k}' in dataset_input not known.", k, known_keys))
+            log.warning(ConfigError(f"Key '{k}' in dataset_input not known.", k, known_keys))
         return DataSetInput(name=name, sys=sysnum, cfac=cfac, frac=frac,
                 weight=weight)
 
@@ -288,14 +290,15 @@ class CoreConfig(configparser.Config):
                               self.loader.available_datasets) from e
         except LoadFailedError as e:
             raise ConfigError(e) from e
+        except InconsistentMetaDataError as e:
+            raise ConfigError(e) from e
 
     def produce_cuts(self,
                      *,
                      commondata,
                      use_cuts,
+                     rules,
                      fit=None,
-                     q2min: (numbers.Number, type(None)) = None,
-                     w2min: (numbers.Number, type(None)) = None,
                      theoryid=None):
         """Obtain cuts for a given dataset input, based on the
         appropriate policy."""
@@ -314,14 +317,10 @@ class CoreConfig(configparser.Config):
             except LoadFailedError as e:
                 raise ConfigError(e) from e
         elif use_cuts is CutsPolicy.INTERNAL:
-            if not isinstance(q2min, numbers.Number):
-                raise ConfigError("q2min must be specified for internal cuts")
-            if not isinstance(w2min, numbers.Number):
-                raise ConfigError("w2min must be specified for internal cuts")
             if not theoryid:
                 raise ConfigError(
-                    "thoeryid must be specified for internal cuts")
-            return self.loader.check_internal_cuts(commondata, theoryid, q2min, w2min)
+                    "theoryid must be specified for internal cuts")
+            return self.loader.check_internal_cuts(commondata, rules)
         elif use_cuts is CutsPolicy.FROM_CUT_INTERSECTION_NAMESPACE:
             cut_list = []
             _, nss = self.parse_from_(None, 'cuts_intersection_spec', write=False)
@@ -343,6 +342,7 @@ class CoreConfig(configparser.Config):
 
     def produce_dataset(self,
                         *,
+                        rules,
                         dataset_input,
                         theoryid,
                         cuts,
@@ -361,6 +361,7 @@ class CoreConfig(configparser.Config):
 
         try:
             ds = self.loader.check_dataset(
+                rules=rules,
                 name=name,
                 sysnum=sysnum,
                 theoryid=theoryid,
@@ -369,7 +370,8 @@ class CoreConfig(configparser.Config):
                 frac=frac,
                 use_fitcommondata=use_fitcommondata,
                 fit=fit,
-                weight=weight)
+                weight=weight,
+                )
         except DataNotFoundError as e:
             raise ConfigError(str(e), name, self.loader.available_datasets)
 
@@ -391,11 +393,10 @@ class CoreConfig(configparser.Config):
             *,
             theoryid,
             use_cuts,
+            rules,
             fit=None,
             check_plotting: bool = False,
             use_fitcommondata=False,
-            q2min: (numbers.Number, type(None)) = None,
-            w2min: (numbers.Number, type(None)) = None,
     ):
         """A set of datasets where correlated systematics are taken
            into account. It is a mapping where the keys are the experiment
@@ -414,10 +415,9 @@ class CoreConfig(configparser.Config):
                 fit=fit) for dsinp in dsinputs]
         cutinps = [
             self.produce_cuts(
+                rules=rules,
                 commondata=cd,
                 use_cuts=use_cuts,
-                q2min=q2min,
-                w2min=w2min,
                 fit=fit,
                 theoryid=theoryid,
                 ) for cd in cds
@@ -426,6 +426,7 @@ class CoreConfig(configparser.Config):
         #autogenerated func, from elemet_of
         datasets = [
             self.produce_dataset(
+                rules=rules,
                 dataset_input=dsinp,
                 theoryid=theoryid,
                 cuts=cuts,
@@ -481,19 +482,20 @@ class CoreConfig(configparser.Config):
         """Take an arbitrary list of mappings called dataspecs and
         return a new list of mappings called dataspecs constructed as follows.
 
-        From each of the original datasepcs, resolve the key `experiments` and
-        all the dataset therein.
+        From each of the original dataspecs, resolve the key `process`, and
+        all the experiments and datasets therein.
 
         Compute the intersection of the dataset names, and for each element in
         the intersection construct a mapping with the follwing keys:
-
+            
+            - process : A string with the common process name.
             - experiment_name : A string with the common experiment name.
             - dataset_name : A string with the common dataset name.
-            - datasepcs : A list of mappinngs matching the original
-              "datasepcs". Each mapping contains:
+            - dataspecs : A list of mappinngs matching the original
+              "dataspecs". Each mapping contains:
                 * dataset: A dataset with the name data_set name and the
                 properties (cuts, theory, etc) corresponding to the original
-                datasepec.
+                dataspec.
                 * dataset_input: The input line used to build dataset.
                 * All the other keys in the original dataspec.
         """
@@ -503,7 +505,7 @@ class CoreConfig(configparser.Config):
             with self.set_context(ns=self._curr_ns.new_child(spec)):
                 _, experiments = self.parse_from_(
                     None, 'experiments', write=False)
-                names = {(e.name, ds.name): (ds, dsin)
+                names = {(e.name, ds.name, process_lookup(ds.name)): (ds, dsin)
                          for e in experiments
                          for ds, dsin in zip(e.datasets, e)}
                 all_names.append(names)
@@ -511,7 +513,7 @@ class CoreConfig(configparser.Config):
 
         res = []
         for k in used_set:
-            inres = {'experiment_name': k[0], 'dataset_name': k[1]}
+            inres = {'experiment_name': k[0], 'dataset_name': k[1], 'process': k[2]}
             #TODO: Should this have the same name?
             inner_spec_list = inres['dataspecs'] = []
             for ispec, spec in enumerate(dataspecs):
@@ -522,7 +524,7 @@ class CoreConfig(configparser.Config):
                 }, spec)
                 inner_spec_list.append(d)
             res.append(inres)
-        res.sort(key=lambda x: (x['experiment_name'], x['dataset_name']))
+        res.sort(key=lambda x: (x['process'], x['experiment_name'], x['dataset_name']))
         return res
 
     def produce_matched_positivity_from_dataspecs(self, dataspecs):
@@ -591,6 +593,26 @@ class CoreConfig(configparser.Config):
             newds.cuts = matched_cuts
             res.append(ChainMap({'dataset': newds}, spec))
         return res
+
+    def produce_theory_database(self):
+        """Produces path to the theory.db file"""
+        return self.loader.theorydb_file
+
+    def produce_combined_shift_and_theory_dataspecs(self, theoryconfig, shiftconfig):
+        total_dataspecs = theoryconfig["dataspecs"] + shiftconfig["dataspecs"]
+        matched_datasets = self.produce_matched_datasets_from_dataspecs(total_dataspecs)
+        for ns in matched_datasets:
+            ns["dataspecs"] = self.produce_dataspecs_with_matched_cuts(ns["dataspecs"])
+        new_theoryconfig = []
+        new_shiftconfig = []
+        len_th = len(theoryconfig['dataspecs'])
+        for s in matched_datasets:
+            new_theoryconfig.append(ChainMap({"dataspecs": s['dataspecs'][:len_th]}, s))
+            new_shiftconfig.append(ChainMap({"dataspecs": s['dataspecs'][len_th:]}, s))
+        return {
+            "shiftconfig": {"dataspecs": new_shiftconfig, "original": shiftconfig},
+            "theoryconfig": {"dataspecs": new_theoryconfig, "original": theoryconfig}
+        }
 
 
     #TODO: Worth it to do some black magic to not pass params explicitly?
@@ -670,6 +692,9 @@ class CoreConfig(configparser.Config):
         """Return a string containing the PDF's LHAPDF ID"""
         return pdf.name
 
+    def produce_fit_id(self, fit) -> str:
+        """Return a string containing the ID of the fit"""
+        return fit.name
 
     @element_of('lumi_channels')
     def parse_lumi_channel(self, ch:str):
@@ -682,6 +707,97 @@ class CoreConfig(configparser.Config):
     def produce_all_lumi_channels(self):
         return {'lumi_channels': self.parse_lumi_channels(list(LUMI_CHANNELS))}
 
+    @configparser.explicit_node
+    def produce_nnfit_theory_covmat(
+        self,
+        use_thcovmat_in_sampling: bool,
+        use_thcovmat_in_fitting: bool,
+        thcovmat_type: str = "full",
+    ):
+        """
+        Return the theory covariance matrix used in the fit.
+        By default it is set to be the full one, the user can
+        set it to be block-diagonal or diagonal, based on the
+        value of ``thcovmat_type``. The possible options are:
+
+        ``thcovmat_type = "full"`` (default):
+            Include all correlations. The covarance matrix is
+            computed using ``theory_covmat_custom``.
+
+        ``thcovmat_type = "diagonal"``:
+            Only diagonal entries are computes included. The
+            covariance matrix is computed using
+            ``theory_diagonal_covmat``.
+
+        ``thcovmat_type = "blockdiagonal"``:
+            Only correlations by process type are included.
+            The covariance matrix is computed using
+            ``theory_block_diag_covmat``.
+        """
+        valid_type = {"full", "blockdiagonal", "diagonal"}
+        if thcovmat_type not in valid_type:
+            raise ConfigError(
+                f"Invalid thcovmat_type setting: '{valid_type}'.",
+                thcovmat_type,
+                valid_type,
+            )
+
+        from validphys.theorycovariance.construction import theory_covmat_custom
+        from validphys.theorycovariance.construction import theory_diagonal_covmat
+        from validphys.theorycovariance.construction import theory_block_diag_covmat
+
+        if thcovmat_type == "full":
+            f = theory_covmat_custom
+        if thcovmat_type == "diagonal":
+            f = theory_diagonal_covmat
+        if thcovmat_type == "blockdiagonal":
+            f = theory_block_diag_covmat
+
+        @functools.wraps(f)
+        def res(*args, **kwargs):
+            return f(*args, **kwargs)
+
+        # Set this to get the same filename regardless of the action.
+        res.__name__ = "theory_covmat"
+        return res
+
+    def produce_fitthcovmat(
+            self, use_thcovmat_if_present: bool = False, fit: (str, type(None)) = None):
+        """If a `fit` is specified and `use_thcovmat_if_present` is `True` then returns the
+        corresponding covariance matrix for the given fit if it exists. If the fit doesn't have a
+        theory covariance matrix then returns `False`.
+        """
+        if not isinstance(use_thcovmat_if_present, bool):
+            raise ConfigError("use_thcovmat_if_present should be a boolean, by default it is False")
+
+        if use_thcovmat_if_present and not fit:
+            raise ConfigError("`use_thcovmat_if_present` was true but no `fit` was specified.")
+
+        if use_thcovmat_if_present and fit:
+            try:
+                thcovmat_present = fit.as_input()[
+                    'theorycovmatconfig']['use_thcovmat_in_fitting']
+            except KeyError:
+                #assume covmat wasn't used and fill in key accordingly but warn user
+                log.warning("use_thcovmat_if_present was true but the flag "
+                            "`use_thcovmat_in_fitting` didn't exist in the runcard for "
+                            f"{fit.name}. Theory covariance matrix will not be used "
+                            "in any statistical estimators.")
+                thcovmat_present = False
+
+
+        if use_thcovmat_if_present and thcovmat_present:
+            # Expected path of covmat hardcoded
+            covmat_path = (
+                fit.path/'tables'/'datacuts_theory_theorycovmatconfig_theory_covmat.csv')
+            if not os.path.exists(covmat_path):
+                raise ConfigError(
+                    "Fit appeared to use theory covmat in fit but the file was not at the "
+                    f"usual location: {covmat_path}.")
+            fit_theory_covmat = ThCovMatSpec(covmat_path)
+        else:
+            fit_theory_covmat = None
+        return fit_theory_covmat
 
     def parse_speclabel(self, label:(str, type(None))):
         """A label for a dataspec. To be used in some plots"""
@@ -698,6 +814,135 @@ class CoreConfig(configparser.Config):
         {@endwith@}
         """
         return label
+
+    def produce_fit_data_groupby_experiment(self, fit):
+        """Used to produce data from the fit grouped into experiments,
+        where each experiment is a group of datasets according to the experiment
+        key in the plotting info file.
+        """
+        #TODO: consider this an implimentation detail
+        from reportengine.namespaces import NSList
+
+        with self.set_context(ns=self._curr_ns.new_child({'fit':fit})):
+            _, experiments = self.parse_from_('fit', 'experiments', write=False)
+
+        flat = (ds for exp in experiments for ds in exp.datasets)
+        metaexps = [get_info(ds).experiment for ds in flat]
+        res = {}
+        for exp in experiments:
+            for dsinput, ds in zip(exp.dsinputs, exp.datasets):
+                metaexp = get_info(ds).experiment
+                if metaexp in res:
+                    res[metaexp].append(ds)
+                else:
+                    res[metaexp] = [ds]
+        exps = []
+        for exp in res:
+            exps.append(ExperimentSpec(exp, res[exp]))
+
+        experiments = NSList(exps, nskey='experiment')
+        return {'experiments': experiments}
+
+    def produce_fit_context_groupby_experiment(self, fit):
+        """produces experiments similarly to `fit_data_groupby_experiment`
+        but also sets fitcontext (pdf and theoryid)
+        """
+        _, pdf         = self.parse_from_('fit', 'pdf', write=False)
+        _, theory      = self.parse_from_('fit', 'theory', write=False)
+        thid = theory['theoryid']
+        with self.set_context(ns=self._curr_ns.new_child({'theoryid':thid})):
+            experiments = self.produce_fit_data_groupby_experiment(
+                fit)['experiments']
+        return {'pdf': pdf, 'theoryid':thid, 'experiments': experiments}
+
+    def produce_all_commondata(self):
+        """produces all commondata using the loader function """
+        ds_names = self.loader.available_datasets
+        ds_inputs = [self.parse_dataset_input({'dataset': ds}) for ds in ds_names]
+        cd_out = [self.produce_commondata(dataset_input=ds_input) for ds_input in ds_inputs]
+        return cd_out
+
+    def parse_groupby(self, grouping: str):
+        """parses the groupby key and checks it is an allowed grouping"""
+        #TODO: think if better way to do this properly
+        if grouping not in ['experiment', 'nnpdf31_process']:
+            raise ConfigError(
+                f"Grouping not available: {grouping}, did you spell it "
+                "correctly?")
+        return grouping
+
+    def parse_perform_covmat_reg(self, do_reg: bool):
+        """Parse the `regularize_covmat` key from runcard"""
+        if do_reg:
+            log.info("Regularizing covariance matrices")
+        return do_reg
+
+    def parse_filter_rules(self, filter_rules: (list, type(None))):
+        """A list of filter rules. See https://docs.nnpdf.science/vp/filters.html
+        for details on the syntax"""
+        return filter_rules
+
+    def produce_rules(self, theoryid, use_cuts, defaults, filter_rules=None):
+        """Produce filter rules based on the user defined input and defaults."""
+        from validphys.filters import Rule, RuleProcessingError, default_filter_rules_input
+
+        theory_parameters = theoryid.get_description()
+
+        if filter_rules is None:
+            #Don't bother loading the rules if we are not using them.
+            if use_cuts is not CutsPolicy.INTERNAL:
+                return None
+            filter_rules = default_filter_rules_input()
+
+        try:
+            rule_list = [
+                Rule(
+                    initial_data=i,
+                    defaults=defaults,
+                    theory_parameters=theory_parameters,
+                    loader=self.loader
+                )
+                for i in filter_rules
+            ]
+        except RuleProcessingError as e:
+            raise ConfigError(e) from e
+
+        return rule_list
+
+    def parse_filter_defaults(self, filter_defaults: (dict, type(None))):
+        """A mapping containing the default kinematic limits to be used when
+        filtering data (when using internal cuts).
+        Currently these limits are ``q2min`` and ``w2min``.
+        """
+        return filter_defaults
+
+    def produce_defaults(self, q2min=None, w2min=None, filter_defaults={}):
+        """Produce default values for filters taking into account both the
+        values of ``q2min`` and ` `w2min`` defined at namespace
+        level and those inside a ``filter_defaults`` mapping.
+        """
+        from validphys.filters import default_filter_settings
+        if q2min is not None and "q2min" in filter_defaults and q2min != filter_defaults["q2min"]:
+            raise ConfigError("q2min defined multiple times with different values")
+        if w2min is not None and "w2min" in filter_defaults and w2min != filter_defaults["w2min"]:
+            raise ConfigError("w2min defined multiple times with different values")
+
+        if not filter_defaults:
+            filter_defaults = default_filter_settings()
+            defaults_loaded = True
+        else:
+            defaults_loaded = False
+
+        if q2min is not None and defaults_loaded:
+            log.warning("Using q2min from runcard")
+            filter_defaults["q2min"] = q2min
+
+        if w2min is not None and defaults_loaded:
+            log.warning("Using w2min from runcard")
+            filter_defaults["w2min"] = w2min
+
+        return filter_defaults
+
 
 class Config(report.Config, CoreConfig, ParamfitsConfig):
     """The effective configuration parser class."""

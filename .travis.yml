@@ -9,17 +9,18 @@ git:
 os:
   - osx
   - linux
-osx_image: xcode6.4
+#Latest Mac image
+osx_image: xcode10.2
 
 env:
   global:
     - CONDAPATH="/Users/travis/miniconda3"
     - OUTPUT_ARCH=osx-64
-    - OUTPUT_CHANNEL=conda-pkgs-private
+    - OUTPUT_CHANNEL=conda-private
     - UPLOAD_NON_MASTER="false"
+    - CONDA_BUILD_SYSROOT="${CONDAPATH}/MacOSX10.9.sdk"
 
   matrix:
-    - CONDA_PY=36
     - CONDA_PY=37
 
 before_install:
@@ -58,7 +59,7 @@ before_install:
      fi
     - >
      if [[ "$TRAVIS_OS_NAME" == "linux" ]];
-     then docker exec build bash -c "echo ZIGZAH_SSH_KEY=$ZIGZAH_SSH_KEY >> /root/.bashrc"  ;
+     then docker exec build bash -c "echo NNPDF_SSH_KEY=$NNPDF_SSH_KEY >> /root/.bashrc"  ;
      fi
     - >
      if [[ "$TRAVIS_OS_NAME" == "linux" ]];
@@ -84,16 +85,20 @@ install:
     - >
      if [[ "$TRAVIS_OS_NAME" == "osx" ]];
      then MINICONDA_URL="https://repo.continuum.io/miniconda";
+
+     echo "$NETRC_FILE" | base64 --decode > ~/.netrc;
      MINICONDA_FILE="Miniconda3-latest-MacOSX-x86_64.sh";
      curl -L -O "${MINICONDA_URL}/${MINICONDA_FILE}";
      bash $MINICONDA_FILE -b;
      conda update --yes conda;
+     curl -L -O https://data.nnpdf.science/MacOSX10.9.sdk.tar.xz;
+     tar xfz MacOSX10.9.sdk.tar.xz -C "${CONDAPATH}";
      source /Users/travis/miniconda3/bin/activate root;
      conda config --append channels conda-forge;
-     conda config --add channels https://zigzah.com/static/conda-pkgs/;
-     conda config --add channels https://zigzah.com/static/conda-pkgs-private/;
+     conda config --add channels https://packages.nnpdf.science/conda;
+     conda config --add channels https://packages.nnpdf.science/conda-private;
      conda config --set show_channel_urls true;
-     conda install --yes conda-build;
+     conda install --yes conda-build=3.18.9;
      fi
 
 script:
@@ -105,3 +110,10 @@ script:
      if [[ "$TRAVIS_OS_NAME" == "linux" ]];
      then docker exec build bash -c "cd /nnpdf/; .ciscripts/build-deploy-linux.sh";
      fi
+
+jobs:
+  include:
+    - stage: sphinx
+      os: linux
+      if: branch = master
+      script: docker exec build bash -c "cd /nnpdf/; .ciscripts/deploy-documentation.sh";
