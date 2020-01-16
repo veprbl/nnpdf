@@ -230,6 +230,41 @@ def boot_fits_ratio_exp(
     )
     return df
 
+def bias_variance(
+    experiment_results, exp_result_underlying):
+    """Calculate the ratio of bias over variance"""
+
+    dt_ct, th_ct = experiment_results
+    _, th_ul = exp_result_underlying[0]
+
+    diff = np.array(th_ct._rawdata - dt_ct.central_value[:, np.newaxis])
+
+    phi = calc_phi(dt_ct.sqrtcovmat, diff)
+    var = phi**2
+
+    dt_ct, th_ct = experiment_results
+
+    bias_diff = th_ct.central_value - th_ul.central_value
+    bias = calc_chi2(dt_ct.sqrtcovmat, bias_diff)/len(dt_ct)
+    return bias, var
+
+fits_b_v = collect('bias_variance', ('fits', 'fitpdf'))
+
+@table
+def fits_ratio_exp(
+    fits_b_v,
+    experiment,
+):
+    """no bootstrap - check result"""
+    ratios_np = np.array(fits_b_v)
+    means = ratios_np.mean(axis=0)
+    df = pd.DataFrame(
+        means[0]/means[1],
+        columns=["ratio"],
+        index=[str(experiment)]
+    )
+    return df
+
 @table
 def boot_fits_ratio_table(
     exps_fits_bs_ratio,
