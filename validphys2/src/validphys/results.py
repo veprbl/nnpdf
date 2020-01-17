@@ -537,6 +537,7 @@ def experiment_results(
         experiment_covariance_matrix,
         experiment_sqrt_covariance_matrix):
     """Like `results` but for a whole experiment"""
+    print(pdf)
     return results(
         experiment,
         pdf,

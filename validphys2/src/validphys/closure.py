@@ -242,8 +242,6 @@ def bias_variance(
     phi = calc_phi(dt_ct.sqrtcovmat, diff)
     var = phi**2
 
-    dt_ct, th_ct = experiment_results
-
     bias_diff = th_ct.central_value - th_ul.central_value
     bias = calc_chi2(dt_ct.sqrtcovmat, bias_diff)/len(dt_ct)
     return bias, var
