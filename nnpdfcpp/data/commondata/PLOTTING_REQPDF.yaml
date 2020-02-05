@@ -1,7 +1,7 @@
-dataset_label: "REQPDF"
+dataset_label: "Real part quasi-PDFs matrix element"
 x: k1
-y_label: '$Re[h(z)]$'
-kinematics_override: dis_sqrt_scale
+y_label: '$Re\left[\mathcal{M}\right]$'
+kinematics_override: lattice
 
 x_scale: linear
 y_scale: linear

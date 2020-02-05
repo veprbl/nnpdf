@@ -1,7 +1,7 @@
-dataset_label: "IMPPDF_fine"
+dataset_label: "Imaginary part reduced-ITD"
 x: k1
-y_label: '$Im[h(z)]$'
-kinematics_override: dis_sqrt_scale
+y_label: '$Im[\mathfrak{M}]$'
+kinematics_override: lattice
 
 x_scale: linear
 y_scale: linear
