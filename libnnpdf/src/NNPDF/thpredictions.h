@@ -94,6 +94,7 @@ namespace NNPDF
 
         // Print thpredictions to file
         void Print(std::ostream&, bool latex = false) const;
+        void ExportThrep(std::string);
 
         // Verbosity
         static bool Verbose;
