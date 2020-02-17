@@ -14,6 +14,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cstring>
+#include <string>
 
 #include "NNPDF/common.h"
 #include "NNPDF/experiments.h"
