@@ -276,13 +276,13 @@ ThPredictions& ThPredictions::operator+=(const ThPredictions& o)
   // Increment predictions
   for (int i=0; i<fNpdf*fNData; i++)
     fObs[i] += o.fObs[i];
-  
+
   fTconv += o.fTconv;
   if (fPDFName.compare(o.fPDFName) != 0)
     {std::stringstream pdf; pdf << "(" << fPDFName <<"+"<<o.fPDFName << ")"; fPDFName = pdf.str();}
   if (fSetName.compare(o.fSetName) != 0)
     {std::stringstream set; set << "(" << fSetName <<"+"<<o.fSetName << ")"; fSetName = set.str();}
-  
+
   return *this;
 }
 
@@ -590,6 +590,29 @@ void ThPredictions::Print(std::ostream& out, bool latex) const
   }
 }
 
+void ThPredictions::ExportThrep(string filename)
+{
+  // Perhaps if I made new file per experiment and saved per dataset here
+  std::ofstream outThrep(filename.c_str());
+  // Arbitrary 8 here, perhaps should think more about this (at least 1s.f more than bin precision)
+  outThrep << setprecision(8);
+  outThrep << scientific;
+  outThrep << "{\n";
+  for (int j = 0; j < GetNSet(); j++)
+  {
+    DataSet& dataset =  fSets[j];
+    std::cout << fSetName << std::endl;
+    outThrep << fSetName << ": [" << GetObsCV(0);
+    for (int i = 1; i < fNData(); i++)
+    {
+      outThrep << ", " << GetObsCV(i);
+    }
+    outThrep << "],\n";
+  }
+  outThrep << "}\n";
+  outThrep.close();
+  return;
+}
 
 /*
  * For the xgrid, nonzero flavours in data, construct the pdf array.

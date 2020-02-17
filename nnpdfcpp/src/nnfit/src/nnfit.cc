@@ -411,7 +411,7 @@ void LoadAllDataAndSplit(NNPDFSettings const& settings,
           exp->LoadRepCovMat(ThCovMatPath, settings.IsThCovSampling());
           exp->LoadFitCovMat(ThCovMatPath, settings.IsThCovFitting());
         }
-  
+
       // Apply MC shifts
       if (settings.Get("fitting","genrep").as<bool>())
         exp->MakeReplica();
@@ -423,11 +423,17 @@ void LoadAllDataAndSplit(NNPDFSettings const& settings,
        pseudofile << settings.GetResultsDirectory() << "/nnfit/replica_" << replica_number << "/" << exp->GetExpName() << ".pdat";
        std::cout << pseudofile.str() << std::endl;
        exp->ExportPseudodata(pseudofile.str());
+
+       stringstream threpfile;
+       threpfile << settings.GetResultsDirectory() << "/nnfit/replica_" << replica_number << "/" << exp->GetExpName() << ".threpdat";
+       std::cout << threpfile.str() << std::endl;
+       exp->ExportThrep(threpfile.str());
       }
       training.push_back(NULL);
       validation.push_back(NULL);
       TrainValidSplit(settings, exp.get(), training.back(), validation.back());
     }
+
 
   // Read Positivity Sets
   if (settings.GetNPos())

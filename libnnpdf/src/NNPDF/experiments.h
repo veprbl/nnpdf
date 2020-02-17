@@ -54,6 +54,7 @@ namespace NNPDF
     void ExportCovMat(std::string);         //!< Export covariance matrix
     void ExportSqrtCov(std::string);        //!< Export Cholesky decomposition
     void ExportPseudodata(std::string);
+    void ExportThrep(std::string);
 
     void SetT0(const PDFSet&); //!<Set T0 Predictions for each dataset in place and update internal structures
 
