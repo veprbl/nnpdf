@@ -32,6 +32,7 @@ from NNPDF import (LHAPDFSet,
 #Maybe move the cuts logic to its own module?
 from validphys import lhaindex, filters
 from validphys.tableloader import parse_exp_mat
+from validphys.theorydbutils import fetch_theory
 
 log = logging.getLogger(__name__)
 
@@ -334,18 +335,15 @@ class Cuts(TupleComp):
         return np.atleast_1d(np.loadtxt(self.path, dtype=int))
 
 class InternalCutsWrapper(TupleComp):
-    def __init__(self, commondata, theoryid, q2min, w2min):
+    def __init__(self, commondata, rules):
+        self.rules = rules
         self.commondata = commondata
-        self.theoryid = theoryid
-        self.q2min = q2min
-        self.w2min = w2min
-        super().__init__(commondata, q2min, w2min)
+        super().__init__(commondata)
 
     def load(self):
         return np.atleast_1d(
             np.asarray(
-                filters.get_cuts_for_dataset(self.commondata, self.theoryid,
-                                             self.q2min, self.w2min),
+                filters.get_cuts_for_dataset(self.commondata, self.rules),
                 dtype=int))
 
 class MatchedCuts(TupleComp):
@@ -509,6 +507,7 @@ class FitSpec(TupleComp):
     def __init__(self, name, path):
         self.name = name
         self.path = path
+        self.label = name
         super().__init__(name, path)
 
     def __iter__(self):
@@ -518,17 +517,17 @@ class FitSpec(TupleComp):
     @functools.lru_cache()
     def as_input(self):
         p = self.path/'filter.yml'
-        log.debug('Reading input from fit configuration %s' % (p,))
+        log.debug('Reading input from fit configuration %s' , p)
         try:
             with p.open() as f:
                 d = yaml.safe_load(f)
         except (yaml.YAMLError, FileNotFoundError) as e:
             raise AsInputError(str(e)) from e
-        d['pdf'] = self.name
+        d['pdf'] = {'id': self.name, 'label': self.label}
         return d
 
     def __str__(self):
-        return self.name
+        return self.label
 
     __slots__ = ('label','name', 'path')
 
@@ -544,22 +543,8 @@ class TheoryIDSpec:
         yield self.path
 
     def get_description(self):
-        #I'd be happier if we consider sqlite3 an implementation detail
-        #to be changed eventually. Depend on it as little as possible.
-        import sqlite3
         dbpath = self.path.parent/'theory.db'
-        #Note this still requires a string and not a path
-        conn = sqlite3.connect(str(dbpath))
-        with conn:
-            cursor = conn.cursor()
-            #int casting is intentional to avoid malformed querys.
-            query = "SELECT * FROM TheoryIndex WHERE ID=%d;"%int(self.id)
-            res = cursor.execute(query)
-            val = res.fetchone()
-            if not val:
-                raise KeyError("ID %s not in the database."%self.id)
-            return OrderedDict(((k[0],v) for k,v in zip(res.description, val)))
-
+        return fetch_theory(dbpath, self.id)
 
     __slots__ = ('id', 'path')
 

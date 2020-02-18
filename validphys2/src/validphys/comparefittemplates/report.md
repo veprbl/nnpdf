@@ -1,8 +1,19 @@
-%NNPDF Report for fit {@ current fit @}
+%NNPDF Report for fit {@ current fit_id @}
 
-Fit summary 
-------------------
+Fit summary
+------------
+
+We are comparing:
+
+  - {@ current fit @} (`{@ current fit_id @}`): {@ current description @}
+  - {@ reference fit @} (`{@ reference fit_id @}`): {@ reference description @}
+
+
 {@ summarise_fits @}
+
+Theory Covariance Summary
+-------------------------
+{@summarise_theory_covmat_fits@}
 
 Dataset properties
 ------------------
@@ -44,10 +55,7 @@ $\chi^2$ by dataset comparisons
 
 $\phi$ by experiment
 --------------------
-{@with dataspecs@}
-### {@fit@}
-{@plot_phi@}
-{@endwith@}
+{@plot_fits_experiments_phi@}
 
 Experiment plots
 ---------------

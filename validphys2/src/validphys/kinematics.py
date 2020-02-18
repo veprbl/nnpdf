@@ -76,7 +76,7 @@ def kinlimits(commondata, cuts, use_cuts, use_kinoverride:bool=True):
     kintable = plotoptions.kitable(commondata, info)
     ndata = len(kintable)
     if cuts:
-        kintable = kintable.ix[cuts.load()]
+        kintable = kintable.loc[cuts.load()]
         nfitted = len(kintable)
     elif use_cuts is not CutsPolicy.NOCUTS:
         nfitted = len(kintable)
@@ -119,6 +119,18 @@ def all_kinlimits_table(all_kinlimits, use_kinoverride:bool=True):
 
     return table
 
+@table
+def all_commondata_grouping(all_commondata, groupby):
+    """Return a table with the grouping specified
+    by `groupby` key for each dataset for all available commondata.
+    """
+    records = []
+    for cd in all_commondata:
+        records.append({'dataset': str(cd), groupby: getattr(plotoptions.get_info(cd), groupby)})
+    df = pd.DataFrame.from_records(records, index='dataset')
+    # sort first by grouping alphabetically and then dataset name
+    return df.sort_values([groupby, 'dataset'])
+
 def total_fitted_points(all_kinlimits_table)->int:
     """Print the total number of fitted points in a given set of experiments"""
     tb = all_kinlimits_table
@@ -137,8 +149,8 @@ def xq2map_with_cuts(experiment, commondata, cuts):
         mask = cuts.load()
         boolmask = np.zeros(len(kintable), dtype=bool)
         boolmask[mask] = True
-        fitted_kintable = kintable.ix[boolmask]
-        masked_kitable = kintable.ix[~boolmask]
+        fitted_kintable = kintable.loc[boolmask]
+        masked_kitable = kintable.loc[~boolmask]
         xq2fitted =  plotoptions.get_xq2map(fitted_kintable, info)
         xq2masked = plotoptions.get_xq2map(masked_kitable, info)
         return XQ2Map(experiment, commondata, xq2fitted, xq2masked)

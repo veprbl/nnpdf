@@ -23,7 +23,6 @@ import mimetypes
 import requests
 from reportengine.compat import yaml
 from reportengine import filefinder
-import sqlite3
 
 from validphys.core import (CommonDataSpec, FitSpec, TheoryIDSpec, FKTableSpec,
                             PositivitySetSpec, DataSetSpec, PDF, Cuts,
@@ -60,6 +59,8 @@ class CutsNotFound(LoadFailedError): pass
 class PDFNotFound(LoadFailedError): pass
 
 class RemoteLoaderError(LoaderError): pass
+
+class InconsistentMetaDataError(LoaderError): pass
 
 class LoaderBase:
 
@@ -273,7 +274,11 @@ class Loader(LoaderBase):
             for p in tp:
                 if p.exists():
                     plotfiles.append(p)
-
+        if setname != metadata.name:
+            raise InconsistentMetaDataError(
+                f"The name found in the CommonData file, {metadata.name}, did "
+                f"not match the dataset name, {setname}."
+            )
         return CommonDataSpec(datafile, sysfile, plotfiles, name=setname, metadata=metadata)
 
     @functools.lru_cache()
@@ -285,24 +290,14 @@ class Loader(LoaderBase):
                   "Folder '%s' not found") % (theoryID, theopath) )
         return TheoryIDSpec(theoryID, theopath)
 
-    def check_theoryinfo(self, theoryID: int):
-        """ Looks in the datapath for the theory.db and returns a dictionary of theory info for the
-        theory number specified by `theoryID`.
+    @property
+    def theorydb_file(self):
+        """Checks theory db file exists and returns path to it
         """
         dbpath = self.datapath/'theory.db'
-        if not dbpath.exists():
+        if not dbpath.is_file():
             raise TheoryDataBaseNotFound(f"could not find theory.db. File not found at {dbpath}")
-        #Note this still requires a string and not a path
-        conn = sqlite3.connect(str(dbpath))
-        with conn:
-            cursor = conn.cursor()
-            #int casting is intentional to avoid malformed querys.
-            query = f"SELECT * FROM TheoryIndex WHERE ID={int(theoryID)};"
-            res = cursor.execute(query)
-            val = res.fetchone()
-            if not val:
-                raise TheoryNotFound(f"ID {theoryID} not found in database.")
-            return dict([(k[0], v) for k, v in zip(res.description, val)])
+        return dbpath
 
     def get_commondata(self, setname, sysnum):
         """Get a Commondata from the set name and number."""
@@ -390,9 +385,26 @@ class Loader(LoaderBase):
                    "'{p}' must be a folder").format(**locals())
         raise FitNotFound(msg)
 
+    def check_default_filter_rules(self, theoryid, defaults=None):
+        # avoid circular import
+        from validphys.filters import (
+            default_filter_settings,
+            default_filter_rules_input,
+            Rule,
+        )
+
+        th_params = theoryid.get_description()
+        if defaults is None:
+            defaults = default_filter_settings()
+        return [
+            Rule(inp, defaults=defaults, theory_parameters=th_params, loader=self)
+            for inp in default_filter_rules_input()
+        ]
+
     def check_dataset(self,
                       name,
                       *,
+                      rules=None,
                       sysnum=None,
                       theoryid,
                       cfac=(),
@@ -400,9 +412,7 @@ class Loader(LoaderBase):
                       cuts=CutsPolicy.INTERNAL,
                       use_fitcommondata=False,
                       fit=None,
-                      weight=1,
-                      q2min=None,
-                      w2min=None):
+                      weight=1):
 
         if not isinstance(theoryid, TheoryIDSpec):
             theoryid = self.check_theoryID(theoryid)
@@ -427,7 +437,9 @@ class Loader(LoaderBase):
             elif cuts is CutsPolicy.FROMFIT:
                 cuts = self.check_fit_cuts(name, fit)
             elif cuts is CutsPolicy.INTERNAL:
-                cuts = self.check_internal_cuts(commondata, theoryid, q2min, w2min)
+                if rules is None:
+                    rules = self.check_default_filter_rules(theoryid)
+                cuts = self.check_internal_cuts(commondata, rules)
             elif cuts is CutsPolicy.FROM_CUT_INTERSECTION_NAMESPACE:
                 raise LoaderError(f"Intersection cuts not supported in loader calls.")
 
@@ -457,12 +469,8 @@ class Loader(LoaderBase):
             return None
         return Cuts(setname, p)
 
-    def check_internal_cuts(self, commondata, theoryid, q2min, w2min):
-        if not isinstance(q2min, numbers.Number):
-            raise TypeError("q2min must be a number")
-        if not isinstance(w2min, numbers.Number):
-            raise TypeError("w2min must be a number")
-        return InternalCutsWrapper(commondata, theoryid, q2min, w2min)
+    def check_internal_cuts(self, commondata, rules):
+        return InternalCutsWrapper(commondata, rules)
 
     def check_vp_output_file(self, filename, extra_paths=('.',)):
         """Find a file in the vp-cache folder, or (with higher priority) in

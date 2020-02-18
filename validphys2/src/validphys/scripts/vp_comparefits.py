@@ -41,7 +41,7 @@ class KeywordsWithCache():
 class CompareFitApp(App):
     def add_positional_arguments(self, parser):
         parser.add_argument(
-            'base_fit',
+            'current_fit',
             default=None,
             nargs='?',
             help="The fit to produce the report for.",
@@ -67,14 +67,31 @@ class CompareFitApp(App):
             '--closure',
             help="Use the closure comparison template.",
             action='store_true')
+#        parser.add_argument(
+#            '--use_thcovmat_if_present',
+#            help="Use theory cov mat for calculating statistical estimators.",
+#            action='store_true')
         parser.add_argument(
-            '--theory_cov',
-            help="Use theory cov mat for calculating statistical estimators.")
+            '--thcovmat_if_present',
+            dest='thcovmat_if_present',
+            action='store_true',
+            help="Use theory cov mat for calculating statistical estimators if available.")
+        parser.add_argument(
+            '--no-thcovmat_if_present',
+            dest='thcovmat_if_present',
+            action='store_false',
+            help="Do not use theory cov mat for calculating statistical estimators.")
+        parser.set_defaults(thcovmat_if_present=None)
 
     def try_complete_args(self):
         args = self.args
-        argnames = ('base_fit', 'reference_fit', 'theory_cov', 'title', 'author', 'keywords')
-        bad = [argname for argname in argnames if not args[argname]]
+        argnames = (
+            'current_fit', 'reference_fit', 'title', 'author', 'keywords')
+        boolnames = (
+            'thcovmat_if_present',)
+        badargs = [argname for argname in argnames if not args[argname]]
+        badbools = [bname for bname in boolnames if args[bname] is None]
+        bad = badargs + badbools
         if bad and not args['interactive']:
             sys.exit(f"The following arguments are required: {bad}")
         try:
@@ -84,13 +101,13 @@ class CompareFitApp(App):
             raise KeyboardInterrupt()
         texts = '\n'.join(
             f'    {argname.replace("_", " ").capitalize()}: {args[argname]}'
-            for argname in argnames)
+            for argname in [*argnames, *boolnames])
         log.info(f"Starting NNPDF fit comparison:\n{texts}")
 
-    def interactive_base_fit(self):
+    def interactive_current_fit(self):
         l = self.environment.loader
         completer = WordCompleter(l.available_fits)
-        return prompt_toolkit.prompt("Enter base fit: ", completer=completer)
+        return prompt_toolkit.prompt("Enter current fit: ", completer=completer)
 
     def interactive_reference_fit(self):
         l = self.environment.loader
@@ -100,7 +117,7 @@ class CompareFitApp(App):
 
     def interactive_title(self):
         #TODO Use the colors in prompt_toolkit 2+ instead of this
-        default = (f"Comparison between {self.args['base_fit']} "
+        default = (f"Comparison between {self.args['current_fit']} "
                    f"and {self.args['reference_fit']} ")
         print(f"Enter report title [default:\n{t.dim(default)}]:")
         #Do not use the default keyword because it is a pain to delete
@@ -126,11 +143,11 @@ class CompareFitApp(App):
             complete_in_thread=True)
         return [k.strip() for k in kwinp.split(',') if k]
 
-    def interactive_theory_cov(self):
+    def interactive_thcovmat_if_present(self):
         """Interactively fill in the `use_thcovmat_if_present` runcard flag. Which is True by default
         """
-        message = ("Do you want to use the fitted covariance matrix (including theory covariance\n"
-                   "matrix) to calculate the statistical estimators? ")
+        message = ("Do you want to use the theory covariance matrix, if available,\n"
+                   "to calculate the statistical estimators? ")
         return confirm(message, default=True)
 
     def get_commandline_arguments(self, cmdline=None):
@@ -154,10 +171,10 @@ class CompareFitApp(App):
             'author': args['author'],
             'keywords': args['keywords']
         }
-        basemap = {'id': args['base_fit'], 'label': "Current Fit"}
+        currentmap = {'id': args['current_fit'], 'label': "Current Fit"}
         autosettings['current'] = {
-            'fit': basemap,
-            'pdf': basemap,
+            'fit': currentmap,
+            'pdf': currentmap,
             'theory': {
                 'from_': 'fit'
             },
@@ -178,7 +195,7 @@ class CompareFitApp(App):
             },
             'speclabel': 'Reference Fit'
         }
-        autosettings['use_thcovmat_if_present'] = args['theory_cov']
+        autosettings['use_thcovmat_if_present'] = args['thcovmat_if_present']
         return autosettings
 
 

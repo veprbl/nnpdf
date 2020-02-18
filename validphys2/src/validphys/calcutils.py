@@ -149,3 +149,78 @@ def get_df_block(matrix: pd.DataFrame, key: str, level):
             key, level=level, axis=1).values
     return block
 
+def regularize_covmat(covmat: np.array, norm_threshold=4):
+    """Given a covariance matrix, performs a regularization which is equivalent
+    to performing `regularize_l2` on the sqrt of `covmat`: the l2 norm of
+    the inverse of the correlation matrix calculated from `covmat` is set to be
+    less than or equal to `norm_threshold`. If the input covmat already fulfills
+    this criterion it is returned.
+
+    Parameters
+    ----------
+    covmat : array
+        a covariance matrix which is to be regularized.
+    norm_threshold : float
+        The acceptable l2 norm of the sqrt correlation matrix, by default
+        set to 4.
+
+    Returns
+    -------
+    new_covmat : array
+        A new covariance matrix which has been regularized according to
+        prescription above.
+
+    """
+    # square up threshold since we have cov not sqrtcov
+    sqr_threshold = norm_threshold**2
+    d = np.sqrt(np.diag(covmat))[:, np.newaxis]
+    corr = covmat / d / d.T
+    e_val, e_vec = la.eigh(corr)
+    if 1 / e_val[0] <= sqr_threshold: # eigh gives eigenvals in ascending order
+        return covmat
+    new_e_val = np.clip(e_val, a_min=1/sqr_threshold, a_max=None)
+    return ((e_vec * new_e_val) @ e_vec.T) * d * d.T
+
+def regularize_l2(sqrtcov, norm_threshold=4):
+    r"""Return a regularized version of `sqrtcov`.
+
+    Given `sqrtcov` an (N, nsys) matrix, such that it's
+    gram matrix is the covariance matrix (`covmat = sqrtcov@sqrtcov.T`), first
+    decompose it like ``sqrtcov = D@A``, where `D` is a positive diagonal matrix
+    of standard deviations and `A` is the "square root" of the correlation
+    matrix, ``corrmat = A@A.T``. Then produce a new version of `A` which removes
+    the unstable behaviour and assemble a new square root covariance matrix,
+    which is returned.
+
+    The stability condition is controlled by `norm_threshold`. It is
+
+    .. math::
+
+        \left\Vert A+ \right\Vert_L2
+        \leq \frac{1}{norm_threshold}
+
+    A+ is the pseudoinverse of A, `norm_threshold` roughly corresponds to the
+    sqrt of the maximimum relative uncertainty in any systematic.
+
+    Parameters
+    ----------
+
+    sqrtcov : 2d array
+        An (N, nsys) matrix specifying the uncertainties.
+    norm_threshold : float
+        The tolerance for the regularization.
+
+    Returns
+    -------
+
+    newsqrtcov : 2d array
+        A regularized version of `sqrtcov`.
+    """
+
+    d = np.sqrt(np.sum(sqrtcov ** 2, axis=1))[:, np.newaxis]
+    sqrtcorr = sqrtcov / d
+    u, s, vt = la.svd(sqrtcorr, full_matrices=False)
+    if 1 / s[-1] <= norm_threshold:
+        return sqrtcov
+    snew = np.clip(s, a_min=1/norm_threshold, a_max=None)
+    return u * (snew * d) @ vt

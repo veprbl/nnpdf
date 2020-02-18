@@ -97,12 +97,12 @@ vector<int> convert_pids_to_indexes(vector<int> const& pids)
   for (auto fl: pids)
   {
     if (fl == 21)
-      indexes.push_back(6);
-    else if (fl == 22) 
-      indexes.push_back(14);
+      indexes.push_back(7);
+    else if (fl == 22)
+      indexes.push_back(0);
     else
-      indexes.push_back(fl+6);
-  }   
+      indexes.push_back(fl+7); // follows APFEL ordering from -7:6 where -7 is the photon.
+  }
   return indexes;
 }
 
@@ -121,6 +121,10 @@ EvolveGrid::EvolveGrid(vector<ExportGrid> const& initialscale_grid,
 
   // Initialize APFEL
   APFEL::SetParam(theory);
+
+  // reset ren/fac to 1 if EScaleVar is 0
+  if (!stoi(theory.at("EScaleVar")))
+    APFEL::SetRenFacRatio(1.0);
 
   // Fetch initial-scale x-grid
   APFEL::SetNumberOfGrids(1);
@@ -232,7 +236,7 @@ vector<stringstream> EvolveGrid::WriteLHAFile() const
             stream << sqrt(q2val) << " ";
           stream << std::endl;
 
-          // Print out final-state PIDs          
+          // Print out final-state PIDs
           for (auto fl: pids)
             stream << fl << " ";
           stream << std::endl;
@@ -263,7 +267,10 @@ vector<stringstream> EvolveGrid::WriteLHAFile() const
                 for( int ix_in = 0; ix_in  < (int) xg.size(); ix_in++ ) // This can be optimised, should start from ix_in = ix_out and above
                   {
                      const int index = ix_in + if_in*xg.size() + if_out*xg.size()*14 + ix_out*xg.size()*14*14 + iq*xg.size()*xg.size()*14*14;
-                     evol_op[index] = APFEL::ExternalEvolutionMatrixPh2Ph(if_out-6, if_in-6, ix_out, ix_in);
+
+                     // Retreive the evolution operation in the physical basis defined for indexes -7 to 6
+                     // following the order [photon, tbar, bbar, cbar, sbar, ubar, dbar, g, d, u, s, c, b, t]
+                     evol_op[index] = APFEL::ExternalEvolutionMatrixPh2Ph(if_out-7, if_in-7, ix_out, ix_in);
                   }
         }
 
@@ -281,7 +288,7 @@ vector<stringstream> EvolveGrid::WriteLHAFile() const
                 // New line in LHAgrid
                 stream << " ";
                 for(auto if_out: convert_pids_to_indexes(pids))
-                {                    
+                {
                     double evolved_pdf = 0;
                     for(int if_in = 0; if_in < 14; if_in++)
                       for(int ix_in = 0; ix_in < (int) xg.size(); ix_in++) // ix_in = ix_out
