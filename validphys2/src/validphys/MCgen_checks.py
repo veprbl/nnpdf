@@ -214,3 +214,53 @@ def ArtDataMeanTable(experiments, nreplica: int, experiments_index):
 
     return df
 
+def ArtData(experiments, nreplica: int, experiments_index):
+
+    """Return a (N_replicas, N_Data) matrix for the givent experiments"""
+    from NNPDF import RandomGenerator
+    RandomGenerator.InitRNG(0, 0)
+    art_replicas = []
+
+    for exp in experiments:
+        
+        real_exp = Experiment(exp.load())
+        exp_location = experiments_index.get_loc(real_exp.GetExpName())
+        index = itertools.count()
+
+        real_data = real_exp.get_cv()
+        art_data = np.zeros(real_data.shape)
+        
+        #producing replicas
+        for i in range(nreplica):
+            replica_exp = Experiment(real_exp)
+            replica_exp.MakeReplica()
+            art_replicas.append(replica_exp.get_cv())
+
+    res = np.asarray(art_replicas)
+    return res
+    
+
+def ArtDataCovariance(experiments, nreplica: int, experiments_index):
+
+    """Return the covariance matrix of the artificial data """
+    from NNPDF import RandomGenerator
+    RandomGenerator.InitRNG(0, 0)
+    art_replicas = []
+    for exp in experiments:
+        
+        real_exp = Experiment(exp.load())
+        exp_location = experiments_index.get_loc(real_exp.GetExpName())
+        index = itertools.count()
+
+        real_data = real_exp.get_cv()
+        art_data = np.zeros(real_data.shape)
+
+        #producing replicas
+        for i in range(nreplica):
+            replica_exp = Experiment(real_exp)
+            replica_exp.MakeReplica()
+            art_replicas.append(replica_exp.get_cv())
+
+    res = np.asarray(art_replicas)
+    cov = np.cov(res.T)
+    return cov        
