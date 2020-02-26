@@ -164,6 +164,127 @@ def check_normalize_to(ns, **kwargs):
 
     raise RuntimeError("Should not be here")
 
+def plot_by_kinematics(table, info, labellist, normalize_to):
+    """Given a table, which is a pandas dataframe which has index idat and
+    columns:
+        {(cv, 0), (err, 0), ..., (cv, N), (err, N), k1, k2, k3}
+
+    (central value and error with tuple headers for each line which is to be
+    plotted and kinematics of dataset. The columns can be in any order.)
+
+    Makes a plot with the plots split according the the figby and lineby keys
+    in the PLOTTING file.
+
+    """
+    # should we check here that columns - 3 is a factor of 2?
+    n_results = int((len(table.columns) - 3) / 2)
+    cvcols = [("cv", i) for i in range(n_results)]
+
+    figby = sane_groupby_iter(table, info.figure_by)
+
+    for samefig_vals, fig_data in figby:
+        #Nothing to plot if all data is cut away
+        if np.all(np.isnan(fig_data[cvcols])):
+            continue
+        #For some reason matplotlib doesn't set the axis right
+        min_vals = []
+        max_vals = []
+        fig, ax = plt.subplots()
+        ax.set_title(
+            f"{info.dataset_label} "
+            f"{info.group_label(samefig_vals, info.figure_by)}"
+        )
+
+        lineby = sane_groupby_iter(fig_data, info.line_by)
+
+        first = True
+
+
+        for (sameline_vals, line_data) in lineby:
+            ax.set_prop_cycle(None)
+            labels = first
+            first = False
+
+            offset_iter = plotutils.offset_xcentered(n_results, ax)
+
+            x = info.get_xcol(line_data)
+
+            try:
+                x = np.asanyarray(x, np.float)
+            except ValueError:
+                xticklabels = x
+                npoints = len(x)
+                x = np.arange(npoints)
+                ax.set_xticks(x)
+                ax.set_xticklabels(xticklabels)
+                #TODO: Remove this when mpl stops doing the wrong thing
+                #(in v2?)
+                ax.set_xlim(-npoints/20, npoints - 1+ npoints/20)
+
+
+            #Use black for the first iteration (data),
+            #and follow the cycle for
+            #the rest.
+            next_color = itertools.chain(['#262626'], plotutils.color_iter())
+
+            for i, (lb, color) in enumerate(zip(labellist, next_color)):
+                if labels:
+                    label = lb
+                else:
+                    label = None
+                cv = line_data[('cv', i)].values
+                err = line_data[('err', i)].values
+                ax.errorbar(x, cv, yerr=err,
+                     linestyle='--',
+                     lw=0.25,
+                     label= label,
+                     #elinewidth = 2,
+                     capsize=2,
+                     marker = 's',
+                     markeredgewidth=0.25,
+                     c=color,
+                     zorder=1000,
+                     transform=next(offset_iter))
+
+
+                #We 'plot' the empty lines to get the labels. But
+                #if everything is rmpty we skip the plot.
+                if np.any(np.isfinite(cv)):
+                    max_vals.append(np.nanmax(cv+err))
+                    min_vals.append(np.nanmin(cv-err))
+
+            glabel = info.group_label(sameline_vals, info.line_by)
+
+            #Use some anchor that is not in y=1 for ratio plots
+            if normalize_to is not None:
+                next_after_normalize = (normalize_to + 1) % n_results
+                annotate_point = x[-1], line_data[('cv', next_after_normalize)].values[-1]
+            else:
+                annotate_point = x[-1], line_data[('cv', 0)].values[-1]
+            #This is a workaround for https://github.com/matplotlib/matplotlib/issues/12648
+            if np.isfinite(annotate_point).all():
+                ax.annotate(glabel, annotate_point, xytext=(15 ,-10),
+                             size='xx-small',
+                             textcoords='offset points', zorder=10000)
+
+        if info.x_scale:
+            ax.set_xscale(info.x_scale)
+
+        if info.y_scale:
+            ax.set_yscale(info.y_scale)
+
+        if normalize_to is None:
+            if info.y_label:
+                ax.set_ylabel(info.y_label)
+        else:
+            lb = labellist[normalize_to]
+            ax.set_ylabel(f"Ratio to {labellist[normalize_to]}")
+
+        ax.legend().set_zorder(100000)
+        ax.set_xlabel(info.xlabel)
+        fig.tight_layout()
+        yield fig
+
 #TODO: This interface is horrible. We need to think how to adapt libnnpdf
 #to make this use case easier
 def _plot_fancy_impl(results, commondata, cutlist,
@@ -199,12 +320,11 @@ def _plot_fancy_impl(results, commondata, cutlist,
     info = get_info(commondata, normalize=(normalize_to is not None))
 
     table = kitable(commondata, info)
-    nkinlabels = len(table.columns)
     ndata = len(table)
 
     #This is easier than cheking every time
     if labellist is None:
-        labellist = [None]*len(results)
+        labellist = [res.label for res in results]
 
     if normalize_to is not None:
         norm_result = results[normalize_to]
@@ -214,23 +334,26 @@ def _plot_fancy_impl(results, commondata, cutlist,
 
         err = np.full(ndata, np.nan)
         err[mask] =  norm_result.std_error
-        #We modify the table, so we pass only the label columns
-        norm_cv, _ = transform_result(cv,
-                                   err,
-                                   table.iloc[:,:nkinlabels], info)
+        norm_cv, _ = transform_result(
+            cv,
+            err,
+            table,
+            info
+        )
 
-
-    cvcols = []
     for i,(result, cuts) in enumerate(zip(results, cutlist)):
-        #We modify the table, so we pass only the label columns
         mask = cut_mask(cuts)
         cv = np.full(ndata, np.nan)
         cv[mask] = result.central_value
         err = np.full(ndata, np.nan)
         err[mask] = result.std_error
-
-        cv, err = transform_result(cv, err,
-                                   table.iloc[:,:nkinlabels], info)
+        #We modify the table, so we pass only the label columns
+        cv, err = transform_result(
+            cv,
+            err,
+            table[["k1", "k2", "k3"]],
+            info
+        )
         #By doing tuple keys we avoid all possible name collisions
         cvcol = ('cv', i)
         if normalize_to is None:
@@ -239,116 +362,8 @@ def _plot_fancy_impl(results, commondata, cutlist,
         else:
             table[cvcol] = cv/norm_cv
             table[('err', i)] = err/norm_cv
-        cvcols.append(cvcol)
 
-    figby = sane_groupby_iter(table, info.figure_by)
-
-
-    for samefig_vals, fig_data in figby:
-        #Nothing to plot if all data is cut away
-        if np.all(np.isnan(fig_data[cvcols])):
-            continue
-        #For some reason matplotlib doesn't set the axis right
-        min_vals = []
-        max_vals = []
-        fig, ax = plt.subplots()
-        ax.set_title("%s %s"%(info.dataset_label,
-                     info.group_label(samefig_vals, info.figure_by)))
-
-        lineby = sane_groupby_iter(fig_data, info.line_by)
-
-        first = True
-
-
-        for (sameline_vals, line_data) in lineby:
-            ax.set_prop_cycle(None)
-            labels = first
-            first = False
-
-            offset_iter = plotutils.offset_xcentered(len(results), ax)
-
-            x = info.get_xcol(line_data)
-
-            try:
-                x = np.asanyarray(x, np.float)
-            except ValueError:
-                xticklabels = x
-                npoints = len(x)
-                x = np.arange(npoints)
-                ax.set_xticks(x)
-                ax.set_xticklabels(xticklabels)
-                #TODO: Remove this when mpl stops doing the wrong thing
-                #(in v2?)
-                ax.set_xlim(-npoints/20, npoints - 1+ npoints/20)
-
-
-            #Use black for the first iteration (data),
-            #and follow the cycle for
-            #the rest.
-            next_color = itertools.chain(['#262626'], plotutils.color_iter())
-
-            for i, (res, lb, color) in enumerate(zip(results, labellist, next_color)):
-
-                if labels:
-                    if lb:
-                        label = lb
-                    else:
-                        label = res.label
-                else:
-                    label = None
-                cv = line_data[('cv', i)].values
-                err = line_data[('err', i)].values
-                ax.errorbar(x, cv, yerr=err,
-                     linestyle='--',
-                     lw=0.25,
-                     label= label,
-                     #elinewidth = 2,
-                     capsize=2,
-                     marker = 's',
-                     markeredgewidth=0.25,
-                     c=color,
-                     zorder=1000,
-                     transform=next(offset_iter))
-
-
-                #We 'plot' the empty lines to get the labels. But
-                #if everything is rmpty we skip the plot.
-                if np.any(np.isfinite(cv)):
-                    max_vals.append(np.nanmax(cv+err))
-                    min_vals.append(np.nanmin(cv-err))
-
-            glabel = info.group_label(sameline_vals, info.line_by)
-
-            #Use some anchor that is not in y=1 for ratio plots
-            if normalize_to is not None:
-                next_after_normalize = (normalize_to + 1) % len(results)
-                annotate_point = x[-1], line_data[('cv', next_after_normalize)].values[-1]
-            else:
-                annotate_point = x[-1], line_data[('cv', 0)].values[-1]
-            #This is a workaround for https://github.com/matplotlib/matplotlib/issues/12648
-            if np.isfinite(annotate_point).all():
-                ax.annotate(glabel, annotate_point, xytext=(15 ,-10),
-                             size='xx-small',
-                             textcoords='offset points', zorder=10000)
-
-        if info.x_scale:
-            ax.set_xscale(info.x_scale)
-
-        if info.y_scale:
-            ax.set_yscale(info.y_scale)
-
-        if normalize_to is None:
-            if info.y_label:
-                ax.set_ylabel(info.y_label)
-        else:
-            lb = labellist[normalize_to]
-            ax.set_ylabel(f"Ratio to {lb if lb else norm_result.label}")
-
-
-        ax.legend().set_zorder(100000)
-        ax.set_xlabel(info.xlabel)
-        fig.tight_layout()
-        yield fig
+    yield from plot_by_kinematics(table, info, labellist, normalize_to)
 
 
 @check_normalize_to
