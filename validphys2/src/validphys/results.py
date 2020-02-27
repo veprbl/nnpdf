@@ -1166,6 +1166,21 @@ def dataspecs_datasets_covmat_differences_table(
     df.columns = pd.MultiIndex.from_product((dataspecs_speclabel, cols))
     return df
 
+def my_chi2(cov, diffs):
+    """Return the chi2 value"""
+    invcov = la.inv(cov)
+    l,v = la.eig(invcov)
+    u = v.transpose()
+    delta = u.dot(diffs)
+    return (np.real(l), delta)
+
+def my_central_chi2(results):
+    """Calculate the chi² from the central value of the theory prediction to
+    the data"""
+    data_result, th_result = results
+    central_diff = th_result.central_value - data_result.central_value
+    return my_chi2(data_result.covmat, central_diff)
+
 experiments_chi2 = collect(abs_chi2_data_experiment, ('experiments',))
 each_dataset_chi2 = collect(abs_chi2_data, ('experiments', 'experiment'))
 
