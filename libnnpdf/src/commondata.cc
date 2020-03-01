@@ -78,7 +78,8 @@ namespace NNPDF
     { "HQP_YQ",     {"yQ","mu2","sqrts"}},
     { "HQP_PTQ",    {"p_TQ","mu2","sqrts"}},
     { "HIG_RAP",    {"y","M_H2","sqrts"}},
-    { "SIA" ,       {"z", "Q2", "y"}}
+    { "SIA" ,       {"z", "Q2", "y"}},
+    { "LATTICE" ,   {"z", "pz", "nu"}}
   };
 
 

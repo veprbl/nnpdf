@@ -235,3 +235,15 @@
   FNS: FONLL-C
   IC: True
   rule: "Q2 > 8"
+
+- dataset: REPPDF_fine
+  reason: |
+    Cut data with high value of z. 
+  rule: "z < 5"
+
+- dataset: IMPPDF_fine
+  reason: |
+    Cut data with high value of z. 
+  rule: "z < 5"  
+  
+
