@@ -9,6 +9,12 @@ y_scale: linear
 line_by:
   - k2
 
+normalize:
+    line_by: []
+    y_scale: linear
+    figure_by:
+        - k2
+
 experiment: "LATTICE"
 nnpdf31_process: LATTICE
 
