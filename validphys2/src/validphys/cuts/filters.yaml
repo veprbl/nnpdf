@@ -238,12 +238,13 @@
 
 - dataset: REPPDF_fine
   reason: |
-    Cut uncompatible data 
-  rule: "(pz == 1 and z < 4) or (1 < pz < 4) or (pz == 4 and z > 1) or (pz == 5 and (z == 1 or z > 2)) or (pz == 6 and z > 1) "
+    Cut uncompatible data (4sigma)
+  rule: "(pz == 1 and z < 4) or (pz == 2 and z < 8) or (pz == 3) or (pz == 4 and z > 1) or (pz == 5 and (z == 1 or z > 2)) or (pz == 6 and z > 1) "
 
 - dataset: IMPPDF_fine
   reason: |
-    Cut uncompatible data 
-  rule: "(pz == 1 and (z == 1 or z > 6)) or (1 < pz < 4) or (pz == 4 and (z == 2 or z > 3)) or pz > 4"  
+    Cut uncompatible data (4sigma)
+  rule: "(pz == 1 and (z == 1 or z > 7)) or (1 < pz < 4) or (pz == 4 and (z == 2 or z > 3)) or 4 < pz < 5 or (pz == 5 and (z == 1 or z > 2)) or pz ==6"
+
   
 
