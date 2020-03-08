@@ -236,15 +236,43 @@
   IC: True
   rule: "Q2 > 8"
 
+#- dataset: REPPDF_fine
+#  reason: |
+#    Cut uncompatible data (4sigma)
+#  rule: "(pz == 1 and z < 4) or 
+#         (pz == 2 and z < 8) or 
+#         (pz == 3) or 
+#         (pz == 4 and z > 1) or 
+#         (pz == 5 and z != 2) or 
+#         (pz == 6 and z > 1) "
+
+#- dataset: IMPPDF_fine
+#  reason: |
+#    Cut uncompatible data (4sigma)
+#  rule: "(pz == 1 and (z == 1 or z == 8)) or 
+#         (pz == 2) or
+#         (pz == 3) or 
+#         (pz == 4 and z != 1 and z != 3) or 
+#         (pz == 5 and z != 2 ) or 
+#         (pz ==6)"
+
+  
 - dataset: REPPDF_fine
   reason: |
-    Cut uncompatible data (4sigma)
-  rule: "(pz == 1 and z < 4) or (pz == 2 and z < 8) or (pz == 3) or (pz == 4 and z > 1) or (pz == 5 and (z == 1 or z > 2)) or (pz == 6 and z > 1) "
+    Cut uncompatible data (3sigma)
+  rule: "(pz == 1 and z < 3) or 
+         (pz == 2 and z != 6 and z != 8) or 
+         (pz == 3 and z != 6 ) or 
+         (pz == 4 and z > 2) or 
+         (pz == 5 and (z > 2)) or 
+         (pz == 6 and z != 1)"
 
 - dataset: IMPPDF_fine
   reason: |
-    Cut uncompatible data (4sigma)
-  rule: "(pz == 1 and (z == 1 or z > 7)) or (1 < pz < 4) or (pz == 4 and (z == 2 or z > 3)) or 4 < pz < 5 or (pz == 5 and (z == 1 or z > 2)) or pz ==6"
-
-  
-
+    Cut uncompatible data (3sigma)
+  rule: "(pz == 1 and z == 1) or 
+         (pz == 2 and z != 3 and z != 4) or
+         (pz == 3) or
+         (pz == 4 and z > 3) or 
+         (pz == 5 and pz != 1 and pz != 2 and pz != 5) or 
+         (pz == 6)"
