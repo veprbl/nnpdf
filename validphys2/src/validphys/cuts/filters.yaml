@@ -274,5 +274,5 @@
          (pz == 2 and z != 3 and z != 4) or
          (pz == 3) or
          (pz == 4 and z > 3) or 
-         (pz == 5 and pz != 1 and pz != 2 and pz != 5) or 
+         (pz == 5 and z != 1 and z != 2 and z != 3 and z != 5) or
          (pz == 6)"
