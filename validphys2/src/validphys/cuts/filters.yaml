@@ -276,3 +276,30 @@
          (pz == 4 and z > 3) or 
          (pz == 5 and z != 1 and z != 2 and z != 3 and z != 5) or
          (pz == 6)"
+
+- dataset: REPPDF_coarse
+  reason: |
+    Cut uncompatible data (4sigma)
+  rule: "(pz == 1) or 
+         (pz == 2 and z < 4) or 
+         (pz == 3 and z != 1 ) or 
+         (pz == 4) or 
+         (pz == 5 and z > 2) or 
+         (pz == 6)"
+
+- dataset: IMPPDF_coarse
+  reason: |
+    Cut uncompatible data (4sigma)
+  rule: "(pz < 6 ) or 
+         (pz == 6 and z != 1)"         
+
+#- dataset: REPPDF_coarse
+#  reason: |
+#    Cut uncompatible data (3sigma)
+#  rule: "(pz == 1 and z != 3 and z != 5 and z != 6) or 
+#         (pz == 2 and z < 3) or 
+#         (pz == 3 and z != 1) or 
+#         (pz == 4 and z != 6) or 
+#         (pz == 5 and z > 2) or 
+#         (pz == 6)"
+         
