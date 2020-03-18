@@ -56,12 +56,6 @@ def per_point_art_rep_generation(experiments, nreplica:int, experiments_index):
     RandomGenerator.InitRNG(0,0)
 
     for exp in experiments:
-        #Since we are going to modify the experiments, we copy them
-        #(and work on the copies) to avoid all
-        #sorts of weirdness with other providers. We don't want this to interact
-        #with ExperimentSpec at all, because it could do funny things with the
-        #cache when calling load(). We need to copy this yet again, for each
-        # of the noisy replicas.
         real_exp = Experiment(exp.load())
 
         art_replicas = []
@@ -128,6 +122,10 @@ def art_data_distribution(art_rep_generation, nreplica:int, title='Artificial Da
 
 @figure
 def per_point_art_data_distribution(per_point_art_rep_generation, nreplica:int):
+    """
+    Plots the distribution of pseudodata for artificial replicas calculated per point
+    (uncorrelated).
+    """
     return art_data_distribution(per_point_art_rep_generation, nreplica, title='Uncorrelated Artificial Data Distribution', color="orange")
 
 
@@ -158,6 +156,10 @@ def art_data_moments(art_rep_generation, nreplica:int, color="green"):
 
 @figure
 def per_point_art_data_moments(per_point_art_rep_generation, nreplica:int):
+    """
+    Returns the moments of the distributions per data point, as a histogram,
+    for data replicas calculated per point (uncorrelated).
+    """
     return art_data_moments(per_point_art_rep_generation, nreplica, color="orange")
 
 @figure
@@ -227,11 +229,12 @@ def one_art_data_residuals(art_rep_generation, nreplica:int, experiments):
 
 @figure
 def plot_deviation_from_mean(art_rep_generation, per_point_art_rep_generation, nreplica:int, experiments):
+    """Plots the deviation of the mean of the replicas from the data central value D_0
+    in units of the standard deviation"""
     real_data, art_replicas, normart_replicas, art_data = art_rep_generation
     ppreal_data, ppart_replicas, ppnormart_replicas, ppart_data = per_point_art_rep_generation
 
     fig, ax = plt.subplots()
-
     residuals = (real_data - art_data)/np.std(art_replicas, axis=0)
     ppresiduals = (real_data - ppart_data)/np.std(ppart_replicas, axis=0)
 
@@ -239,15 +242,15 @@ def plot_deviation_from_mean(art_rep_generation, per_point_art_rep_generation, n
     ax.plot(residuals, color="green", label="Correlated")
     ax.legend()
     ax.set_xlabel("Datapoint index")
-    ax.set_ylabel(r"$(<D> - D_0)/\sigma$")
+    ax.set_ylabel(r"$(D_0 - <D>)/\sigma$")
     ax.set_title("Deviation from the mean")
     ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle="-", color="black")
 
-    return fig
+    return fig    
 
 @table
 def art_data_mean_table(art_rep_generation, nreplica:int, experiments):
-    """Generate table for artdata mean values
+    """Generates table or artificial data mean values
     """
     real_data, art_replicas, normart_replicas, art_data = art_rep_generation
 
@@ -264,4 +267,3 @@ def art_data_mean_table(art_rep_generation, nreplica:int, experiments):
     df =  pd.DataFrame(data,columns=["DataSet","ArtData","ExpData","abs(residual)"])
 
     return df
-
