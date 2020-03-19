@@ -157,7 +157,7 @@ void Experiment::MakeReplica()
   // Compute the sampling covariance matrix with data CVs, no multiplicative error and no theory errors
   if (fSamplingMatrix.size(0) == 0)
   {
-    matrix<double> SM = ComputeCovMat_basic(fNData, fNSys, fSqrtWeights, fData, fStat, fSys, false, false, false, "", {});
+    matrix<double> SM = ComputeCovMat_basic(fNData, fNSys, fSqrtWeights, fData, fStat, fSys, false, true, true, "~/replicabin/theorycovmat.csv", {});
     fSamplingMatrix = ComputeSqrtMat(SM); // Take the sqrt of the sampling matrix
   }
 
@@ -235,9 +235,9 @@ void Experiment::MakeReplica()
               const bool is_asymmetry = proctype[i].find("ASY") != std::string::npos;
               if (!is_asymmetry)
               {
-             //   artdata[i] = 0;
+                artdata[i] = 0;
              //   cout << "Datapoint " << i << " has been set to 0" << endl;
-                isArtNegative = true;
+              // isArtNegative = true;
                 break;
               }
           }
