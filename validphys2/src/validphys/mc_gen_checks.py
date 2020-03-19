@@ -18,6 +18,9 @@ from reportengine.table import table
 from reportengine.figure import figure
 log = logging.getLogger(__name__)
 
+from validphys.results import experiments_results
+from matplotlib import cm, colors as mcolors
+
 
 def art_rep_generation(experiments, nreplica:int, experiments_index):
     """Generates the nreplica pseudodata replicas for a given experiment"""
@@ -267,3 +270,39 @@ def art_data_mean_table(art_rep_generation, nreplica:int, experiments):
     df =  pd.DataFrame(data,columns=["DataSet","ArtData","ExpData","abs(residual)"])
 
     return df
+
+@figure
+def plot_x_and_y(art_rep_generation, nreplica:int, experiments_results, experiments):
+    real_data, art_replicas, normart_replicas, art_data = art_rep_generation
+    from IPython import embed
+    threps = []
+    th_centrals = []
+    for result in experiments_results:
+        dat, th = result
+        th_cv = th.central_value
+        threp = th._rawdata
+        threps.append(threp)
+        th_centrals.append(th_cv)
+    threps_all = np.concatenate(threps)
+    th_centrals = np.concatenate(th_centrals)
+    th_centrals_repeat = np.vstack([th_centrals]*100)
+    datrepstack = np.stack(art_replicas)
+    replaced_data = np.copy(real_data)
+    # Replacing data points affected by positivity
+    # with the mean of the replica values
+    for i in range(len(datrepstack.T)):
+        if 0 in datrepstack.T[i]:
+            replaced_data[i] = np.mean(datrepstack.T[i])
+    threpdiffs = threps_all.T - th_centrals_repeat
+  #  np.random.shuffle(datrepstack)
+    datdiffs = datrepstack - replaced_data
+    xmats = [np.outer(threpdiff, threpdiff) for threpdiff in threpdiffs]
+    ymats = [np.outer(threpdiff, datdiff) for (threpdiff, datdiff) in zip(threpdiffs, datdiffs)]
+    X = sum(xmats)/len(xmats)
+    Y = sum(ymats)/len(ymats)
+    matrix = (X+Y)/X
+    sqrtdiags = np.diag(matrix)
+    fig,ax = plt.subplots(figsize=(20,10))
+    ax.plot(sqrtdiags, 'o', color="purple")
+    ax.hlines(1, ax.get_xlim()[0], ax.get_xlim()[1], color="mediumseagreen")
+    return fig
