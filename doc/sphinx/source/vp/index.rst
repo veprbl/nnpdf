@@ -12,4 +12,6 @@ vp-guide
    ./download.md
    ./upload.md
    ./nnprofile.md
+   ./scripts.md
    ./theorycov/index
+   ./pydataobjs.rst
