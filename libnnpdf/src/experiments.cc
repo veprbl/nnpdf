@@ -157,7 +157,7 @@ void Experiment::MakeReplica()
   // Compute the sampling covariance matrix with data CVs, no multiplicative error and no theory errors
   if (fSamplingMatrix.size(0) == 0)
   {
-    matrix<double> SM = ComputeCovMat_basic(fNData, fNSys, fSqrtWeights, fData, fStat, fSys, false, false, true, "/home/rosalyn/replicabin/theorycovmat.csv", {});
+    matrix<double> SM = ComputeCovMat_basic(fNData, fNSys, fSqrtWeights, fData, fStat, fSys, false, false, false, "", {});
     fSamplingMatrix = ComputeSqrtMat(SM); // Take the sqrt of the sampling matrix
   }
 
@@ -186,13 +186,25 @@ void Experiment::MakeReplica()
       generate(deviates.begin(), deviates.end(),
                []()->double {return RandomGenerator::GetRNG()->GetRandomGausDev(1); } );
       const vector<double> correlated_deviates = fSamplingMatrix*deviates;
+      
+      #include <iostream>
+      #include <fstream>
+      using namespace std;
+
+      ofstream myfile;
+      myfile.open ("/home/rosalyn/replicabin/additive.txt", ofstream::app);
 
       // Generate additive theory noise directly from the covariance matrix
       vector<double> artdata(fData);
-      for (int i=0; i<fNData; i++)
-          artdata[i] += correlated_deviates[i];
-
+      for (int i=0; i<fNData; i++) {
+          if (i==0){
+          myfile << "\n" ;}
+          myfile << correlated_deviates[i] << "\t";
+          artdata[i] += correlated_deviates[i]; }
+      myfile.close();
       // Generation of the experimental noise
+      ofstream myfile2;
+      myfile2.open ("/home/rosalyn/replicabin/multiplicative.txt", ofstream::app);
       for (int i = 0; i < fNData; i++) // should rearrange to update set-by-set -- nh
       {
         xnor[i] = 1.0;
@@ -221,11 +233,13 @@ void Experiment::MakeReplica()
             }
           }
         }
-
+        if (i==0){
+          myfile2 << "\n" ;}
+        myfile2 << xnor[i] << "\t";
         artdata[i] = xnor[i] * artdata[i];
 
       }
-
+      myfile2.close() ;
       // If it's not a closure test, check for positivity of artifical data
       if (!fIsClosure)
         for (int i=0; i<fNData; i++)
@@ -261,6 +275,7 @@ void Experiment::MakeReplica()
 
   // Now the fData is artificial
   fIsArtificial = true;
+
 }
 
 void Experiment::SetT0(const PDFSet& pdf){
