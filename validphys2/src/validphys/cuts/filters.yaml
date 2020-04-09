@@ -134,6 +134,14 @@
   reason: Avoid the region where EWK corrections are important.
   rule: "p_T2 <= 170**2"
 
+- dataset: CMS_Z_13TEV_DIFF_ZPT_2E
+  reason: Avoid the region where resummation effects become important.
+  rule: "p_T >= 32"
+
+- dataset: CMS_Z_13TEV_DIFF_ZPT_2M
+  reason: Avoid the region where resummation effects become important.
+  rule: "p_T >= 32"
+
 - dataset: CMSZDIFF12
   reason: |
     removes the last rapidity bin, where we cannot provide a decent
