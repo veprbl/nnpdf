@@ -1,0 +1,8 @@
+dataset_label: "CMS $Z$ $|p_T^Z|$ 13 TeV, dimuon"
+x: k1
+y_label: '$d\sigma/d|p_T^Z|$ (fb)'
+x_label: '|p_T^Z|'
+
+experiment: "CMS"
+
+nnpdf31_process: DY

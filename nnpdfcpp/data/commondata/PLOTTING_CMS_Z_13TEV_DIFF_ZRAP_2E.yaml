@@ -1,0 +1,8 @@
+dataset_label: "CMS $Z$ $|y_Z|$ 13 TeV, dielectron"
+x: k1
+y_label: '$d\sigma/d|y_Z|$ (fb)'
+x_label: '|y_Z|'
+
+experiment: "CMS"
+
+nnpdf31_process: DY
