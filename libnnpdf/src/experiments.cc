@@ -161,11 +161,21 @@ void Experiment::MakeReplica()
     fSamplingMatrix = ComputeSqrtMat(SM); // Take the sqrt of the sampling matrix
   }
 
+  
+
   // generate procType array for ease of checking
   std::vector<std::string> proctype;
   for (int s = 0; s < GetNSet(); s++)
     for (int i=0; i< GetSet(s).GetNData(); i++)
       proctype.push_back(GetSet(s).GetProc(i));
+
+    #include <iostream>
+    #include <fstream>
+    using namespace std;
+
+    ofstream myfile;
+    myfile.open ("/home/rosalyn/replicabin/additive.txt", ofstream::app);
+      
 
   bool isArtNegative = true;
   while (isArtNegative)
@@ -175,6 +185,10 @@ void Experiment::MakeReplica()
       for (int l = 0; l < fNSys; l++)
       {
         rand[l] = rng->GetRandomGausDev(1.0);
+          if (l==0){
+          myfile << "\n" ;}
+          myfile << rand[l] << "\t";
+          cout << rand[l] << endl;
         if (fSys[0][l].isRAND)
           fSys[0][l].type = rST[rng->GetRandomUniform(2)];
         for (int i = 1; i < fNData; i++)
@@ -187,19 +201,13 @@ void Experiment::MakeReplica()
                []()->double {return RandomGenerator::GetRNG()->GetRandomGausDev(1); } );
       const vector<double> correlated_deviates = fSamplingMatrix*deviates;
       
-      #include <iostream>
-      #include <fstream>
-      using namespace std;
-
-      ofstream myfile;
-      myfile.open ("/home/rosalyn/replicabin/additive.txt", ofstream::app);
-
       // Generate additive theory noise directly from the covariance matrix
       vector<double> artdata(fData);
       for (int i=0; i<fNData; i++) {
-          if (i==0){
-          myfile << "\n" ;}
-          myfile << correlated_deviates[i] << "\t";
+//          if (i==0){
+ //         myfile << "\n" ;}
+  //        myfile << deviates[i] << "\t";
+   //       cout << deviates[i] << endl;
           artdata[i] += correlated_deviates[i]; }
       myfile.close();
       // Generation of the experimental noise
