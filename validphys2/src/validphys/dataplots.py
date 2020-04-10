@@ -29,14 +29,14 @@ log = logging.getLogger(__name__)
 
 #plt.rcParams.update({'font.size': 17})
 #plt.rcParams.update({'font.size': 16})
-plt.rcParams.update({'font.size': 12})
+#plt.rcParams.update({'font.size': 14})
 #plt.rc('axes', labelsize=18)
 
 #plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=17)     # fontsize of the axes title
-plt.rc('axes', labelsize=17)    # fontsize of the x and y labels
-#plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-#plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('axes', titlesize=18)     # fontsize of the axes title
+plt.rc('axes', labelsize=14)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=14)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=14)    # fontsize of the tick labels
 #plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
 #plt.rc('figure', titlesize=BIGGER_SIZE)
 

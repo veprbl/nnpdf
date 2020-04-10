@@ -932,3 +932,86 @@ def plot_lumi2d_uncertainty(pdf, lumi_channel, lumigrid2d, sqrts:numbers.Real):
     ax.grid(False)
 
     return fig
+
+@figure
+def for_referee():
+    from validphys.pdfgrids import lumigrid2d
+    from validphys.loader import Loader
+    from matplotlib import cm, colors as mcolors
+    import copy
+    import numpy as np
+    from matplotlib import pyplot as plt
+    from validphys.pdfplots import _reflect_matud, _reflect_matrl
+    from validphys.gridvalues import LUMI_CHANNELS
+
+    l = Loader()
+    pdf_base = l.check_pdf('190529-cv-nnlo-global-stop-1')
+    pdf_opt = l.check_pdf('200126-cv-nnlo-global-stop-6')
+    channel = 'udbar'
+    sqrts = 13000
+
+    grid_base = lumigrid2d(pdf_base, channel, sqrts)
+    grid_opt = lumigrid2d(pdf_opt, channel, sqrts)
+
+    norm = mcolors.SymLogNorm(vmin=-1, vmax=1, linscale=0.1, linthresh=0.05)
+    #cmap = copy.copy(cm.viridis_r)
+    cmap = 'RdBu_r'
+    #cmap.set_bad("white", alpha=0)
+
+    fig, ax = plt.subplots()
+
+    gv_base = grid_base.grid_values
+    gv_opt = grid_opt.grid_values
+
+    mat_base = gv_base.std_error()/np.abs(gv_base.central_value())*100
+    mat_opt = gv_opt.std_error()/np.abs(gv_opt.central_value())*100
+
+    mat_base = _reflect_matud(mat_base)
+    mat_opt = _reflect_matud(mat_opt)
+
+    # These should be the same so set one to be y. Can test by running twice with either option
+    y_base = _reflect_matrl(grid_base.y, odd=True)
+    y_opt = _reflect_matrl(grid_opt.y, odd=True)
+    y = y_base
+    grid = grid_base
+
+    #print(y_base == y_opt)
+
+    mat = (mat_opt - mat_base)/mat_base
+    masked_weights = np.ma.masked_invalid(mat, copy=False)
+
+    mesh = ax.pcolormesh(y, grid.m, masked_weights, norm=norm,
+                         cmap=cmap,
+                         shading='gouraud',
+                         linewidth=0,
+                         edgecolor='None',
+                         rasterized=True)
+
+    # some extra options
+    ##extup = np.nanmax(masked_weights) > 1
+    ##extdown = np.nanmin(masked_weights) < -1
+
+    #TODO: Wrap this somewhere
+    ##if extup:
+    ##    if extdown:
+    ##        extend = 'both'
+    ##    else:
+    ##        extend = 'max'
+    ##elif extdown:
+    ##    extend = 'min'
+    ##else:
+    ##    extend = None
+
+    fig.colorbar(mesh, label="Relative difference (%)",
+                 ticks=[-1,-0.1,0,0.1,1], format='%.1f')#, extend=extend)
+    #    ticks=[1,5,10,25,50], format='%.0f', extend=extend)
+    ax.set_yscale('log')
+    ax.set_title("Relative difference for $%s$-luminosity\n"
+                 "$\\sqrt{s}=%.0f$ GeV" % (LUMI_CHANNELS[channel],
+                        sqrts))
+    ax.set_ylabel('$M_{X}$ (GeV)')
+    ax.set_xlabel('y')
+    ax.grid(False)
+
+    return fig
+
