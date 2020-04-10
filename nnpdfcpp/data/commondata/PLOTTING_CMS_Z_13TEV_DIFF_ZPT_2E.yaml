@@ -1,7 +1,9 @@
 dataset_label: "CMS $Z$ $|p_T^Z|$ 13 TeV, dielectron"
 x: k1
-y_label: '$d\sigma/d|p_T^Z|$ (fb)'
+y_label: '$d\sigma/d|p_T^Z|$ (pb)'
 x_label: '$|p_T^Z|$'
+x_scale: log
+y_scale: log
 
 experiment: "CMS"
 
