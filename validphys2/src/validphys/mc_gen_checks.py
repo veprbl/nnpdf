@@ -22,10 +22,10 @@ from validphys.results import experiments_results
 from matplotlib import cm, colors as mcolors
 
 
-def art_rep_generation(experiments, nreplica:int, experiments_index):
+def art_rep_generation(experiments, nreplica:int, experiments_index, seed=0):
     """Generates the nreplica pseudodata replicas for a given experiment"""
 
-    RandomGenerator.InitRNG(0,0)
+    RandomGenerator.InitRNG(0,seed)
 
     for exp in experiments:
         #Since we are going to modify the experiments, we copy them
@@ -53,10 +53,10 @@ def art_rep_generation(experiments, nreplica:int, experiments_index):
 
         return real_data, art_replicas, normart_replicas, art_data
 
-def per_point_art_rep_generation(experiments, nreplica:int, experiments_index):
+def per_point_art_rep_generation(experiments, nreplica:int, experiments_index, seed=0):
     """Generates the nreplica pseudodata replicas for a given experiment"""
 
-    RandomGenerator.InitRNG(0,0)
+    RandomGenerator.InitRNG(0,seed)
 
     for exp in experiments:
         real_exp = Experiment(exp.load())
@@ -234,6 +234,7 @@ def one_art_data_residuals(art_rep_generation, nreplica:int, experiments):
 def plot_deviation_from_mean(art_rep_generation, per_point_art_rep_generation, nreplica:int, experiments):
     """Plots the deviation of the mean of the replicas from the data central value D_0
     in units of the standard deviation"""
+
     real_data, art_replicas, normart_replicas, art_data = art_rep_generation
     ppreal_data, ppart_replicas, ppnormart_replicas, ppart_data = per_point_art_rep_generation
 
@@ -249,7 +250,27 @@ def plot_deviation_from_mean(art_rep_generation, per_point_art_rep_generation, n
     ax.set_title("Deviation from the mean")
     ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle="-", color="black")
 
-    return fig    
+    return fig   
+
+@figure
+def plot_deviation_from_mean_distribution(nreplica:int, experiments, experiments_index):
+    """Histogram of the distribution of average deviation of datapoints
+    from the mean as the replica seed is changed."""
+    
+    residual_means = []
+    for seed in range(0,200):
+        real_data, art_replicas, normart_replicas, art_data = art_rep_generation(experiments, nreplica, experiments_index, seed=seed)
+        residuals = (real_data - art_data)/np.std(art_replicas, axis=0)
+        residual_mean = np.mean(residuals)
+        residual_means.append(residual_mean)
+
+    fig, ax = plt.subplots()
+    ax.hist(residual_means,bins=20,histtype='step', stacked=True, fill=False)
+    ax.set_xlabel(r'Mean over datapoints of $(D^{(r)}_{0} - D^0_{0})/\sigma$')
+    ax.set_ylabel(r'Frequency')
+    ax.set_title(r'Effect of changing seed on $(D^{(r)}_{0} - D^0_{0})/\sigma$')
+   
+    return fig
 
 @table
 def art_data_mean_table(art_rep_generation, nreplica:int, experiments):
