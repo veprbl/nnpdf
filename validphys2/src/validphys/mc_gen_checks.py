@@ -25,7 +25,7 @@ from matplotlib import cm, colors as mcolors
 def art_rep_generation(experiments, nreplica:int, experiments_index, seed=0):
     """Generates the nreplica pseudodata replicas for a given experiment"""
 
-    RandomGenerator.InitRNG(0,seed)
+    RandomGenerator.InitRNG(1,seed)
 
     for exp in experiments:
         #Since we are going to modify the experiments, we copy them
