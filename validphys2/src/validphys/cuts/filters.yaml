@@ -22,6 +22,12 @@
    linearly dependent on the others
   rule: "MQQ<1350"
 
+- dataset: ATLAS_Z_3D_EMU_CRAP_8TEV
+  reason: |
+   We remove the bins with an invariant mass of the dilepton pair larger than
+   116 GeV because these are taken into account in the 2D distributions
+  rule: "M2<116"
+
 - dataset: CMSTOPDIFF8TEVTRAPNORM
   reason: |
    We remove the last bin of the normalised distribution because it is

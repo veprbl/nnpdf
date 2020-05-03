@@ -44,6 +44,7 @@ The kinematic labels are:
          'EWK_PT': ('$p_T$ (GeV)', '$M^2 (GeV^2)$', '$\\sqrt{s} (GeV)$'),
          'EWK_PTRAP': ('$\\eta/y$', '$p_T^2 (GeV^2)$', '$\\sqrt{s} (GeV)$'),
          'EWK_RAP': ('$\\eta/y$', '$M^2 (GeV^2)$', '$\\sqrt{s} (GeV)$'),
+         'EWK_MLLRAPCOS': ('$y_{ll}','$M_{ll}^2 (GeV^2)$','$\\sqrt{s} (GeV)$',
          'HIG_RAP': ('$y$', '$M_H^2 (GeV^2)$', '$\\sqrt{s} (GeV)$'),
          'HQP_MQQ': ('$M^{QQ} (GeV)$', '$\\mu^2 (GeV^2)$', '$\\sqrt{s} (GeV)$'),
          'HQP_PTQ': ('$p_T^Q (GeV)$', '$\\mu^2 (GeV^2)$', '$\\sqrt{s} (GeV)$'),
@@ -62,7 +63,7 @@ The kinematic labels are:
 
 #TODO: fix the issue with Zmass and top mass - make them (globa?) constants
 ZMASS=91.1876
-TMASS=173.3
+TMASS=172.5
 
 import abc
 
@@ -102,7 +103,7 @@ class DYXQ2MapMixin:
 
 class JETXQ2MapMixin:
     def xq2map(self, k1, k2, k3, **extra_labels):
-        """in DY-like experiments k1 is (pseudo)-rapidity and k2 is pT"""
+        """in jet-like experiments k1 is (pseudo)-rapidity and k2 is pT"""
         ratio = k2/k3
         x = ratio*(np.exp(k1)+np.exp(-k1))
         q2 = k2*k2
@@ -158,6 +159,13 @@ class dijet_sqrt_scale_ATLAS(SqrtScaleMixin,JETXQ2MapMixin):
 class dijet_CMS_3D(SqrtScaleMixin,JETXQ2MapMixin):
     def new_labels(self, *old_labels):
         return ('$|y^*|$', '$p_{T,avg}$ (GeV)', r'$|y_b|$')
+        
+class ewk_ATLAS_3D(SqrtScaleMixin,DYXQ2MapMixin):
+    def __call__(self, k1, k2, k3):
+        return k1, k2, k3
+
+    def new_labels(self, *old_labels):
+        return ('$|y_{\ell\ell}|$', '$m_{\ell\ell}$ (GeV)', r'$\cos\theta^*$')
 
 class dis_sqrt_scale(DISXQ2MapMixin):
     def __call__(self, k1, k2, k3):
