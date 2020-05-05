@@ -251,7 +251,7 @@ void Experiment::MakeReplica()
       // If it's not a closure test, check for positivity of artifical data
       if (!fIsClosure)
         for (int i=0; i<fNData; i++)
-          if (artdata[i] < 0 )
+          if (artdata[i] == -10000 )
           {
               // If it's negative and not an asymmetry, set the data point to 0
               const bool is_asymmetry = proctype[i].find("ASY") != std::string::npos;
