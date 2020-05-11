@@ -34,6 +34,43 @@ def _svalence_sum_rule_integrand(x, lpdf:LHAPDFSet, irep, Q):
 def _momentum_sum_rule_integrand(x, lpdf:LHAPDFSet, irep, Q):
     return sum([lpdf.xfxQ(x, Q=Q, n=irep, fl=fl) for fl in ALL_FLAVOURS])
 
+def _t3_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    t3 = (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-2)
+    - lpdf.xfxQ(x, Q=Q, n=irep, fl=1) - lpdf.xfxQ(x, Q=Q, n=irep, fl=-1))/x
+    return t3
+
+def _t8_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    t8 = (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-2)
+    + lpdf.xfxQ(x, Q=Q, n=irep, fl=1) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-1)
+    -2*lpdf.xfxQ(x, Q=Q, n=irep, fl=3) -2*lpdf.xfxQ(x, Q=Q, n=irep, fl=-3))/x
+    return t8
+
+def _t15_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    t15 = (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-2)
+    + lpdf.xfxQ(x, Q=Q, n=irep, fl=1) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-1)
+    + lpdf.xfxQ(x, Q=Q, n=irep, fl=3) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-3)
+    -3*lpdf.xfxQ(x, Q=Q, n=irep, fl=4) - 3*lpdf.xfxQ(x, Q=Q, n=irep, fl=-4))/x
+    return t15
+
+def _v_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    xv = sum([
+        (lpdf.xfxQ(x, Q=Q, n=irep, fl=f) 
+        -  lpdf.xfxQ(x, Q=Q, n=irep, fl=-f)) for f in range(1,7)
+    ])
+    return xv/x   
+
+def _v3_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    v3 = (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) - lpdf.xfxQ(x, Q=Q, n=irep, fl=-2)
+    - lpdf.xfxQ(x, Q=Q, n=irep, fl=1) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-1))/x
+    return v3
+
+def _v8_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    v8 = (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) - lpdf.xfxQ(x, Q=Q, n=irep, fl=-2)
+    + lpdf.xfxQ(x, Q=Q, n=irep, fl=1) - lpdf.xfxQ(x, Q=Q, n=irep, fl=-1)
+    -2*lpdf.xfxQ(x, Q=Q, n=irep, fl=3) +2*lpdf.xfxQ(x, Q=Q, n=irep, fl=-3))/x
+    return v8    
+
+
 
 #NOTE: For the moment we rely on this order being the same as in the .sumrules
 #file produced by nnfit.
@@ -42,6 +79,12 @@ SUM_RULES = {
     'uvalence': _uvalence_sum_rule_integrand,
     'dvalence': _dvalence_sum_rule_integrand,
     'svalence': _svalence_sum_rule_integrand,
+    't3': _t3_integrand,
+    't8': _t8_integrand,
+    't15': _t15_integrand,
+    'v': _v_integrand,
+    'v3': _v3_integrand,
+    'v8': _v8_integrand,
 }
 
 SUM_RULES_EXPECTED = {
