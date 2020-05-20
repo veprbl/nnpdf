@@ -68,23 +68,37 @@ def _v8_integrand(x, lpdf:LHAPDFSet, irep, Q):
     v8 = (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) - lpdf.xfxQ(x, Q=Q, n=irep, fl=-2)
     + lpdf.xfxQ(x, Q=Q, n=irep, fl=1) - lpdf.xfxQ(x, Q=Q, n=irep, fl=-1)
     -2*lpdf.xfxQ(x, Q=Q, n=irep, fl=3) +2*lpdf.xfxQ(x, Q=Q, n=irep, fl=-3))/x
-    return v8    
+    return v8
+
+def _xup_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    return (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-2))
+
+def _xdp_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    return (lpdf.xfxQ(x, Q=Q, n=irep, fl=1) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-1))
+
+def _xsp_integrand(x, lpdf:LHAPDFSet, irep, Q):
+    return (lpdf.xfxQ(x, Q=Q, n=irep, fl=3) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-3))    
+
+
 
 
 
 #NOTE: For the moment we rely on this order being the same as in the .sumrules
 #file produced by nnfit.
 SUM_RULES = {
-    'momentum': _momentum_sum_rule_integrand,
-    'uvalence': _uvalence_sum_rule_integrand,
-    'dvalence': _dvalence_sum_rule_integrand,
-    'svalence': _svalence_sum_rule_integrand,
-    't3': _t3_integrand,
-    't8': _t8_integrand,
-    't15': _t15_integrand,
-    'v': _v_integrand,
-    'v3': _v3_integrand,
-    'v8': _v8_integrand,
+    #'momentum': _momentum_sum_rule_integrand,
+    #'uvalence': _uvalence_sum_rule_integrand,
+    #'dvalence': _dvalence_sum_rule_integrand,
+    #'svalence': _svalence_sum_rule_integrand,
+    #'t3': _t3_integrand,
+    #'t8': _t8_integrand,
+    #'t15': _t15_integrand,
+    #'v': _v_integrand,
+    #'v3': _v3_integrand,
+    #'v8': _v8_integrand,
+    'xup' : _xup_integrand,
+    'xdp' : _xdp_integrand,
+    'xsp' : _xsp_integrand,
 }
 
 SUM_RULES_EXPECTED = {
