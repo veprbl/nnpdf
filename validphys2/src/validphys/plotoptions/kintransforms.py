@@ -89,6 +89,11 @@ class DISXQ2MapMixin:
         """in DIS-like experiment k1 is x, k2 is Q"""
         return k1, k2*k2
 
+class LATTICEMapMixin:
+    def xq2map(self, k1, k2, k3, **extra_labels):
+        """in LATTICE-like experiment k1 is z, k2 is P"""
+        return k1, k2
+
 class DYXQ2MapMixin:
     def xq2map(self, k1, k2, k3, **extra_labels):
         """in DY-like experiments k1 is (pseudo)-rapidity and k2 is Q for
@@ -217,6 +222,15 @@ class dis_sqrt_scale(DISXQ2MapMixin):
 
     def new_labels(self, *old_labels):
         return ('$x$', '$Q$ (GeV)', r'$\sqrt{s} (GeV)$')
+
+class lattice(LATTICEMapMixin):
+    def __call__(self, k1, k2, k3):
+        ecm = np.sqrt(k2/(k1*k3))
+        return k1, k2, np.ceil(ecm)
+
+    def new_labels(self, *old_labels):
+        return ('$z (a)$', '$P (2\pi / L )$', r'$\sqrt{s} (GeV)$')
+
 
 class ewj_jpt_sqrt_scale(SqrtScaleMixin,EWPTXQ2MapMixin):  #okay but it does not exist
     qlabel = '$M (GeV)$'

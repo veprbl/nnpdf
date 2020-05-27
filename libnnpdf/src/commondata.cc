@@ -51,7 +51,8 @@ namespace NNPDF
     { "HQP_YQ",     {"$y^Q$","$\\mu^2 (GeV^2)$","$\\sqrt{s} (GeV)$"}},
     { "HQP_PTQ",    {"$p_T^Q (GeV)$","$\\mu^2 (GeV^2)$","$\\sqrt{s} (GeV)$"}},
     { "HIG_RAP",    {"$y$","$M_H^2 (GeV^2)$","$\\sqrt{s} (GeV)$"}},
-    { "SIA" ,       {"$z$", "$Q^2 (GeV^2)$", "$y$"}}
+    { "SIA" ,       {"$z$", "$Q^2 (GeV^2)$", "$y$"}},
+    { "LATTICE",    {"$z$", "$P_z^2 (GeV^2)$", "$\\mu_R^2 (GeV^2)$"}}
   };
 
   const CommonData::kinMap CommonData::kinLabel = {
@@ -77,7 +78,8 @@ namespace NNPDF
     { "HQP_YQ",     {"yQ","mu2","sqrts"}},
     { "HQP_PTQ",    {"p_TQ","mu2","sqrts"}},
     { "HIG_RAP",    {"y","M_H2","sqrts"}},
-    { "SIA" ,       {"z", "Q2", "y"}}
+    { "SIA" ,       {"z", "Q2", "y"}},
+    { "LATTICE" ,   {"z", "pz", "nu"}}
   };
 
 
@@ -337,7 +339,7 @@ namespace NNPDF
   // Verify that the process type is one of allowed processes
   void CommonData::VerifyProc(std::string const& proc)
   {
-    const int nProc = 23;
+    const int nProc = 24;
     const std::string validProc[nProc] = {
       "DIS",
       "DYP",
@@ -361,7 +363,8 @@ namespace NNPDF
       "HQP_YQ",
       "HQP_PTQ",
       "HIG_RAP",
-      "SIA"
+      "SIA",
+      "LATTICE"
     };
 
     bool foundString = false;
