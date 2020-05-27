@@ -1,0 +1,20 @@
+dataset_label: "Real part reduced-ITD"
+x: k1
+y_label: '$Re\left[\mathfrak{M}\right]$'
+kinematics_override: lattice
+
+x_scale: linear
+y_scale: linear
+
+line_by:
+  - k2
+
+normalize:
+    line_by: []
+    y_scale: linear
+    figure_by:
+        - k2
+
+experiment: "LATTICE"
+nnpdf31_process: LATTICE
+
