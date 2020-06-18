@@ -64,7 +64,7 @@ def _xsp_integrand(x, lpdf:LHAPDFSet, irep, Q):
 def _xg_integrand(x, lpdf:LHAPDFSet, irep, Q):
     return lpdf.xfxQ(x, Q=Q, n=irep, fl=0)   
 
-def _gottfried(x, lpdf:LHAPDFSet, irep, Q):
+def _fa(x, lpdf:LHAPDFSet, irep, Q):
     return (lpdf.xfxQ(x, Q=Q, n=irep, fl=-2) - lpdf.xfxQ(x, Q=Q, n=irep, fl=-1))/x
 
 
@@ -72,18 +72,18 @@ def _gottfried(x, lpdf:LHAPDFSet, irep, Q):
 #NOTE: For the moment we rely on this order being the same as in the .sumrules
 #file produced by nnfit.
 SUM_RULES = {
-    #'uvalence': _uvalence_sum_rule_integrand,
-    #'dvalence': _dvalence_sum_rule_integrand,
-    #'svalence': _svalence_sum_rule_integrand,
+    'uvalence': _uvalence_sum_rule_integrand,
+    'dvalence': _dvalence_sum_rule_integrand,
+    'svalence': _svalence_sum_rule_integrand,
     't3': _t3_integrand,
     't8': _t8_integrand,
     't15': _t15_integrand,
-    #'xup' : _xup_integrand,
-    #'xdp' : _xdp_integrand,
-    #'xsp' : _xsp_integrand,
-    #'xg'  : _xg_integrand,
-    #'momentum': _momentum_sum_rule_integrand,
-    'gottfried' : _gottfried,
+    'xup' : _xup_integrand,
+    'xdp' : _xdp_integrand,
+    'xsp' : _xsp_integrand,
+    'xg'  : _xg_integrand,
+    'momentum': _momentum_sum_rule_integrand,
+    'fa' : _fa,
 }
 
 SUM_RULES_EXPECTED = {
