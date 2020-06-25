@@ -43,14 +43,14 @@ def _t8_integrand(x, lpdf:LHAPDFSet, irep, Q):
     t8 = (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-2)
     + lpdf.xfxQ(x, Q=Q, n=irep, fl=1) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-1)
     -2*lpdf.xfxQ(x, Q=Q, n=irep, fl=3) -2*lpdf.xfxQ(x, Q=Q, n=irep, fl=-3))/x
-    return t8
+    return t8/np.sqrt(3)
 
 def _t15_integrand(x, lpdf:LHAPDFSet, irep, Q):
     t15 = (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-2)
     + lpdf.xfxQ(x, Q=Q, n=irep, fl=1) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-1)
     + lpdf.xfxQ(x, Q=Q, n=irep, fl=3) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-3)
     -3*lpdf.xfxQ(x, Q=Q, n=irep, fl=4) - 3*lpdf.xfxQ(x, Q=Q, n=irep, fl=-4))/x
-    return t15
+    return t15/np.sqrt(6)
 
 def _xup_integrand(x, lpdf:LHAPDFSet, irep, Q):
     return (lpdf.xfxQ(x, Q=Q, n=irep, fl=2) + lpdf.xfxQ(x, Q=Q, n=irep, fl=-2))
