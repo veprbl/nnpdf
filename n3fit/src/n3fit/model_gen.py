@@ -12,6 +12,7 @@ import numpy as np
 import n3fit.msr as msr_constraints
 from n3fit.layers import DIS, DY, Mask, ObsRotation
 from n3fit.layers import Preprocessing, FkRotation, FlavourToEvolution
+from n3fit.layers import Feature_Scaling
 
 from n3fit.backends import MetaModel, Input
 from n3fit.backends import operations
@@ -479,16 +480,24 @@ def pdfNN_layer_generator(
             lambda x: operations.concatenate([x, operations.op_log(x)], axis=-1)
         )
 
+    input_scaling = Feature_Scaling(name='feature_scaling')
+
     def dense_me(x):
         """ Takes an input tensor `x` and applies all layers
         from the `list_of_pdf_layers` in order """
+        #x1 = tf.keras.backend.ones_like(x)
+        #x1 = input_scaling(x1)
+        #x = input_scaling(x)
         if inp == 1:
             curr_fun = list_of_pdf_layers[0](x)
+            curr_fun1 = list_of_pdf_layers[0](x1)
         else:
             curr_fun = list_of_pdf_layers[0](add_log(x))
 
         for dense_layer in list_of_pdf_layers[1:]:
             curr_fun = dense_layer(curr_fun)
+            #curr_fun1 = dense_layer(curr_fun1)
+        #res = tf.keras.layers.subtract([curr_fun, curr_fun1])
         return curr_fun
 
     # Preprocessing layer (will be multiplied to the last of the denses)
@@ -502,7 +511,7 @@ def pdfNN_layer_generator(
 
     # Basis rotation
     basis_rotation = FlavourToEvolution(flav_info=flav_info)
-    
+
     # Apply preprocessing and basis
     def layer_fitbasis(x):
         ret = operations.op_multiply([dense_me(x), layer_preproc(x)])
@@ -516,6 +525,7 @@ def pdfNN_layer_generator(
         return layer_evln(layer_fitbasis(x))
 
     dict_layers = {
+        "feature_scaling": input_scaling, # The layer tht scales the input x-grids
         "denses": dense_me,  # The set of the N dense layers
         "preprocessing": layer_preproc,  # The layer that applies preprocessing
         "fitbasis": layer_fitbasis,  # Applied preprocessing to the output of the denses
