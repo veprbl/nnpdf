@@ -330,7 +330,7 @@ def generate_dense_per_flavour_network(
 
 
 def pdfNN_layer_generator(
-    inp=2,
+    inp=1,
     nodes=None,
     activations=None,
     initializer_name="glorot_normal",
@@ -485,9 +485,9 @@ def pdfNN_layer_generator(
     def dense_me(x):
         """ Takes an input tensor `x` and applies all layers
         from the `list_of_pdf_layers` in order """
-        #x1 = tf.keras.backend.ones_like(x)
-        #x1 = input_scaling(x1)
-        #x = input_scaling(x)
+        x1 = tf.keras.backend.ones_like(x)
+        x1 = input_scaling(x1)
+        x = input_scaling(x)
         if inp == 1:
             curr_fun = list_of_pdf_layers[0](x)
             curr_fun1 = list_of_pdf_layers[0](x1)
@@ -496,9 +496,9 @@ def pdfNN_layer_generator(
 
         for dense_layer in list_of_pdf_layers[1:]:
             curr_fun = dense_layer(curr_fun)
-            #curr_fun1 = dense_layer(curr_fun1)
-        #res = tf.keras.layers.subtract([curr_fun, curr_fun1])
-        return curr_fun
+            curr_fun1 = dense_layer(curr_fun1)
+        res = tf.keras.layers.subtract([curr_fun, curr_fun1])
+        return res
 
     # Preprocessing layer (will be multiplied to the last of the denses)
     preproseed = seed + number_of_layers
