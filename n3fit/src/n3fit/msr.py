@@ -38,10 +38,10 @@ def gen_integration_input(nx):
 
     mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
     interpolation = interp1d(mapping[0], mapping[1])
-    xgrid = interpolation(xgrid.squeeze())
-    xgrid = np.expand_dims(xgrid, axis=1)
+    xgrid_scaled = interpolation(xgrid.squeeze())
+    xgrid_scaled = np.expand_dims(xgrid, axis=1)
 
-    return xgrid, weights_array
+    return xgrid, xgrid_scaled, weights_array
 
 
 def msr_impose(fit_layer, final_pdf_layer, verbose=False):
@@ -54,7 +54,7 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     """
     # 1. Generate the fake input which will be used to integrate
     nx = int(2e3)
-    xgrid, weights_array = gen_integration_input(nx)
+    _, xgrid_scaled, weights_array = gen_integration_input(nx)
 
     # 2. Prepare the pdf for integration
     #    for that we need to multiply several flavours with 1/x
@@ -71,7 +71,7 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     normalizer = MSR_Normalization(input_shape=(8,))
 
     # 5. Make the xgrid numpy array into a backend input layer so it can be given
-    xgrid_input = operations.numpy_to_input(xgrid, name='apply_sr_grid')
+    xgrid_input = operations.numpy_to_input(xgrid_scaled, name='apply_sr_grid')
     normalization = normalizer(integrator(pdf_integrand(xgrid_input)))
 
     def ultimate_pdf(x):
@@ -99,8 +99,8 @@ def check_integration(ultimate_pdf, integration_input):
     Called only (for debugging purposes) by msr_impose above
     """
     nx = int(1e4)
-    xgrid, weights_array = gen_integration_input(nx)
-    xgrid_input = operations.numpy_to_input(xgrid)
+    _, xgrid_scaled, weights_array = gen_integration_input(nx)
+    xgrid_input = operations.numpy_to_input(xgrid_scaled)
 
     multiplier = xDivide(output_dim=14, div_list=range(3, 9))
 
@@ -140,11 +140,12 @@ def compute_arclength(pdf_function, nx=int(2e3)):  # TODO: to be removed
         - `nx`: number of point for the integration grid
     """
     # Generate the input layers for the xgrid and the weight
-    xgrid, weights_array = gen_integration_input(nx)
+    xgrid, xgrid_scaled, weights_array = gen_integration_input(nx)
+    eps_scaled = xgrid_scaled[0] / 2.0
     eps = xgrid[0] / 2.0
     # Compute the "integration values"
-    y = pdf_function(xgrid)
-    yprime = pdf_function(xgrid - eps)
+    y = pdf_function(xgrid_scaled)
+    yprime = pdf_function(xgrid_scaled - eps_scaled)
     result_raw = (yprime - y) / eps
     # Now select the 8-basis
     aa = [1, 2, 3, 4, 5, 9, 10, 11]
