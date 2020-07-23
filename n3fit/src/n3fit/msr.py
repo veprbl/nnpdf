@@ -3,10 +3,12 @@
 """
 import logging
 import numpy as np
+from scipy.interpolate import interp1d
 
 from n3fit.layers import xDivide, MSR_Normalization, xIntegrator
 from n3fit.backends import operations
 from n3fit.backends import MetaModel
+
 
 
 log = logging.getLogger(__name__)
@@ -48,6 +50,10 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     # 1. Generate the fake input which will be used to integrate
     nx = int(2e3)
     xgrid, weights_array = gen_integration_input(nx)
+    mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
+    interpolation = interp1d(mapping[0], mapping[1], bounds_error=False, kind='linear', fill_value="extrapolate")
+    xgrid = interpolation(xgrid.squeeze())
+    xgrid = np.expand_dims(xgrid, axis=1)
 
     # 2. Prepare the pdf for integration
     #    for that we need to multiply several flavours with 1/x

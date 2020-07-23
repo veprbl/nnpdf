@@ -336,11 +336,10 @@ class ModelTrainer:
         # Compute the input array that will be given to the pdf
         input_arr = np.concatenate(self.input_list, axis=1)
 
-        mapping = np.loadtxt('/home/roystegeman/interpolation_coefficients.dat')
-        interpolation = interp1d(mapping[0], mapping[1], bounds_error=False, fill_value="extrapolate")
+        mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
+        interpolation = interp1d(mapping[0], mapping[1], bounds_error=False, kind='linear', fill_value="extrapolate")
         input_arr = interpolation(input_arr.squeeze())
         input_arr = np.expand_dims(input_arr, axis=0)
-        input_arr = input_arr
 
         input_layer = operations.numpy_to_input(input_arr.T)
         if self.impose_sumrule:
@@ -450,16 +449,21 @@ class ModelTrainer:
 
             input_arr = np.concatenate(self.input_list, axis=1)
             input_arr = np.sort(input_arr)
-            new_xgrid = np.linspace(start=-1, stop=1, num=input_arr.size)
-            map_from, counts = np.unique(input_arr, return_counts=True)
-            map_to = []
+
+            input_arr_size = input_arr.size
+            start_val = np.array(1/input_arr_size, dtype=input_arr.dtype)
+            new_xgrid = np.linspace(start=start_val, stop=1., endpoint=False, num=input_arr_size)
+
+            unique, counts = np.unique(input_arr, return_counts=True)
+
+            map_from = np.append(unique, 1.)
+            map_from = np.insert(map_from, 0 ,0)
+            map_to = [0]
             for cumsum_ in np.cumsum(counts):
-                map_to.append(new_xgrid[cumsum_ - 1])
+                map_to.append(new_xgrid[cumsum_-1])
+            map_to.append(1.)
             map_to = np.array(map_to)
             np.savetxt('/home/roy/interpolation_coefficients.dat', np.asarray([map_from, map_to]))
-            interpolation = interp1d(map_from, map_to, bounds_error=False, fill_value="extrapolate")
-            xequal1 = interpolation(1)
-            np.savetxt('/home/roy/xequal1.dat', np.expand_dims(xequal1, axis=0) )
 
             # The positivity all falls to the training
             self.training["output"].append(pos_layer["output_tr"])

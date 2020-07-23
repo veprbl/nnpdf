@@ -12,7 +12,6 @@ import numpy as np
 import n3fit.msr as msr_constraints
 from n3fit.layers import DIS, DY, Mask, ObsRotation
 from n3fit.layers import Preprocessing, FkRotation, FlavourToEvolution
-from n3fit.layers import Feature_Scaling
 
 from n3fit.backends import MetaModel, Input
 from n3fit.backends import operations
@@ -483,9 +482,8 @@ def pdfNN_layer_generator(
     def dense_me(x):
         """ Takes an input tensor `x` and applies all layers
         from the `list_of_pdf_layers` in order """
-        xequal1 = np.loadtxt('/home/roystegeman/xequal1.dat')
-        xequal1 = xequal1.item()
-        x0 = xequal1 * tf.keras.backend.ones_like(x)
+        x = 2*x-1
+        x0 = tf.keras.backend.ones_like(x)
         curr_fun = list_of_pdf_layers[0](x)
         curr_fun0 = list_of_pdf_layers[0](x0)
         for dense_layer in list_of_pdf_layers[1:]:

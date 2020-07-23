@@ -6,5 +6,4 @@ from n3fit.layers.DIS import DIS
 from n3fit.layers.DY import DY
 from n3fit.layers.Mask import Mask
 from n3fit.layers.Obsrotation import ObsRotation
-from n3fit.layers.Feature_Scaling import Feature_Scaling
 from n3fit.backends import MetaLayer
