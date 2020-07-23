@@ -13,6 +13,7 @@ import numpy as np
 import n3fit.model_gen as model_gen
 from n3fit.backends import MetaModel, clear_backend_state, operations
 from n3fit.stopping import Stopping
+from scipy.interpolate import interp1d
 
 log = logging.getLogger(__name__)
 
@@ -334,6 +335,13 @@ class ModelTrainer:
 
         # Compute the input array that will be given to the pdf
         input_arr = np.concatenate(self.input_list, axis=1)
+
+        mapping = np.loadtxt('/home/roystegeman/interpolation_coefficients.dat')
+        interpolation = interp1d(mapping[0], mapping[1], bounds_error=False, fill_value="extrapolate")
+        input_arr = interpolation(input_arr.squeeze())
+        input_arr = np.expand_dims(input_arr, axis=0)
+        input_arr = input_arr
+
         input_layer = operations.numpy_to_input(input_arr.T)
         if self.impose_sumrule:
             full_model_input = [self.integrator_input, input_layer]
