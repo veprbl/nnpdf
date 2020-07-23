@@ -337,7 +337,7 @@ class ModelTrainer:
         input_arr = np.concatenate(self.input_list, axis=1)
 
         mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
-        interpolation = interp1d(mapping[0], mapping[1], bounds_error=False, kind='linear', fill_value="extrapolate")
+        interpolation = interp1d(mapping[0], mapping[1])
         input_arr = interpolation(input_arr.squeeze())
         input_arr = np.expand_dims(input_arr, axis=0)
 

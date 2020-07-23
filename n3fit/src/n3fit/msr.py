@@ -50,8 +50,9 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     # 1. Generate the fake input which will be used to integrate
     nx = int(2e3)
     xgrid, weights_array = gen_integration_input(nx)
+
     mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
-    interpolation = interp1d(mapping[0], mapping[1], bounds_error=False, kind='linear', fill_value="extrapolate")
+    interpolation = interp1d(mapping[0], mapping[1])
     xgrid = interpolation(xgrid.squeeze())
     xgrid = np.expand_dims(xgrid, axis=1)
 
