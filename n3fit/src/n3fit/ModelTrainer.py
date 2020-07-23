@@ -448,6 +448,19 @@ class ModelTrainer:
             self.input_list += pos_layer["inputs"]
             self.input_sizes.append(pos_layer["experiment_xsize"])
 
+            input_arr = np.concatenate(self.input_list, axis=1)
+            input_arr = np.sort(input_arr)
+            new_xgrid = np.linspace(start=-1, stop=1, num=input_arr.size)
+            map_from, counts = np.unique(input_arr, return_counts=True)
+            map_to = []
+            for cumsum_ in np.cumsum(counts):
+                map_to.append(new_xgrid[cumsum_ - 1])
+            map_to = np.array(map_to)
+            np.savetxt('/home/roy/interpolation_coefficients.dat', np.asarray([map_from, map_to]))
+            interpolation = interp1d(map_from, map_to, bounds_error=False, fill_value="extrapolate")
+            xequal1 = interpolation(1)
+            np.savetxt('/home/roy/xequal1.dat', np.expand_dims(xequal1, axis=0) )
+
             # The positivity all falls to the training
             self.training["output"].append(pos_layer["output_tr"])
             self.training["losses"].append(pos_layer["loss_tr"])
