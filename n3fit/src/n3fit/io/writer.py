@@ -205,9 +205,9 @@ def storefit(
 
     mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
     interpolation = interp1d(mapping[0], mapping[1])
-    xgrid = interpolation(xgrid)
+    xgrid_scaled = interpolation(xgrid)
 
-    result = pdf_function(xgrid)
+    result = pdf_function(xgrid_scaled)
     lha = evln2lha(result.T).T
 
     data = {

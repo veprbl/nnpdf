@@ -447,30 +447,30 @@ class ModelTrainer:
             self.input_list += pos_layer["inputs"]
             self.input_sizes.append(pos_layer["experiment_xsize"])
 
-            input_arr = np.concatenate(self.input_list, axis=1)
-            input_arr = np.sort(input_arr)
-
-            input_arr_size = input_arr.size
-            start_val = np.array(1/input_arr_size, dtype=input_arr.dtype)
-            new_xgrid = np.linspace(start=start_val, stop=1., endpoint=False, num=input_arr_size)
-
-            unique, counts = np.unique(input_arr, return_counts=True)
-
-            map_from = np.append(unique, 1.)
-            map_from = np.insert(map_from, 0 ,0)
-            map_to = [0]
-            for cumsum_ in np.cumsum(counts):
-                map_to.append(new_xgrid[cumsum_-1])
-            map_to.append(1.)
-            map_to = np.array(map_to)
-            np.savetxt('/home/roy/interpolation_coefficients.dat', np.asarray([map_from, map_to]))
-
             # The positivity all falls to the training
             self.training["output"].append(pos_layer["output_tr"])
             self.training["losses"].append(pos_layer["loss_tr"])
         # Save the positivity multiplier into the training dictionary
         # as it will be used during training
         self.training["pos_multiplier"] = pos_multiplier
+
+        input_arr = np.concatenate(self.input_list, axis=1)
+        input_arr = np.sort(input_arr)
+
+        input_arr_size = input_arr.size
+        start_val = np.array(1/input_arr_size, dtype=input_arr.dtype)
+        new_xgrid = np.linspace(start=start_val, stop=1., endpoint=False, num=input_arr_size)
+
+        unique, counts = np.unique(input_arr, return_counts=True)
+
+        map_from = np.append(unique, 1.)
+        map_from = np.insert(map_from, 0 ,0)
+        map_to = [0]
+        for cumsum_ in np.cumsum(counts):
+            map_to.append(new_xgrid[cumsum_-1])
+        map_to.append(1.)
+        map_to = np.array(map_to)
+        np.savetxt('/home/roy/interpolation_coefficients.dat', np.asarray([map_from, map_to]))
 
     def _generate_pdf(
         self,
