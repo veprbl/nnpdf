@@ -336,7 +336,8 @@ class ModelTrainer:
         # Compute the input array that will be given to the pdf
         input_arr = np.concatenate(self.input_list, axis=1)
 
-        mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
+        # mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
+        mapping = self.mapping
         interpolation = interp1d(mapping[0], mapping[1])
         input_arr = interpolation(input_arr.squeeze())
         input_arr = np.expand_dims(input_arr, axis=0)
@@ -470,7 +471,8 @@ class ModelTrainer:
             map_to.append(new_xgrid[cumsum_-1])
         map_to.append(1.)
         map_to = np.array(map_to)
-        np.savetxt('/home/roy/interpolation_coefficients.dat', np.asarray([map_from, map_to]))
+        # np.savetxt('/home/roy/interpolation_coefficients.dat', np.asarray([map_from, map_to]))
+        self.mapping = [map_from, map_to]
 
     def _generate_pdf(
         self,
@@ -532,6 +534,7 @@ class ModelTrainer:
             regularizer=regularizer,
             regularizer_args=regularizer_args,
             impose_sumrule=self.impose_sumrule,
+            mapping=self.mapping
         )
         self.integrator_input_scaled = integrator_input_scaled
         self.pdf_model = pdf_model

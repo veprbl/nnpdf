@@ -15,7 +15,7 @@ from n3fit.backends import MetaModel
 log = logging.getLogger(__name__)
 
 
-def gen_integration_input(nx):
+def gen_integration_input(nx, mapping):
     """
     Generates a np.array (shaped (nx,1)) of nx elements where the
     nx/2 first elements are a logspace between 0 and 0.1
@@ -37,7 +37,7 @@ def gen_integration_input(nx):
         weights.append((spacing[i] + spacing[i + 1]) / 2.0)
     weights_array = np.array(weights).reshape(nx, 1)
 
-    mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
+    # mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
     interpolation = interp1d(mapping[0], mapping[1])
     xgrid_scaled = interpolation(xgrid.squeeze())
     xgrid_scaled = np.expand_dims(xgrid_scaled, axis=1)
@@ -45,7 +45,7 @@ def gen_integration_input(nx):
     return xgrid, xgrid_scaled, weights_array
 
 
-def msr_impose(fit_layer, final_pdf_layer, verbose=False):
+def msr_impose(fit_layer, final_pdf_layer, mapping, verbose=False):
     """
         This function receives:
             - fit_layer: the 8-basis layer of PDF which we fit
@@ -55,7 +55,7 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     """
     # 1. Generate the fake input which will be used to integrate
     nx = int(2e3)
-    xgrid, xgrid_scaled, weights_array = gen_integration_input(nx)
+    xgrid, xgrid_scaled, weights_array = gen_integration_input(nx, mapping)
 
     # 2. Prepare the pdf for integration
     #    for that we need to multiply several flavours with 1/x
@@ -86,7 +86,7 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
         #         result = modelito.predict(x = None, steps = 1)
 
         print(" > > Generating model for the inyection layer which imposes MSR")
-        check_integration(ultimate_pdf, xgrid_input)
+        check_integration(ultimate_pdf, xgrid_input, mapping)
 
     # Save a reference to xgrid in ultimate_pdf, very useful for debugging
     ultimate_pdf.ref_xgrid = xgrid_input
@@ -94,14 +94,14 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     return ultimate_pdf, xgrid_input_scaled
 
 
-def check_integration(ultimate_pdf, integration_input):
+def check_integration(ultimate_pdf, integration_input, mapping):
     """
     Naive integrator for quick checks.
     Receives the final PDF layer, computes the 4 MSR and prints out the result
     Called only (for debugging purposes) by msr_impose above
     """
     nx = int(1e4)
-    xgrid, _, weights_array = gen_integration_input(nx)
+    xgrid, _, weights_array = gen_integration_input(nx, mapping)
     xgrid_input = operations.numpy_to_input(xgrid)
 
     multiplier = xDivide(output_dim=14, div_list=range(3, 9))
@@ -133,7 +133,7 @@ def check_integration(ultimate_pdf, integration_input):
     )
 
 
-def compute_arclength(pdf_function, nx=int(2e3)):  # TODO: to be removed
+def compute_arclength(pdf_function, mapping, nx=int(2e3)):  # TODO: to be removed
     """
     Given the layer with the fit basis computes the arc length
 
@@ -142,7 +142,7 @@ def compute_arclength(pdf_function, nx=int(2e3)):  # TODO: to be removed
         - `nx`: number of point for the integration grid
     """
     # Generate the input layers for the xgrid and the weight
-    xgrid, xgrid_scaled, weights_array = gen_integration_input(nx)
+    xgrid, xgrid_scaled, weights_array = gen_integration_input(nx, mapping)
     eps_scaled = xgrid_scaled[0] / 2.0
     eps = xgrid[0] / 2.0
     # Compute the "integration values"

@@ -341,6 +341,7 @@ def pdfNN_layer_generator(
     regularizer=None,
     regularizer_args=None,
     impose_sumrule=False,
+    mapping=None
 ):  # pylint: disable=too-many-locals
     """
     Generates the PDF model which takes as input a point in x (from 0 to 1)
@@ -527,7 +528,7 @@ def pdfNN_layer_generator(
     # Impose sumrule if necessary
     if impose_sumrule:
         layer_pdf, integrator_input_scaled = msr_constraints.msr_impose(
-            layer_fitbasis, layer_pdf
+            layer_fitbasis, layer_pdf, mapping
         )
         model_input = [integrator_input_scaled, placeholder_input]
     else:
