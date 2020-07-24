@@ -86,7 +86,6 @@ class MetaModel(Model):
             input_list = [input_list]
         if not isinstance(output_list, list):
             output_list = [output_list]
-
         super(MetaModel, self).__init__(input_list, output_list, **kwargs)
         self.x_in = {}
         self.tensors_in = {}

@@ -526,14 +526,13 @@ def pdfNN_layer_generator(
 
     # Impose sumrule if necessary
     if impose_sumrule:
-        layer_pdf, integrator_input = msr_constraints.msr_impose(
+        layer_pdf, integrator_input_scaled = msr_constraints.msr_impose(
             layer_fitbasis, layer_pdf
         )
-        model_input = [integrator_input, placeholder_input]
+        model_input = [integrator_input_scaled, placeholder_input]
     else:
         integrator_input = None
         model_input = [placeholder_input]
-
     pdf_model = MetaModel(model_input, layer_pdf(placeholder_input))
 
-    return pdf_model, integrator_input
+    return pdf_model, integrator_input_scaled

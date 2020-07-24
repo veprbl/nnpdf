@@ -4,6 +4,7 @@
 import logging
 import numpy as np
 from scipy.interpolate import interp1d
+import tensorflow as tf
 
 from n3fit.layers import xDivide, MSR_Normalization, xIntegrator
 from n3fit.backends import operations
@@ -39,7 +40,7 @@ def gen_integration_input(nx):
     mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
     interpolation = interp1d(mapping[0], mapping[1])
     xgrid_scaled = interpolation(xgrid.squeeze())
-    xgrid_scaled = np.expand_dims(xgrid, axis=1)
+    xgrid_scaled = np.expand_dims(xgrid_scaled, axis=1)
 
     return xgrid, xgrid_scaled, weights_array
 
@@ -54,14 +55,14 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     """
     # 1. Generate the fake input which will be used to integrate
     nx = int(2e3)
-    _, xgrid_scaled, weights_array = gen_integration_input(nx)
+    xgrid, xgrid_scaled, weights_array = gen_integration_input(nx)
 
     # 2. Prepare the pdf for integration
     #    for that we need to multiply several flavours with 1/x
     division_by_x = xDivide()
 
-    def pdf_integrand(x):
-        res = operations.op_multiply([division_by_x(x), fit_layer(x)])
+    def pdf_integrand(xgrid, xgrid_scaled):
+        res = operations.op_multiply([division_by_x(xgrid), fit_layer(xgrid_scaled)])
         return res
 
     # 3. Now create the integration layer (the layer that will simply integrate, given some weight
@@ -71,8 +72,10 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     normalizer = MSR_Normalization(input_shape=(8,))
 
     # 5. Make the xgrid numpy array into a backend input layer so it can be given
-    xgrid_input = operations.numpy_to_input(xgrid_scaled, name='apply_sr_grid')
-    normalization = normalizer(integrator(pdf_integrand(xgrid_input)))
+    xgrid_input_scaled = operations.numpy_to_input(xgrid_scaled, name='apply_sr_grid_scaled')
+    xgrid_input = np.expand_dims(xgrid, 0)
+    xgrid_input = tf.convert_to_tensor(xgrid_input, dtype=xgrid_input_scaled.dtype)
+    normalization = normalizer(integrator(pdf_integrand(xgrid_input, xgrid_input_scaled)))
 
     def ultimate_pdf(x):
         return operations.op_multiply_dim([final_pdf_layer(x), normalization])
@@ -88,19 +91,18 @@ def msr_impose(fit_layer, final_pdf_layer, verbose=False):
     # Save a reference to xgrid in ultimate_pdf, very useful for debugging
     ultimate_pdf.ref_xgrid = xgrid_input
 
-    return ultimate_pdf, xgrid_input
+    return ultimate_pdf, xgrid_input_scaled
 
 
 def check_integration(ultimate_pdf, integration_input):
     """
     Naive integrator for quick checks.
     Receives the final PDF layer, computes the 4 MSR and prints out the result
-
     Called only (for debugging purposes) by msr_impose above
     """
     nx = int(1e4)
-    _, xgrid_scaled, weights_array = gen_integration_input(nx)
-    xgrid_input = operations.numpy_to_input(xgrid_scaled)
+    xgrid, _, weights_array = gen_integration_input(nx)
+    xgrid_input = operations.numpy_to_input(xgrid)
 
     multiplier = xDivide(output_dim=14, div_list=range(3, 9))
 

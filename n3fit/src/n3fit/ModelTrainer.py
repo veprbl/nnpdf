@@ -191,7 +191,7 @@ class ModelTrainer:
 
         # Initialize the pdf model
         self.pdf_model = None
-        self.integrator_input = None
+        self.integrator_input_scaled = None
 
         # Initialize the dictionaries which contain all fitting information
         self.input_list = []
@@ -343,7 +343,7 @@ class ModelTrainer:
 
         input_layer = operations.numpy_to_input(input_arr.T)
         if self.impose_sumrule:
-            full_model_input = [self.integrator_input, input_layer]
+            full_model_input = [self.integrator_input_scaled, input_layer]
         else:
             full_model_input = [input_layer]
         # The output of the pdf on input_layer will be thus a concatenation
@@ -521,7 +521,7 @@ class ModelTrainer:
         # Set the parameters of the NN
 
         # Generate the NN layers
-        pdf_model, integrator_input = model_gen.pdfNN_layer_generator(
+        pdf_model, integrator_input_scaled = model_gen.pdfNN_layer_generator(
             nodes=nodes_per_layer,
             activations=activation_per_layer,
             layer_type=layer_type,
@@ -533,7 +533,7 @@ class ModelTrainer:
             regularizer_args=regularizer_args,
             impose_sumrule=self.impose_sumrule,
         )
-        self.integrator_input = integrator_input
+        self.integrator_input_scaled = integrator_input_scaled
         self.pdf_model = pdf_model
 
     def _toggle_fold(self, datasets, kidx=0, off=False, recompile=False):
