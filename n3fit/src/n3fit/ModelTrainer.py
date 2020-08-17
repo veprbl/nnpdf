@@ -13,7 +13,7 @@ import numpy as np
 import n3fit.model_gen as model_gen
 from n3fit.backends import MetaModel, clear_backend_state, operations
 from n3fit.stopping import Stopping
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, PchipInterpolator
 
 log = logging.getLogger(__name__)
 
@@ -338,7 +338,7 @@ class ModelTrainer:
 
         # mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
         mapping = self.mapping
-        interpolation = interp1d(mapping[0], mapping[1])
+        interpolation = PchipInterpolator(mapping[0], mapping[1])
         input_arr = interpolation(input_arr.squeeze())
         input_arr = np.expand_dims(input_arr, axis=0)
 
@@ -457,6 +457,12 @@ class ModelTrainer:
 
         input_arr = np.concatenate(self.input_list, axis=1)
         input_arr = np.sort(input_arr)
+
+        onein = int(input_arr.size/20)
+        input_list = [i for j,i in enumerate(input_arr.flatten()) if j%onein==0]
+        input_list.insert(0,input_arr.min())
+        input_list.append(input_arr.max())
+        input_arr = np.expand_dims(np.array(input_list),axis=0)
 
         input_arr_size = input_arr.size
         start_val = np.array(1/input_arr_size, dtype=input_arr.dtype)

@@ -3,7 +3,7 @@
 """
 import logging
 import numpy as np
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, PchipInterpolator
 import tensorflow as tf
 
 from n3fit.layers import xDivide, MSR_Normalization, xIntegrator
@@ -38,7 +38,7 @@ def gen_integration_input(nx, mapping):
     weights_array = np.array(weights).reshape(nx, 1)
 
     # mapping = np.loadtxt('/home/roy/interpolation_coefficients.dat')
-    interpolation = interp1d(mapping[0], mapping[1])
+    interpolation = PchipInterpolator(mapping[0], mapping[1])
     xgrid_scaled = interpolation(xgrid.squeeze())
     xgrid_scaled = np.expand_dims(xgrid_scaled, axis=1)
 
