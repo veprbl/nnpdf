@@ -10,7 +10,7 @@ Add here a description of the data set
 
 #include "LEP.h"
 
-void LEP_eeWW_182GeV::ReadData()
+void LEP_eeWW_182GeVFilter::ReadData()
 {
   fstream f1;
 
@@ -46,7 +46,7 @@ void LEP_eeWW_182GeV::ReadData()
   
 }
 
-void LEP_eeWW_189GeV::ReadData()
+void LEP_eeWW_189GeVFilter::ReadData()
 {
   fstream f1;
 
@@ -82,7 +82,7 @@ void LEP_eeWW_189GeV::ReadData()
   
 }
 
-void LEP_eeWW_198GeV::ReadData()
+void LEP_eeWW_198GeVFilter::ReadData()
 {
   fstream f1;
 
@@ -118,7 +118,7 @@ void LEP_eeWW_198GeV::ReadData()
   
 }
 
-void LEP_eeWW_206GeV::ReadData()
+void LEP_eeWW_206GeVFilter::ReadData()
 {
   fstream f1;
 
@@ -154,7 +154,7 @@ void LEP_eeWW_206GeV::ReadData()
   
 }
 
-void LEP_eeWW_all::ReadData()
+void LEP_eeWW_allFilter::ReadData()
 {
   fstream f1;
 
