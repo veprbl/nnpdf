@@ -34,8 +34,8 @@ void LEP_eeWW_182GeVFilter::ReadData()
       getline(f1,line);
       istringstream lstream(line);
       fKin1[i] = 0.;
-      fKin1[i] = 182.0;     //GeV
-      fKin1[i] = 0.;
+      fKin2[i] = 182.0;     //GeV
+      fKin3[i] = 0.;
       lstream >> fData[i] >> fStat[i] >> fSys[i][0].add;
       fSys[i][0].mult = fSys[i][0].add*1e2/fData[i];
       fSys[i][0].type = ADD;
@@ -70,8 +70,8 @@ void LEP_eeWW_189GeVFilter::ReadData()
       getline(f1,line);
       istringstream lstream(line);
       fKin1[i] = 0.;
-      fKin1[i] = 189.0;     //GeV
-      fKin1[i] = 0.;
+      fKin2[i] = 189.0;     //GeV
+      fKin3[i] = 0.;
       lstream >> fData[i] >> fStat[i] >> fSys[i][0].add;
       fSys[i][0].mult = fSys[i][0].add*1e2/fData[i];
       fSys[i][0].type = ADD;
@@ -106,8 +106,8 @@ void LEP_eeWW_198GeVFilter::ReadData()
       getline(f1,line);
       istringstream lstream(line);
       fKin1[i] = 0.;
-      fKin1[i] = 198.0;     //GeV
-      fKin1[i] = 0.;
+      fKin2[i] = 198.0;     //GeV
+      fKin3[i] = 0.;
       lstream >> fData[i] >> fStat[i] >> fSys[i][0].add;
       fSys[i][0].mult = fSys[i][0].add*1e2/fData[i];
       fSys[i][0].type = ADD;
@@ -142,8 +142,8 @@ void LEP_eeWW_206GeVFilter::ReadData()
       getline(f1,line);
       istringstream lstream(line);
       fKin1[i] = 0.;
-      fKin1[i] = 206.0;     //GeV
-      fKin1[i] = 0.;
+      fKin2[i] = 206.0;     //GeV
+      fKin3[i] = 0.;
       lstream >> fData[i] >> fStat[i] >> fSys[i][0].add;
       fSys[i][0].mult = fSys[i][0].add*1e2/fData[i];
       fSys[i][0].type = ADD;
@@ -178,8 +178,8 @@ void LEP_eeWW_allFilter::ReadData()
       getline(f1,line);
       istringstream lstream(line);
       fKin1[i] = 0.;
-      fKin1[i] = 0.;     //GeV
-      fKin1[i] = 0.;
+      fKin2[i] = 0.;     //GeV
+      fKin3[i] = 0.;
       lstream >> fData[i] >> fStat[i]
 	      >> fSys[i][0].add
 	      >> fSys[i][1].add
