@@ -1,11 +1,13 @@
 /*
+Reference: Electroweak Measurements inElectron-Positron Collisionsat 
+           W-Boson-Pair Energies at LEP
+Publication: Phys.Rept. 532 (2013) 119 [arXiv:1302.3415] 
 
-
-Add here a description of the data set
-
-
-
-
+Description: Combined LEP W-differential angular cross-section in the 10 
+angular bins for the four chosen energy intervals: 182, 189, 198 and 206 GeV,
+and associated total cross sections. The data is taken from Table 5.6 for the
+measurements differential in costheta, and from Table E.2 for the total
+cross sections.
 */
 
 #include "LEP.h"
