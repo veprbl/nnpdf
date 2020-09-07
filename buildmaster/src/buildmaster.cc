@@ -110,6 +110,7 @@
 #include "ATLAS_WZ_13TEV.h"
 #include "ATLAS_WW_13TEV.h"
 #include "CMS_WZ_13TEV.h"
+#include "LEP.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -457,4 +458,11 @@ void InitCommonData(vector<CommonData*>& target)
   // *********************** ATLAS Z (8 TeV) 3D **********************************
   target.push_back(new ATLAS_Z_3D_EMU_CRAP_8TEVFilter());
   target.push_back(new ATLAS_Z_3D_ELE_HRAP_8TEVFilter());
+
+  // *********************** LEP **********************************
+  target.push_back(new LEP_eeWW_182GeVFilter());
+  target.push_back(new LEP_eeWW_189GeVFilter());
+  target.push_back(new LEP_eeWW_198GeVFilter());
+  target.push_back(new LEP_eeWW_206GeVFilter());
+  target.push_back(new LEP_eeWW_allFilter());
 }
