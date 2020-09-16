@@ -159,7 +159,7 @@ class PDFPlotter(metaclass=abc.ABCMeta):
 
             ax.set_xlabel('$x$')
             ax.set_xlim(self.firstgrid.xgrid[0])
-
+            ax.set_ylim(0.8,1.2)
 
             ax.set_ylabel(self.get_ylabel(parton_name))
 
@@ -296,6 +296,7 @@ class AllFlavoursPlotter(PDFPlotter):
 
         ax.set_axisbelow(True)
         ax.set_xlim(self.firstgrid.xgrid[0])
+        ax.set_ylim(0.8,1.2)
         flstate.labels = self.labels
         self.legend(flstate)
         return fig
