@@ -160,6 +160,25 @@ def xq2map_with_cuts(experiment, commondata, cuts):
 
 experiments_xq2map = collect(xq2map_with_cuts, ('experiments', 'experiment'))
 
+@table
+def experiments_xq2_table(experiments_xq2map, experiments_index):
+    """Generate a table containing kinematics"""
+    result_records = []
+    for experiment_xq2map in experiments_xq2map:
+        xs, q2s = experiment_xq2map.fitted
+        for index, (x, q2) in enumerate(zip(xs, q2s)): 
+            result_records.append(dict([
+                                 ('x', x),
+                                 ('q2', q2)
+                                 ]))
+    if not result_records:
+        log.warning("Empty records for experiment xq2 map")
+        return pd.DataFrame()
+    df =  pd.DataFrame(result_records, columns=result_records[0].keys(),
+                       index=experiments_index)
+
+    return df
+
 
 @table
 def kinematics_table(commondata, kinlimits):
