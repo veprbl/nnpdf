@@ -177,7 +177,8 @@ def generate_replica0(pdf, kin_grids=None, extra_fields=None):
 
     loaded_grids = {}
     grids = []
-
+    print(len(pdf))
+    
     for irep in range(1, len(pdf)):
         if irep in loaded_grids:
             grid = loaded_grids[irep]

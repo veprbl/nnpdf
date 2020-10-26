@@ -145,6 +145,9 @@ def postfit(results: str, nrep: int, chi2_threshold: float, arclength_threshold:
 
     # Copy info file
     info_source_path = nnfit_path.joinpath(f'{fitname}.info')
+    with open(info_source_path, "r") as f:
+        for line in f:
+            print(line)
     info_target_path = LHAPDF_path.joinpath(f'{fitname}.info')
     shutil.copy2(info_source_path, info_target_path)
     set_lhapdf_info(info_target_path, nrep)
@@ -166,6 +169,7 @@ def postfit(results: str, nrep: int, chi2_threshold: float, arclength_threshold:
     # It's important that this is prepended, so that any existing instance of
     # `fitname` is not read from some other path
     lhapdf.pathsPrepend(str(postfit_path))
+    print(postfit_path)
     generatingPDF = PDF(fitname)
     lhio.generate_replica0(generatingPDF)
 

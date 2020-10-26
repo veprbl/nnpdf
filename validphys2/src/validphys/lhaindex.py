@@ -104,6 +104,7 @@ def as_from_name(name):
 
 def infofilename(name):
     for path in get_lha_paths():
+        print(path)
         info = osp.join(path, name, name + '.info')
         if osp.exists(info):
             return info
