@@ -170,7 +170,10 @@ def discarded_mask(
                 tablefilt_total = tablefilt_total.copy()
                 tablefilt_total.iloc[:,~as_mask] = np.NAN
                 parabolas = parabolic_as_determination(fits_as,tablefilt_total).data
-                bootstrap_est = np.random.choice(parabolas,(100000,size)).std(axis=1).std()
+                if not len(parabolas):
+                    bootstrap_est = np.inf
+                else:
+                    bootstrap_est = np.random.choice(parabolas,(100000,size)).std(axis=1).std()
             else:
                 bootstrap_est = np.inf
 
