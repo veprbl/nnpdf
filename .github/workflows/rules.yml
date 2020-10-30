@@ -1,0 +1,13 @@
+# A single CI script with github workflow.
+name: Automatic Fit
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v1
+    - name: Hello
+      run: |
+        echo "Hello Self Runner!"
