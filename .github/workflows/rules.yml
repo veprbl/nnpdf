@@ -5,7 +5,6 @@ on: [push]
 
 env:
   CONDA_PY: 37
-  CONDA_BUILD_VERSION: 3.18.11
 
 jobs:
   build:
@@ -13,13 +12,12 @@ jobs:
     steps:
     - name: Cleanup workspace
       run: |
-        rm -rf /home/docker/miniconda3/conda-bld
-        rm -rf /home/docker/miniconda3/envs/*
+        rm -rf /home/runner/miniconda3/conda-bld
+        rm -rf /home/runner/miniconda3/envs/*
         rm -rf "${{ github.workspace }}"
     - uses: actions/checkout@v1
     - name: Build recipe
       run: |
-        conda install --yes conda-build=$CONDA_BUILD_VERSION
         CONDA_PY=$CONDA_PY conda build --no-test -q conda-recipe
     - name: Installing NNPDF conda package
       run: |
