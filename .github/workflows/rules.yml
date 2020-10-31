@@ -19,7 +19,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build recipe
       run: |
-        conda init bash
         conda install --yes conda-build=$CONDA_BUILD_VERSION
         CONDA_PY=$CONDA_PY conda build --no-test -q conda-recipe
     - name: Installing NNPDF conda package
@@ -27,5 +26,10 @@ jobs:
         conda create -n nnpdfenv /home/docker/miniconda3/conda-bld/linux-64/*.tar.bz2
     - name: Running fit
       run: |
-        conda activate nnpdfenv
-        n3fit n3fit/runcards/developing.yml 1
+        export BRANCH=`git branch --show-current`
+        export COMMIT=`git rev-parse --short HEAD`
+        export RUNCARD=autofit_$BRANCH_$COMMIT.yml
+        cd n3fit/runcards
+        cp developing.yml $RUNCARD
+        conda activate nnpdfenv        
+        n3fit $RUNCARD 1
