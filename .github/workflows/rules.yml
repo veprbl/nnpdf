@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build recipe and run tests on linux
       run: |
-        CONDA_PY=$CONDA_PY conda build -q conda-recipe
+        CONDA_PY=$CONDA_PY conda build -b -q conda-recipe
     - name: Installing NNPDF conda package
       run: |
         conda create -n nnpdf_test /home/docker/miniconda3/conda-bld/linux-64/*.tar.bz2
