@@ -23,6 +23,7 @@ jobs:
       run: |
         conda create -n nnpdfenv ~/miniconda3/conda-bld/linux-64/*.tar.bz2
     - name: Running fit
+      shell: bash -l {0}
       run: |
         export BRANCH=`git branch --show-current`
         export COMMIT=`git rev-parse --short HEAD`
