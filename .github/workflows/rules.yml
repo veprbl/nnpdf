@@ -8,6 +8,13 @@ jobs:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v1
-    - name: Hello
+    - name: Build recipe and run tests on linux
       run: |
-        echo "Hello Self Runner!"
+        conda build -q conda-recipe
+    - name: Cleanup conda build
+      run: |
+        conda build purge-all
+    - name: Runner workspace cleanup
+      run: |
+        echo "Cleaning up previous run"
+        rm -rf "${{ github.workspace }}"
