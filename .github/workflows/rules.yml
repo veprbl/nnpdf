@@ -21,7 +21,7 @@ jobs:
         CONDA_PY=$CONDA_PY conda build --no-test -q conda-recipe
     - name: Installing NNPDF conda package
       run: |
-        conda create -n nnpdfenv ~/miniconda3/conda-bld/linux-64/*.tar.bz2
+        conda create -n nnpdfenv python ~/miniconda3/conda-bld/linux-64/*.tar.bz2
     - name: Running fit
       run: |
         export BRANCH=`git branch --show-current`
