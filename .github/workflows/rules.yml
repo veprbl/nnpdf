@@ -7,14 +7,12 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
+    - name: Cleanup workspace
+      run: |
+        rm -rf /home/docker/miniconda3/conda-bld
+        rm -rf /home/docker/miniconda3/envs/*
+        rm -rf "${{ github.workspace }}"
     - uses: actions/checkout@v1
     - name: Build recipe and run tests on linux
       run: |
         conda build -q conda-recipe
-    - name: Cleanup conda build
-      run: |
-        conda build purge-all
-    - name: Runner workspace cleanup
-      run: |
-        echo "Cleaning up previous run"
-        rm -rf "${{ github.workspace }}"
