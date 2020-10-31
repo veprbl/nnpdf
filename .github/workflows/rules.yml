@@ -12,8 +12,8 @@ jobs:
     steps:
     - name: Cleanup workspace
       run: |
-        rm -rf /home/runner/miniconda3/conda-bld
-        rm -rf /home/runner/miniconda3/envs/*
+        rm -rf ~/miniconda3/conda-bld
+        rm -rf ~/miniconda3/envs/*
         rm -rf "${{ github.workspace }}"
     - uses: actions/checkout@v1
     - name: Build recipe
@@ -21,7 +21,7 @@ jobs:
         CONDA_PY=$CONDA_PY conda build --no-test -q conda-recipe
     - name: Installing NNPDF conda package
       run: |
-        conda create -n nnpdfenv /home/docker/miniconda3/conda-bld/linux-64/*.tar.bz2
+        conda create -n nnpdfenv ~/miniconda3/conda-bld/linux-64/*.tar.bz2
     - name: Running fit
       run: |
         export BRANCH=`git branch --show-current`
