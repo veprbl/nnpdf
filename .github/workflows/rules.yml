@@ -24,3 +24,7 @@ jobs:
     - name: Installing NNPDF conda package
       run: |
         conda create -n nnpdfenv /home/docker/miniconda3/conda-bld/linux-64/*.tar.bz2
+    - name: Running fit
+      run: |
+        conda activate nnpdfenv
+        n3fit n3fit/runcards/developing.yml 1
