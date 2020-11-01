@@ -29,7 +29,7 @@ jobs:
       run: |
         # set runcard name
         export COMMIT=`git rev-parse --short HEAD`
-        export TIMESTAMP=`date --iso-8601=seconds`
+        export TIMESTAMP=`date --iso-8601`
         echo "RUNCARD=NNBOT-$COMMIT-$TIMESTAMP" >> $GITHUB_ENV
     - name: Downloading requirements
       run: |

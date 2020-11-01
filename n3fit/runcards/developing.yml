@@ -51,7 +51,7 @@ experiments:
       - { dataset: HERAF2CHARM, frac: 0.5}
 # F2bottom data
   - experiment: F2BOTTOM
-    datasets: 
+    datasets:
       - { dataset: H1HERAF2B, frac: 1.0}
       - { dataset: ZEUSHERAF2B, frac: 1.0}
       # Fixed target Drell-Yan
@@ -80,16 +80,16 @@ experiments:
       - { dataset: ATLASZHIGHMASS49FB, frac: 1.0, cfac: [QCD] }
       - { dataset: ATLASLOMASSDY11EXT, frac: 1.0, cfac: [QCD] }
       - { dataset: ATLASWZRAP11, frac: 0.5, cfac: [QCD] }
-# ATLAS jets            
+# ATLAS jets
       - { dataset: ATLASR04JETS36PB, frac: 0.5, sys: 10 }
       - { dataset: ATLASR04JETS2P76TEV, frac: 0.5, sys: 10 }
       - { dataset: ATLAS1JET11, frac: 0.5, sys: 10 }
-# ATLAS Z pt    
+# ATLAS Z pt
       - { dataset: ATLASZPT8TEVMDIST,   frac: 0.5, cfac: [QCD], sys: 10 }
       - { dataset: ATLASZPT8TEVYDIST,   frac: 0.5, cfac: [QCD], sys: 10 }
 # ATLAS top
       - { dataset: ATLASTTBARTOT, frac: 1.0, cfac: [QCD] }
-      - { dataset: ATLASTOPDIFF8TEVTRAPNORM, frac: 1.0, cfac: [QCD] }     
+      - { dataset: ATLASTOPDIFF8TEVTRAPNORM, frac: 1.0, cfac: [QCD] }
 # CMS
   - experiment: CMS
     datasets:
@@ -103,10 +103,10 @@ experiments:
       - { dataset: CMS1JET276TEV,     frac: 0.5, sys: 10 }
 # CMS Z pt
       - { dataset: CMSZDIFF12,   frac: 1.0, cfac: [QCD,NRM], sys: 10 }
-# CMS ttbar      
-      - { dataset: CMSTTBARTOT, frac: 1.0, cfac: [QCD] } 
+# CMS ttbar
+      - { dataset: CMSTTBARTOT, frac: 1.0, cfac: [QCD] }
       - { dataset: CMSTOPDIFF8TEVTTRAPNORM, frac: 1.0, cfac: [QCD] }
-  # LHCb 
+  # LHCb
   - experiment: LHCb
     datasets:
       - { dataset: LHCBZ940PB, frac: 1.0, cfac: [QCD] }
@@ -158,12 +158,12 @@ fitting:
     optimizer:
         optimizer_name: 'Adadelta'
         learning_rate: 1.0
-    epochs: 1000
+    epochs: 100
     integrability:
       initial:
       multiplier: 1.03
     positivity:
-        initial: 
+        initial:
         multiplier: 1.10
     stopping_patience: 1.0 # percentage of the number of epochs
     layer_type: 'dense'
@@ -195,7 +195,7 @@ stopping:
   lbdelta   : 0         # Delta for look-back stopping
   mingen    : 0         # Minimum number of generations
   window    : 500       # Window for moving average
-  minchi2   : 3.5       # Minimum chi2 
+  minchi2   : 3.5       # Minimum chi2
   minchi2exp: 6.0       # Minimum chi2 for experiments
   nsmear    : 200       # Smear for stopping
   deltasm   : 200       # Delta smear for stopping
