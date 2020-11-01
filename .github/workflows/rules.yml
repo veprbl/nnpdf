@@ -25,11 +25,13 @@ jobs:
     - name: Installing NNPDF conda package
       run: |
         conda create -n nnpdfenv -c file:///home/runner/miniconda3/conda-bld/ nnpdf
-    - name: Downloading requirements
+    - name: Preparing fit runcard
       run: |
         # set runcard name
         export COMMIT=`git rev-parse --short HEAD`
         echo "RUNCARD=NNBOT-$COMMIT" >> $GITHUB_ENV
+    - name: Downloading requirements
+      run: |
         source activate nnpdfenv
         cd n3fit/runcards
         cp developing.yml $RUNCARD.yml
