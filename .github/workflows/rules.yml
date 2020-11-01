@@ -47,22 +47,24 @@ jobs:
         source activate nnpdfenv
         cd n3fit/runcards
         evolven3fit $RUNCARD $MAXREP
-    - name: Postfit
+    - name: Postfit and upload fit
       run: |
         source activate nnpdfenv
         cd n3fit/runcards
-        postfit $RUNCARD $NREP
-    - name: Uploading results
-      run: |
-        source activate nnpdfenv
-        cd n3fit/runcards
-        vp-upload $RUNCARD
-    - name: Building report
+        postfit $NREP $RUNCARD
+        url=$(vp-upload $RUNCARD 2>&1 | grep https)
+        echo "FIT_URL=$url" >> $GITHUB_ENV
+    - name: Building and upload report
       run: |
         source activate nnpdfenv
         vp-comparefits $RUNCARD $REFERENCE_SET \
                     --title "Automatic fit $RUNCARD" \
                     --author bot \
                     --keywords test \
-                    --thcovmat_if_present \
-                    --upload
+                    --thcovmat_if_present
+        url=$(vp-upload output/ 2>&1 | grep https)
+        echo "REPORT_URL=$url" >> $GITHUB_ENV
+    - name: Summary
+      run: |
+        echo $FIT_URL
+        echo $REPORT_URL
