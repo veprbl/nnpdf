@@ -5,7 +5,6 @@ on: [push]
 
 env:
   CONDA_PY: 37
-  MAXREP: 5
   NREP: 2
   REFERENCE_SET: NNPDF31_nnlo_as_0118
 
@@ -40,7 +39,7 @@ jobs:
       run: |
         source activate nnpdfenv
         cd n3fit/runcards
-        for i in {1..$MAXREP}; do n3fit $RUNCARD.yml $i; done
+        for i in {1..5}; do n3fit $RUNCARD.yml $i; done
     - name: Running dglap
       run: |
         source activate nnpdfenv
