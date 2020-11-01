@@ -45,14 +45,17 @@ jobs:
     - name: Running dglap
       run: |
         source activate nnpdfenv
+        cd n3fit/runcards
         evolven3fit $RUNCARD $MAXREP
     - name: Postfit
       run: |
         source activate nnpdfenv
+        cd n3fit/runcards
         postfit $RUNCARD $NREP
     - name: Uploading results
       run: |
         source activate nnpdfenv
+        cd n3fit/runcards
         vp-upload $RUNCARD
     - name: Building report
       run: |
