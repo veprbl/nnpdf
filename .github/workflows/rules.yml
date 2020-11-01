@@ -5,6 +5,8 @@ on: [push]
 
 env:
   CONDA_PY: 37
+  MAXREP: 5
+  NREP: 2
 
 jobs:
   build:
@@ -22,12 +24,37 @@ jobs:
     - name: Installing NNPDF conda package
       run: |
         conda create -n nnpdfenv -c file:///home/runner/miniconda3/conda-bld/ nnpdf
-    - name: Running fit
+    - name: Downloading requirements
+      run: |
+        # set runcard name
+        export COMMIT=`git rev-parse --short HEAD`
+        echo ::set-env name=RUNCARD::"NNBOT-$COMMIT"
+        source activate nnpdfenv
+        cd n3fit/runcards
+        cp developing.yml $RUNCARD.yml
+        vp-setupfit $RUNCARD.yml
+    - name: Running n3fit
       run: |
         source activate nnpdfenv
-        export BRANCH=`git branch --show-current`
-        export COMMIT=`git rev-parse --short HEAD`
-        export RUNCARD=autofit_$BRANCH_$COMMIT.yml
         cd n3fit/runcards
-        cp developing.yml $RUNCARD        
-        for i in {1..5}; do n3fit $RUNCARD $i; done
+        for i in {1..$MAXREP}; do n3fit $RUNCARD.yml $i; done
+    - name: Running dglap
+      run: |
+        source activate nnpdfenv
+        evolven3fit $RUNCARD $MAXREP
+    - name: Postfit
+      run: |
+        source activate nnpdfenv
+        postfit $RUNCARD $NREP
+    - name: Uploading results
+      run: |
+        source activate nnpdfenv
+        vp-upload $RUNCARD
+    - name: Building report
+        source activate nnpdfenv
+        vp-comparefits $RUNCARD NNPDF31_nnlo_as_0118 \
+                    --title "Automatic fit $RUNCARD" \
+                    --author bot \
+                    --keywords test \
+                    --thcovmat_if_present \
+                    --upload
