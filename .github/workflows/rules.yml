@@ -7,6 +7,7 @@ env:
   CONDA_PY: 37
   MAXREP: 5
   NREP: 2
+  REFERENCE_SET: NNPDF31_nnlo_as_0118
 
 jobs:
   build:
@@ -28,7 +29,7 @@ jobs:
       run: |
         # set runcard name
         export COMMIT=`git rev-parse --short HEAD`
-        echo ::set-env name=RUNCARD::"NNBOT-$COMMIT"
+        echo "RUNCARD=NNBOT-$COMMIT" >> $GITHUB_ENV
         source activate nnpdfenv
         cd n3fit/runcards
         cp developing.yml $RUNCARD.yml
@@ -53,7 +54,7 @@ jobs:
     - name: Building report
       run: |
         source activate nnpdfenv
-        vp-comparefits $RUNCARD NNPDF31_nnlo_as_0118 \
+        vp-comparefits $RUNCARD $REFERENCE_SET \
                     --title "Automatic fit $RUNCARD" \
                     --author bot \
                     --keywords test \
