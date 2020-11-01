@@ -51,6 +51,7 @@ jobs:
         source activate nnpdfenv
         vp-upload $RUNCARD
     - name: Building report
+      run: |
         source activate nnpdfenv
         vp-comparefits $RUNCARD NNPDF31_nnlo_as_0118 \
                     --title "Automatic fit $RUNCARD" \
