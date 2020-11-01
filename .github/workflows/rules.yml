@@ -21,12 +21,13 @@ jobs:
         CONDA_PY=$CONDA_PY conda build --no-test -q conda-recipe
     - name: Installing NNPDF conda package
       run: |
-        conda create -n nnpdfenv
+        conda create -n nnpdfenv -c file:///home/runner/miniconda3/conda-bld/ nnpdf
+    - name: Running fit
+      run: |
         source activate nnpdfenv
-        conda install -c file:///home/runner/miniconda3/conda-bld/ nnpdf
         export BRANCH=`git branch --show-current`
         export COMMIT=`git rev-parse --short HEAD`
         export RUNCARD=autofit_$BRANCH_$COMMIT.yml
         cd n3fit/runcards
         cp developing.yml $RUNCARD        
-        n3fit $RUNCARD 1
+        for i in {1..5}; do n3fit $RUNCARD $i; done
