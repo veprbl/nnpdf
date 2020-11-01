@@ -5,6 +5,7 @@ on: [push]
 
 env:
   CONDA_PY: 37
+  MAXREP: 5
   NREP: 2
   REFERENCE_SET: NNPDF31_nnlo_as_0118
 
@@ -28,7 +29,8 @@ jobs:
       run: |
         # set runcard name
         export COMMIT=`git rev-parse --short HEAD`
-        echo "RUNCARD=NNBOT-$COMMIT" >> $GITHUB_ENV
+        export TIMESTAMP=`date --iso-8601=seconds`
+        echo "RUNCARD=NNBOT-$COMMIT-$TIMESTAMP" >> $GITHUB_ENV
     - name: Downloading requirements
       run: |
         source activate nnpdfenv
@@ -39,7 +41,7 @@ jobs:
       run: |
         source activate nnpdfenv
         cd n3fit/runcards
-        for i in {1..5}; do n3fit $RUNCARD.yml $i; done
+        for ((i=1; i<=$MAXREP; i++)); do n3fit $RUNCARD.yml $i; done
     - name: Running dglap
       run: |
         source activate nnpdfenv
