@@ -5,8 +5,8 @@ on: [push]
 
 env:
   CONDA_PY: 37
-  MAXREP: 5
-  NREP: 5
+  MAXREP: 3
+  NREP: 2
   REFERENCE_SET: 231020-nnpdf40_jcm_iterated
 
 jobs:
