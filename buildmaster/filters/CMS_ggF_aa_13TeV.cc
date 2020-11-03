@@ -1,10 +1,10 @@
 /*
 Reference:
    [CMS PAS HIG-18-029]
-   Measurement of Higgs boson production via gluon fusion and vector boson fusion
-   in the diphoton decay channel at sqrt(s)=13 TeV
+   Measurement of Higgs boson production via gluon fusion and vector boson 
+   fusion in the diphoton decay channel at sqrt(s)=13 TeV
 
-There are 7 simplified template cross sections for gg->H.
+There are 6 simplified template cross sections for gg->H.
 
 The implementation is based on Table 6 (including uncertainties).
 */
