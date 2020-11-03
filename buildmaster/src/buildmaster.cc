@@ -111,6 +111,7 @@
 #include "ATLAS_WW_13TEV.h"
 #include "CMS_WZ_13TEV.h"
 #include "EIC.h"
+#include "ATLAS_ggF_13TeV.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -439,6 +440,7 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new CMS_hxsec_RunII_diff_pTHFilter());
   target.push_back(new CMS_hxsec_RunII_diff_pTH_ggHFilter());
   target.push_back(new CMS_hxsec_RunII_diff_yHFilter());
+  target.push_back(new ATLAS_ggF_13TeVFilter());
 
   // *********************** DIBOSON *********************************
   target.push_back(new ATLAS_WZ_13TEV_pTZFilter());
