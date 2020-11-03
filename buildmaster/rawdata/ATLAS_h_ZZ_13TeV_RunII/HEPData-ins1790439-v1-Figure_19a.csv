@@ -1,0 +1,32 @@
+#: table_doi: 10.17182/hepdata.94312.v1/t5
+#: name: Figure 19a - Diff. Fid. XS for $p_{T}^{4l}$
+#: description: Differential fiducial cross section for the transverse momentum $p_{T}^{4l}$ of the Higgs boson. The measured cross sections are compared to predictions provided by NNLOPS + XH. NNLOPS is normalised to the N3LO total cross section with a K-factor = 1.1 . Measured value in the last bin is un upper limit at 95% CL.
+#: data_file: SummaryPlot_pt.yaml
+#: keyword reactions: P P --> H --> Z0 Z0 --> LEPTON + LEPTON + LEPTON + LEPTON
+#: keyword observables: Results
+#: keyword cmenergies: 13000.0
+#: keyword phrases: Higgs Boson | Measurement of cross sections | Higgs boson differential cross sections | Higgs to 4leptons
+$p_{T}^{4l}$ [$\mbox{GeV}$],$p_{T}^{4l}$ [$\mbox{GeV}$] LOW,$p_{T}^{4l}$ [$\mbox{GeV}$] HIGH,$\mbox{measured}\ \mbox{d}\sigma/\mbox{d}p_{T}^{4l}$ [$\mbox{fb/GeV}$],stat +,stat -,sys +,sys -
+5.0,0,10,0.052,0.015,-0.014,0.002,-0.002
+15.0,10,20,0.055,0.016,-0.015,0.003,-0.002
+25.0,20,30,0.032,0.013,-0.012,0.002,-0.001
+37.5,30,45,0.0312,0.0081,-0.0073,0.0014,-0.0008
+52.5,45,60,0.0148,0.0061,-0.0052,0.0007,-0.0004
+70.0,60,80,0.0086,0.0042,-0.0036,0.0007,-0.0005
+100.0,80,120,0.0137,0.0028,-0.0025,0.0005,-0.0003
+160.0,120,200,0.00359,0.00097,-0.00084,0.00012,-9e-05
+275.0,200,350,0.00084,0.00031,-0.00025,4e-05,-2e-05
+675.0,350,1000,0.000042,0,0,0,0
+
+$p_{T}^{4l}$ [$\mbox{GeV}$],$p_{T}^{4l}$ [$\mbox{GeV}$] LOW,$p_{T}^{4l}$ [$\mbox{GeV}$] HIGH,$\mbox{predicted}\ \mbox{d}\sigma/\mbox{d}p_{T}^{4l}\ \mbox{NNLOPS+XH}$ [$\mbox{fb/GeV}$],error +,error -
+5.0,0,10,0.045,0.003,-0.003
+15.0,10,20,0.062,0.004,-0.004
+25.0,20,30,0.049,0.003,-0.003
+37.5,30,45,0.035,0.002,-0.002
+52.5,45,60,0.024,0.002,-0.002
+70.0,60,80,0.016,0.001,-0.001
+100.0,80,120,0.0085,0.0008,-0.0008
+160.0,120,200,0.0029,0.0003,-0.0003
+275.0,200,350,0.00049,7e-05,-7e-05
+675.0,350,1000,1.5e-05,3e-06,-3e-06
+

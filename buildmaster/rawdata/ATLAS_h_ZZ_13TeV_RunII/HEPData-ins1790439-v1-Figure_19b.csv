@@ -1,0 +1,264 @@
+#: table_doi: 10.17182/hepdata.94312.v1/t6
+#: name: Figure 19b - Corr. Mtx for $p_{T}^{4l}$
+#: description: Correlation matrix between the measured cross sections and the $ZZ^{*}$ background normalization corresponding to the differential fiducial cross section for the transverse momentum $p_{T}^{4l}$ of the Higgs boson.
+#: data_file: CorrMatrix_table_pt.yaml
+#: keyword reactions: P P --> H --> Z0 Z0 --> LEPTON + LEPTON + LEPTON + LEPTON
+#: keyword observables: Results
+#: keyword cmenergies: 13000.0
+#: keyword phrases: Higgs Boson | Measurement of cross sections | Higgs boson differential cross sections | Higgs to 4leptons
+
+$p_{T}^{4l}$ [],$0-10 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 1
+$10-20 \ \mbox{GeV}$, -0.15
+$20-30 \ \mbox{GeV}$, 0.023
+$30-45 \ \mbox{GeV}$, 0.012
+$45-60 \ \mbox{GeV}$, 0.0079
+$60-80 \ \mbox{GeV}$, 0.0062
+$80-120 \ \mbox{GeV}$, 0.014
+$120-200 \ \mbox{GeV}$, 0.01
+$200-350 \ \mbox{GeV}$, 0.0062
+$350-1000 \ \mbox{GeV}$, 8.5e-06
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,-0.36
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.025
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,-0.0018
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,-7.4e-05
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,-0.00027
+
+$p_{T}^{4l}$ [],$10-20 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, -0.15
+$10-20 \ \mbox{GeV}$, 1
+$20-30 \ \mbox{GeV}$, -0.12
+$30-45 \ \mbox{GeV}$, 0.027
+$45-60 \ \mbox{GeV}$, 0.0095
+$60-80 \ \mbox{GeV}$, 0.0083
+$80-120 \ \mbox{GeV}$, 0.016
+$120-200 \ \mbox{GeV}$, 0.011
+$200-350 \ \mbox{GeV}$, 0.006
+$350-1000 \ \mbox{GeV}$, 8.5e-06
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,0.035
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,-0.38
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,0.02
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,-0.00097
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,-0.00066
+
+$p_{T}^{4l}$ [],$20-30 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 0.023
+$10-20 \ \mbox{GeV}$, -0.12
+$20-30 \ \mbox{GeV}$, 1
+$30-45 \ \mbox{GeV}$, -0.099
+$45-60 \ \mbox{GeV}$, 0.013
+$60-80 \ \mbox{GeV}$, 0.0084
+$80-120 \ \mbox{GeV}$, 0.013
+$120-200 \ \mbox{GeV}$, 0.0076
+$200-350 \ \mbox{GeV}$, 0.0043
+$350-1000 \ \mbox{GeV}$, 6.4e-06
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,-0.003
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.028
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,-0.36
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.012
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,-0.001
+
+$p_{T}^{4l}$ [],$30-45 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 0.012
+$10-20 \ \mbox{GeV}$, 0.027
+$20-30 \ \mbox{GeV}$, -0.099
+$30-45 \ \mbox{GeV}$, 1
+$45-60 \ \mbox{GeV}$, -0.034
+$60-80 \ \mbox{GeV}$, 0.013
+$80-120 \ \mbox{GeV}$, 0.018
+$120-200 \ \mbox{GeV}$, 0.012
+$200-350 \ \mbox{GeV}$, 0.0067
+$350-1000 \ \mbox{GeV}$, 9.6e-06
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,0.00027
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,-0.0011
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,0.022
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,-0.22
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,-0.00031
+
+$p_{T}^{4l}$ [],$45-60 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 0.0079
+$10-20 \ \mbox{GeV}$, 0.0095
+$20-30 \ \mbox{GeV}$, 0.013
+$30-45 \ \mbox{GeV}$, -0.034
+$45-60 \ \mbox{GeV}$, 1
+$60-80 \ \mbox{GeV}$, -0.09
+$80-120 \ \mbox{GeV}$, 0.014
+$120-200 \ \mbox{GeV}$, 0.0077
+$200-350 \ \mbox{GeV}$, 0.0054
+$350-1000 \ \mbox{GeV}$, 7.5e-06
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,0.0001
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.00037
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,-5.6e-05
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,-0.2
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,0.015
+
+$p_{T}^{4l}$ [],$60-80 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 0.0062
+$10-20 \ \mbox{GeV}$, 0.0083
+$20-30 \ \mbox{GeV}$, 0.0084
+$30-45 \ \mbox{GeV}$, 0.013
+$45-60 \ \mbox{GeV}$, -0.09
+$60-80 \ \mbox{GeV}$, 1
+$80-120 \ \mbox{GeV}$, -0.023
+$120-200 \ \mbox{GeV}$, 0.029
+$200-350 \ \mbox{GeV}$, 0.0066
+$350-1000 \ \mbox{GeV}$, 6.2e-06
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,-0.00025
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,-0.00074
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,-0.0015
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.0059
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,-0.25
+
+$p_{T}^{4l}$ [],$80-120 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 0.014
+$10-20 \ \mbox{GeV}$, 0.016
+$20-30 \ \mbox{GeV}$, 0.013
+$30-45 \ \mbox{GeV}$, 0.018
+$45-60 \ \mbox{GeV}$, 0.014
+$60-80 \ \mbox{GeV}$, -0.023
+$80-120 \ \mbox{GeV}$, 1
+$120-200 \ \mbox{GeV}$, -0.016
+$200-350 \ \mbox{GeV}$, 0.013
+$350-1000 \ \mbox{GeV}$, 1.4e-05
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,8.9e-05
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.00041
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,0.00027
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.00014
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,-0.15
+
+$p_{T}^{4l}$ [],$120-200 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 0.01
+$10-20 \ \mbox{GeV}$, 0.011
+$20-30 \ \mbox{GeV}$, 0.0076
+$30-45 \ \mbox{GeV}$, 0.012
+$45-60 \ \mbox{GeV}$, 0.0077
+$60-80 \ \mbox{GeV}$, 0.029
+$80-120 \ \mbox{GeV}$, -0.016
+$120-200 \ \mbox{GeV}$, 1
+$200-350 \ \mbox{GeV}$, -0.029
+$350-1000 \ \mbox{GeV}$, 1.4e-05
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,0.00012
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.00027
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,0.0006
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.0025
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,-0.071
+
+$p_{T}^{4l}$ [],$200-350 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 0.0062
+$10-20 \ \mbox{GeV}$, 0.006
+$20-30 \ \mbox{GeV}$, 0.0043
+$30-45 \ \mbox{GeV}$, 0.0067
+$45-60 \ \mbox{GeV}$, 0.0054
+$60-80 \ \mbox{GeV}$, 0.0066
+$80-120 \ \mbox{GeV}$, 0.013
+$120-200 \ \mbox{GeV}$, -0.029
+$200-350 \ \mbox{GeV}$, 1
+$350-1000 \ \mbox{GeV}$, -5.8e-05
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,3.2e-05
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,1.2e-06
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,-8.7e-06
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.0005
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,-0.0089
+
+$p_{T}^{4l}$ [],$350-1000 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 8.5e-06
+$10-20 \ \mbox{GeV}$, 8.5e-06
+$20-30 \ \mbox{GeV}$, 6.4e-06
+$30-45 \ \mbox{GeV}$, 9.6e-06
+$45-60 \ \mbox{GeV}$, 7.5e-06
+$60-80 \ \mbox{GeV}$, 6.2e-06
+$80-120 \ \mbox{GeV}$, 1.4e-05
+$120-200 \ \mbox{GeV}$, 1.4e-05
+$200-350 \ \mbox{GeV}$, -5.8e-05
+$350-1000 \ \mbox{GeV}$, 1
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,-3.1e-09
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,-2.3e-09
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,-2.1e-09
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,-1.3e-08
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,2.7e-07
+
+$p_{T}^{4l}$ [],$ZZ^{*} \ 0-10 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, -0.36
+$10-20 \ \mbox{GeV}$, 0.035
+$20-30 \ \mbox{GeV}$, -0.003
+$30-45 \ \mbox{GeV}$, 0.00027
+$45-60 \ \mbox{GeV}$, 0.0001
+$60-80 \ \mbox{GeV}$, -0.00025
+$80-120 \ \mbox{GeV}$, 8.9e-05
+$120-200 \ \mbox{GeV}$, 0.00012
+$200-350 \ \mbox{GeV}$, 3.2e-05
+$350-1000 \ \mbox{GeV}$, -3.1e-09
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,1
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.0018
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,0.0019
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.0026
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,0.0024
+
+$p_{T}^{4l}$ [],$ZZ^{*} \ 10-20 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, 0.025
+$10-20 \ \mbox{GeV}$, -0.38
+$20-30 \ \mbox{GeV}$, 0.028
+$30-45 \ \mbox{GeV}$, -0.0011
+$45-60 \ \mbox{GeV}$, 0.00037
+$60-80 \ \mbox{GeV}$, -0.00074
+$80-120 \ \mbox{GeV}$, 0.00041
+$120-200 \ \mbox{GeV}$, 0.00027
+$200-350 \ \mbox{GeV}$, 1.2e-06
+$350-1000 \ \mbox{GeV}$, -2.3e-09
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,0.0018
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,1
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,0.0066
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.01
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,0.0084
+
+$p_{T}^{4l}$ [],$ZZ^{*} \ 20-30 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, -0.0018
+$10-20 \ \mbox{GeV}$, 0.02
+$20-30 \ \mbox{GeV}$, -0.36
+$30-45 \ \mbox{GeV}$, 0.022
+$45-60 \ \mbox{GeV}$, -5.6e-05
+$60-80 \ \mbox{GeV}$, -0.0015
+$80-120 \ \mbox{GeV}$, 0.00027
+$120-200 \ \mbox{GeV}$, 0.0006
+$200-350 \ \mbox{GeV}$, -8.7e-06
+$350-1000 \ \mbox{GeV}$, -2.1e-09
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,0.0019
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.0066
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,1
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.01
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,0.0092
+
+$p_{T}^{4l}$ [],$ZZ^{*} \ 30-60 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, -7.4e-05
+$10-20 \ \mbox{GeV}$, -0.00097
+$20-30 \ \mbox{GeV}$, 0.012
+$30-45 \ \mbox{GeV}$, -0.22
+$45-60 \ \mbox{GeV}$, -0.2
+$60-80 \ \mbox{GeV}$, 0.0059
+$80-120 \ \mbox{GeV}$, 0.00014
+$120-200 \ \mbox{GeV}$, 0.0025
+$200-350 \ \mbox{GeV}$, 0.0005
+$350-1000 \ \mbox{GeV}$, -1.3e-08
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,0.0026
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.01
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,0.01
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,1
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,0.038
+
+$p_{T}^{4l}$ [],$ZZ^{*} \ 60-1000 \ \mbox{GeV}$
+$0-10 \ \mbox{GeV}$, -0.00027
+$10-20 \ \mbox{GeV}$, -0.00066
+$20-30 \ \mbox{GeV}$, -0.001
+$30-45 \ \mbox{GeV}$, -0.00031
+$45-60 \ \mbox{GeV}$, 0.015
+$60-80 \ \mbox{GeV}$, -0.25
+$80-120 \ \mbox{GeV}$, -0.15
+$120-200 \ \mbox{GeV}$, -0.071
+$200-350 \ \mbox{GeV}$, -0.0089
+$350-1000 \ \mbox{GeV}$, 2.7e-07
+$ZZ^{*} \ 0-10 \ \mbox{GeV}$,0.0024
+$ZZ^{*} \ 10-20 \ \mbox{GeV}$,0.0084
+$ZZ^{*} \ 20-30 \ \mbox{GeV}$,0.0092
+$ZZ^{*} \ 30-60 \ \mbox{GeV}$,0.038
+$ZZ^{*} \ 60-1000 \ \mbox{GeV}$,1
+
