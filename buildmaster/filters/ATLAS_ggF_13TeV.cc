@@ -94,7 +94,7 @@ void ATLAS_ggF_13TeVFilter::ReadData()
       istringstream jstream(line);
       double SS_cv, SS_er;
       jstream >> SS_cv >> SS_er;
-      SM_cov[i] = SS_er/SS_cv;
+      SM_cov[i] = SS_er;
     }
 
   //Generate covariance matrix from correlation matrix
