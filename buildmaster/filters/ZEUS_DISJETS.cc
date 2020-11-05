@@ -1,5 +1,17 @@
 /*
-!!!!!!Data set description needed here !!!!!!!! 
+Reference: arXiv:1003.2923.
+Hepdata: https://www.hepdata.net/record/ins848883.
+Published in Phys. Lett. B 691 (2010) 127.
+Description: Measurement of the differential inclusive-jet cross sections in 
+neutral current deep inelastic scattering of 27.5 electrons and positrons on 
+920 GeV proton at a centre of mass energy 319 GeV using the anti-KT jet 
+algorithm in the Breit frame. The data, with an integrated luminosity of 
+81.7 pb-1 (16.7 pb-1 E- P, 65.0 pb-1 E+ P), were collected during the 
+1998- 2000 running periods. In the tables of cross sections the first DSYS 
+error is the uncorrelated systematic error and the second is the 
+jet-energy-scale uncertainty. Tables 5-10 (corresponding to the cross section
+differential in the transverse neergy of the jet ET, in six ranges of Q2) are
+implemneted.
 */
 
 #include "ZEUS_DISJETS.h"
