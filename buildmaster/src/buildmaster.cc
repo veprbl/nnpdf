@@ -114,6 +114,8 @@
 #include "CMS_2JET_5TEV.h"
 #include "ATLAS_DY_2D_8TEV_LOWMASS.h"
 #include "ATLAS_WMU_8TEV.h"
+#include "ZEUS_DISJETS.h"
+
 
 /**
  * \param argv the filename containing the configuration
@@ -312,8 +314,10 @@ vector<std::unique_ptr<CommonData>> InitCommonData()
   target.emplace_back(new H1HERA2HGHYFilter());
 
   // ************************* HERA-II F2C ******************************
-
   target.emplace_back(new HERAF2CHARMFilter());
+
+  // ************************* HERA DIS + JETS ************************
+  target.push_back(new ZEUS_DISJETSFilter());
 
   // ************************* LHCb ******************************
 

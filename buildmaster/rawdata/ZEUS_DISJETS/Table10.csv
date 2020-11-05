@@ -1,0 +1,23 @@
+#: table_doi: 10.17182/hepdata.55309.v1/t10
+#: name: Table 10
+#: description: The measured differential cross section DSIG/DET for inclusive jet  production in the Q**2 region 5000 to 100000 GeV for the anti-KT jet  algorithm.
+
+#: data_file: Table10.yaml
+#: keyword reactions: E+ P --> E+ JET X | E- P --> E- JET X
+#: keyword observables: DSIG/DET
+#: keyword phrases: Inclusive | Single Differential Cross Section | Jet Production | Electron production | Neutral Current | Deep Inelastic Scattering
+#: keyword cmenergies: 319.0
+#: ABS(COS(GAMMA(H))),,,< 0.65
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4),,,-2.0-1.5
+#: Q**2 [GeV^2],,,5000.0-100000.0
+#: RE,,,E+- P --> E+- JET X
+#: SQRT(S) [GeV],,,319.0
+ET(P=4) [GEV],ET(P=4) [GEV] LOW,ET(P=4) [GEV] HIGH,D(SIG)/DET(P=4) [PB/GEV],stat +,stat -,sys_1 +,sys_1 -,sys_2 +,sys_2 -
+9.0,8.0,10.0,0.301,0.051,-0.051,0.033,-0.037,0.005,-0.021
+12.0,10.0,14.0,0.229,0.034,-0.034,0.007,-0.013,0.013,-0.005
+16.0,14.0,18.0,0.148,0.028,-0.028,0.02,-0.017,0.0,-0.009
+21.5,18.0,25.0,0.081,0.016,-0.016,0.013,-0.014,0.002,-0.001
+62.5,25.0,100.0,0.0104,0.002,-0.002,0.0007,-0.0007,0.0002,-0.0001
+
