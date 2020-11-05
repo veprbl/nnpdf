@@ -115,6 +115,7 @@
 #include "CMS_ggF_aa_13TeV.h"
 #include "CMS_ggF_tautau_13TeV.h"
 #include "ATLAS_h_ZZ_13TeV_RunII.h"
+#include "ATLAS_ggF_13TeV_2015.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -447,6 +448,8 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new CMS_ggF_aa_13TeVFilter());
   target.push_back(new CMS_ggF_tautau_13TeVFilter());
   target.push_back(new ATLAS_h_ZZ_13TeV_RunIIFilter());
+  target.push_back(new ATLAS_ggF_13TeV_2015_pTHFilter());
+  target.push_back(new ATLAS_ggF_13TeV_2015_yHFilter());
 
   // *********************** DIBOSON *********************************
   target.push_back(new ATLAS_WZ_13TEV_pTZFilter());
