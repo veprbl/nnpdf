@@ -51,7 +51,7 @@ class ParamfitsConfig(Config):
         """NOTE: EXPERIMENTAL. A hack to obtain fits_as from the
         fitdeclarations, without having to
         download and inspect the actual fits."""
-        alpha_pattern = r'\d{6}-cv-\d{3}_W_(m?\d*p\d*)(?:_.*)'
+        alpha_pattern = r'\d{6}-cv-\d{3}_W_(m?\d*p\d*)(?:_.*)?'
         res = []
         for fit in fitdeclarations:
             m = re.match(alpha_pattern, fit)
