@@ -139,6 +139,13 @@ def combine_pseudorreplica_tables(
     res = gb.apply(select_best_replicas)
     res.index = res.index.droplevel(0)
     res.sort_index(inplace=True)
+    from validphys.paramfits.config import ParamfitsConfig
+    order = sorted(res.columns, key=lambda x: ParamfitsConfig.produce_fits_as_from_fitdeclarations(None, [x])['fits_as'][0])
+    res = res.reindex(
+            order,
+            axis=1
+    )
+
 
     #TODO: Why in earth did I decide to keep this?!
     res.columns = pd.MultiIndex.from_product((res.columns, ['chi2']))
