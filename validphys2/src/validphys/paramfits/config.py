@@ -2,6 +2,7 @@
 Configuration class for the paramfits module
 """
 import re
+import numbers
 from collections.abc import Mapping, Sequence
 
 from reportengine.configparser import Config, ConfigError, element_of
@@ -71,7 +72,7 @@ class ParamfitsConfig(Config):
         return datasets
 
     def produce_combine_dataspecs_pseudorreplicas_as(
-            self, dataspecs, how='min', blacklist_datasets=()):
+            self, dataspecs, how='min', blacklist_datasets=(), min_points_required: numbers.Real = 2):
         if not isinstance(dataspecs, Sequence):
             raise ConfigError("dataspecs should be a sequence of mappings, not "
                               f"{type(dataspecs).__name__}")
@@ -96,7 +97,7 @@ class ParamfitsConfig(Config):
                 fitnames.append(namelist)
         finalnames =  [utils.common_prefix(*ns) + '__combined' for ns in zip(*fitnames)]
         res = tableloader.combine_pseudorreplica_tables(dfs, finalnames,
-                blacklist_datasets=blacklist_datasets)
+                blacklist_datasets=blacklist_datasets, min_points_required=min_points_required)
 
         return {'fits_computed_psedorreplicas_chi2': res}
 
