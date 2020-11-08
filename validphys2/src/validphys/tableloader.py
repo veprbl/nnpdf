@@ -80,8 +80,11 @@ def set_actual_column_level0(df, new_levels):
     """Set the first level of the index to new_levels. Note:
     This is a separate function mostly because it breaks
     in every patch update of pandas."""
-    cols = df.columns
-    cols.set_levels(new_levels, inplace=True, level=0)
+    assert (df.columns.levels[1] == ['chi2']).all()
+    df.columns = pd.MultiIndex.from_product([new_levels, ['chi2']])
+    # NOTE: DO NOT DO THIS
+    # cols = df.columns
+    # cols.set_levels(new_levels, inplace=True, level=0)
 
 
 #TODO: Find a better place for this function
