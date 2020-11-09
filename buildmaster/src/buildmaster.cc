@@ -116,6 +116,7 @@
 #include "CMS_ggF_tautau_13TeV.h"
 #include "ATLAS_h_ZZ_13TeV_RunII.h"
 #include "ATLAS_ggF_13TeV_2015.h"
+#include "ATLAS_TTB_DIFF_13TEV_LJ.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -354,6 +355,7 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new ATLAS_TTB_DIFF_8TEV_LJ_TRAPNORMFilter());
   target.push_back(new ATLAS_TTB_DIFF_8TEV_LJ_TTRAPNORMFilter());
   target.push_back(new ATLAS_TTB_DIFF_8TEV_LJ_TTMNORMFilter());
+  target.push_back(new ATLAS_TTB_DIFF_13TEV_LJ_TTMFilter());
 
   //***************************F2B******************************
 
