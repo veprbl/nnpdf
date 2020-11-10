@@ -174,6 +174,7 @@ def common_data_reader_experiment(experiment_c, experiment_spec):
 
 
 def common_data_reader(
+    replica,
     spec,
     t0pdfset,
     replica_seeds=None,
@@ -283,7 +284,67 @@ def common_data_reader(
     # Now it is time to build the masks for the training validation split
     all_dict_out = []
     for expdata, trval_seed in zip(all_expdatas, trval_seeds):
-        tr_mask, vl_mask = make_tr_val_mask(datasets, exp_name, seed=trval_seed)
+        
+        import pandas as pd
+
+        # Load data from nnfit psuedodata file and put it in a dataframe (yes this repeated for every experiment..)
+        nnfit_pseudodata_folder_path = f'/home/roy/github/N3PDF/pdf_correlation/expdata_files/DISonly_data_nnfit/nnfit/replica_{replica[0]}'
+        nnfit_tr = np.loadtxt(f'{nnfit_pseudodata_folder_path}/training.dat',dtype=str)
+        nnfit_vl = np.loadtxt(f'{nnfit_pseudodata_folder_path}/validation.dat',dtype=str)
+        nnfit_tr = pd.DataFrame(data=nnfit_tr, columns=["experiment_name", "dataset_name", "mask_id", "data"] )
+        nnfit_vl = pd.DataFrame(data=nnfit_vl, columns=["experiment_name", "dataset_name", "mask_id", "data"] )
+
+        # Get only the data for the current experiment
+        nnfit_tr = nnfit_tr[nnfit_tr['experiment_name']==exp_name]
+        nnfit_vl = nnfit_vl[nnfit_vl['experiment_name']==exp_name]
+
+        # Get values of the experimental data
+        expdata_tr = np.array([[float(i) for i in nnfit_tr['data'].tolist()]], dtype='float64')
+        expdata_vl = np.array([[float(i) for i in nnfit_vl['data'].tolist()]], dtype='float64')
+
+        # Below we generate the training and validtion masks corresponding to the nnfit data split
+        tr_mask_id = [int(i) for i in nnfit_tr['mask_id'].tolist()]
+        vl_mask_id = [int(i) for i in nnfit_vl['mask_id'].tolist()]
+
+        # cumsum is because n3fit combines the dataset corresponding to an experiment as one, while 
+        # treats them separatly and restarts counting the mask ids again from 0 for each dataset.
+        # In this for-loop we obtain the mask ids relative to the experiment rather than the dataset
+        cumsum_dataset_size = 0
+        tr_mask_id = np.array([])
+        vl_mask_id = np.array([])
+        for dataset in datasets:
+            # Because the name in the runcard doesn't match the name in the dataset object
+            dataset_name = dataset['name']
+            if dataset_name == 'CHORUSNU':
+                dataset_name = 'CHORUSNUPb'
+            elif dataset_name == 'CHORUSNB':
+                dataset_name = 'CHORUSNBPb'
+            elif dataset_name == 'NTVNBDMN':
+                dataset_name = 'NTVNBDMNFe'
+
+            tr_df_dataset = nnfit_tr[nnfit_tr['dataset_name']==dataset_name]
+            tr_dataset_mask_id = np.array([int(i) for i in tr_df_dataset['mask_id'].tolist()])
+            tr_dataset_mask_id += cumsum_dataset_size
+
+            vl_df_dataset = nnfit_vl[nnfit_vl['dataset_name']==dataset['name']]
+            vl_dataset_mask_id = np.array([int(i) for i in vl_df_dataset['mask_id'].tolist()])
+            vl_dataset_mask_id += cumsum_dataset_size
+
+            cumsum_dataset_size += tr_dataset_mask_id.size + vl_dataset_mask_id.size
+
+            tr_mask_id = np.concatenate((tr_mask_id, tr_dataset_mask_id))
+            vl_mask_id = np.concatenate((vl_mask_id, vl_dataset_mask_id))
+
+        # generate the masks (separatly in case a fold is used, although it really doesn't matter 
+        # since we can't use a fold while doing the comparison to nnfit... Oh well..)
+        tr_mask = expdata.size * [False]
+        for i in tr_mask_id:
+            tr_mask[int(i)]=True
+        tr_mask = np.array(tr_mask)
+        vl_mask = expdata.size * [False]
+        for i in vl_mask_id:
+            vl_mask[int(i)]=True
+        vl_mask = np.array(vl_mask)
 
         if rotate_diagonal:
             expdata = np.matmul(dt_trans, expdata)
@@ -300,11 +361,8 @@ def common_data_reader(
             covmat_vl = covmat[vl_mask].T[vl_mask]
             invcovmat_vl = np.linalg.inv(covmat_vl)
 
-        ndata_tr = np.count_nonzero(tr_mask)
-        expdata_tr = expdata[tr_mask].reshape(1, ndata_tr)
-
         ndata_vl = np.count_nonzero(vl_mask)
-        expdata_vl = expdata[vl_mask].reshape(1, ndata_vl)
+        ndata_tr = np.count_nonzero(tr_mask)
 
         # Now save a dictionary of training/validation/experimental folds
         # for training and validation we need to apply the tr/vl masks

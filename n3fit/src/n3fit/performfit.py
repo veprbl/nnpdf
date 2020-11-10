@@ -198,6 +198,7 @@ def performfit(
     for exp in experiments_data:
         log.info("Loading experiment: {0}".format(exp))
         all_exp_dicts = reader.common_data_reader(
+            replica,
             exp,
             t0pdfset,
             replica_seeds=mcseeds,
