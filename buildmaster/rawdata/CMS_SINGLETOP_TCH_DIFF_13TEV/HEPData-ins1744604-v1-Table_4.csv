@@ -1,0 +1,37 @@
+#: table_doi: 10.17182/hepdata.93068.v1/t4
+#: name: Table 4
+#: description: Covariance of the differential absolute cross section as a function of the parton-level top quark rapidity
+#: data_file: y_parton_sum_cov.yaml
+#: keyword reactions: P P --> TOP Q
+#: keyword observables: DSIG(inclusive)/DABS(ETARAP)
+#: keyword cmenergies: 13000.0
+#: keyword phrases: Differential Cross Section | Proton-Proton Scattering | Single Top Production
+#: RE,,,,,$\rm{pp}\ \to\ \rm{tq} + \bar{\rm{t}}q$, $\rm{t} \to \ell\nu \rm{b} (+ \nu_{\tau}\bar{\nu}_{\tau})$, $(\ell = \mu,\rm{e})$
+#: SQRT(S) [GEV],,,,,13000
+Parton-level top quark rapidity,Parton-level top quark rapidity LOW,Parton-level top quark rapidity HIGH,Parton-level top quark rapidity,Parton-level top quark rapidity LOW,Parton-level top quark rapidity HIGH,Var($\textrm{d}\sigma_{\textrm{t}+\bar{\textrm{t}}}/\textrm{d}|y|$) [(pb)**2]
+0.1,0.0,0.2,0.1,0.0,0.2,10.3
+0.1,0.0,0.2,0.35,0.2,0.5,4.6
+0.1,0.0,0.2,0.65,0.5,0.8,2.6
+0.1,0.0,0.2,1.05,0.8,1.3,1.9
+0.1,0.0,0.2,1.9500000000000002,1.3,2.6,2.4
+0.35,0.2,0.5,0.1,0.0,0.2,4.6
+0.35,0.2,0.5,0.35,0.2,0.5,3.0
+0.35,0.2,0.5,0.65,0.5,0.8,1.7
+0.35,0.2,0.5,1.05,0.8,1.3,0.915
+0.35,0.2,0.5,1.9500000000000002,1.3,2.6,1.4
+0.65,0.5,0.8,0.1,0.0,0.2,2.6
+0.65,0.5,0.8,0.35,0.2,0.5,1.7
+0.65,0.5,0.8,0.65,0.5,0.8,4.0
+0.65,0.5,0.8,1.05,0.8,1.3,2.6
+0.65,0.5,0.8,1.9500000000000002,1.3,2.6,1.1
+1.05,0.8,1.3,0.1,0.0,0.2,1.9
+1.05,0.8,1.3,0.35,0.2,0.5,0.915
+1.05,0.8,1.3,0.65,0.5,0.8,2.6
+1.05,0.8,1.3,1.05,0.8,1.3,2.5
+1.05,0.8,1.3,1.9500000000000002,1.3,2.6,0.643
+1.9500000000000002,1.3,2.6,0.1,0.0,0.2,2.4
+1.9500000000000002,1.3,2.6,0.35,0.2,0.5,1.4
+1.9500000000000002,1.3,2.6,0.65,0.5,0.8,1.1
+1.9500000000000002,1.3,2.6,1.05,0.8,1.3,0.643
+1.9500000000000002,1.3,2.6,1.9500000000000002,1.3,2.6,0.99
+

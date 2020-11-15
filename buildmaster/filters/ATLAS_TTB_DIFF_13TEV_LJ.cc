@@ -1,5 +1,5 @@
 /*
-Experiment: CMS
+Experiment: ATLAS
 Eprint: arXiv:1908.07305
 Published in: Eur. Phys. J. C79 (2019) 1028
 Hepdata: https://www.hepdata.net/record/95758?version=1
