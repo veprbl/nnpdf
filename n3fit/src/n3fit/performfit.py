@@ -51,9 +51,6 @@ def initialize_seeds(replica: list, trvlseed: int, nnseed: int, mcseed: int, gen
     nnseeds = []
     mcseeds = []
     for replica_number in replica:
-        np.random.seed(trvlseed)
-        for _ in range(replica_number):
-            trvalseed = np.random.randint(0, pow(2, 31))
 
         np.random.seed(nnseed)
         for _ in range(replica_number):
@@ -62,7 +59,7 @@ def initialize_seeds(replica: list, trvlseed: int, nnseed: int, mcseed: int, gen
         np.random.seed(mcseed)
         for _ in range(replica_number):
             mcseed = np.random.randint(0, pow(2, 31))
-        trvalseeds.append(trvalseed)
+        trvalseeds.append(trvlseed)
         nnseeds.append(nnseed)
         mcseeds.append(mcseed)
 
