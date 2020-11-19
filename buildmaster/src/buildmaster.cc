@@ -118,6 +118,7 @@
 #include "ATLAS_ggF_13TeV_2015.h"
 #include "ATLAS_TTB_DIFF_13TEV_LJ.h"
 #include "CMS_SINGLETOP_TCH_DIFF_13TEV.h"
+#include "CMS_ttZ_ptZ_13TeV.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -454,6 +455,7 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new ATLAS_h_ZZ_13TeV_RunIIFilter());
   target.push_back(new ATLAS_ggF_13TeV_2015_pTHFilter());
   target.push_back(new ATLAS_ggF_13TeV_2015_yHFilter());
+  target.push_back(new CMS_ttZ_ptZ_13TeVFilter());
 
   // *********************** DIBOSON *********************************
   target.push_back(new ATLAS_WZ_13TEV_pTZFilter());
