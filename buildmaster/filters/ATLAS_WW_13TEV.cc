@@ -6,13 +6,13 @@ Reference:
 Description:
    Measurements of fiducial and differential cross-sections for W+ W- 
    production in proton–proton collisions at a centre-of-mass energy of 13 TeV 
-  with the ATLAS experiment at the Large Hadron Collider using data 
-  corresponding to an integrated luminosity of 36.1 fb-1. Events with one 
-  electron and one muon are selected. The fducial cross section and four
-  distributions differential in the invariant mass of the lepton pair, the pT
-  of the lepton pair, the leading pT and the rapidity of the lepton pair are
-  implemented. The information is taken from Tables 7-8, 10-11, 4-5 and 13-14
-  from the hepdata entry.
+   with the ATLAS experiment at the Large Hadron Collider using data 
+   corresponding to an integrated luminosity of 36.1 fb-1. Events with one 
+   electron and one muon are selected. The fducial cross section and four
+   distributions differential in the invariant mass of the lepton pair, the pT
+   of the lepton pair, the leading pT and the rapidity of the lepton pair are
+   implemented. The information is taken from Tables 7-8, 10-11, 4-5 and 13-14
+   from the hepdata entry.
 */
 
 #include "ATLAS_WW_13TEV.h"
@@ -21,7 +21,6 @@ Description:
 void ATLAS_WW_13TEV_memuFilter::ReadData()
 {
   fstream f1;
-  fstream f2;
 
   //Central values and breakdown of ucnertainties
   stringstream datafile("");
@@ -34,35 +33,13 @@ void ATLAS_WW_13TEV_memuFilter::ReadData()
       cerr << "Error opening data file " << datafile.str() << endl;
       exit(-1);
     }
-
-  //Statistical correlation matrix
-  stringstream corrfile("");
-  corrfile << dataPath()
-	   << "rawdata/ATLAS_WW_13TEV/Table8.csv";
-  f2.open(corrfile.str().c_str(), ios::in);
-
-  if (f2.fail())
-    {
-      cerr << "Error opening data file " << corrfile.str() << endl;
-      exit(-1);
-    }
  
   //Read central values and uncertainties
   string line;
-  const int realsys=11;
-
-  double* Stat = new double[fNData];
-  double** corrmat = new double*[fNData];
-  double** syscor  = new double*[fNData];
 
   for(int i=0; i<21; i++)
     {
       getline(f1,line);
-    }
-
-  for(int i=0; i<21; i++)
-    {
-      getline(f2,line);
     }
 
   for(int i=0; i<fNData; i++)
@@ -78,11 +55,10 @@ void ATLAS_WW_13TEV_memuFilter::ReadData()
 	      >> ddum            >> comma
 	      >> ddum            >> comma
 	      >> fData[i]        >> comma
-	      >> Stat[i];
+	      >> fStat[i]        >> comma
+	      >> ddum;
 
-      fStat[i] = 0.;
-
-      for(int j=0; j<realsys; j++)
+      for(int j=0; j<fNSys; j++)
 	{
 	  lstream >> comma >> fSys[i][j].add
 		  >> comma >> ddum;
@@ -94,53 +70,10 @@ void ATLAS_WW_13TEV_memuFilter::ReadData()
       //Exception
       fSys[i][5].type = ADD;           //statistical background uncertainty
       fSys[i][7].name = "ATLASLUMI13"; //luminosity uncertainty
-
-      corrmat[i] = new double[fNData];
-      syscor[i]  = new double[fNData];
-
-      for(int j=0; j<fNData; j++)
-	{
-	  getline(f2,line);
-	  istringstream kstream(line);
-	  kstream >> ddum >> comma 
-		  >> ddum >> comma
-		  >> ddum >> comma
-		  >> ddum >> comma
-		  >> ddum >> comma
-		  >> ddum >> comma
-		  >> corrmat[i][j];
-	}
     }
-
-  //Generate covariance matrix from correlation matrix
-    for(int i=0; i<fNData; i++)
-    {
-      for(int j=0; j<fNData; j++)
-	{
-	  corrmat[i][j] = corrmat[i][j]*Stat[i]*Stat[j];
-	}
-    }
-    
-    //Generate artificial systematics from covariance matrix
-    if(!genArtSys(fNData,corrmat,syscor))
-      {
-	throw runtime_error("Couldn't generate artificial systematics for " + fSetName);
-      }
-    
-    for(int i=0; i<fNData; i++)
-      {
-	for(int j=realsys; j<fNSys; j++)
-	  {
-	    fSys[i][j].add  = syscor[i][j];
-	    fSys[i][j].mult = fSys[i][j].add*1e2/fData[i];
-	    fSys[i][j].type = ADD;
-	    fSys[i][j].name = "CORR";
-	  }
-      } 
-    
-    f1.close();
-    f2.close();
-
+  
+  f1.close();
+  
 }
 
 //ATLAS_WW_13TEV_pTemu: combined pT spectrum
