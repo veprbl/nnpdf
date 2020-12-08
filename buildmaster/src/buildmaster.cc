@@ -111,6 +111,7 @@
 #include "ATLAS_WW_13TEV.h"
 #include "CMS_WZ_13TEV.h"
 #include "EIC.h"
+#include "HERMES.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -492,4 +493,11 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new EICFilter("EIC_NC_EPD_66_PES"));
   target.push_back(new EICFilter("EIC_NC_EPD_28_OPT"));
   target.push_back(new EICFilter("EIC_NC_EPD_28_PES"));
+
+  //*************************HERMES****************************
+  target.push_back(new HERMES_PIplus_protonFilter());
+  target.push_back(new HERMES_PIminus_protonFilter());
+  target.push_back(new HERMES_PIplus_deuteronFilter());
+  target.push_back(new HERMES_PIminus_deuteronFilter());
+  
 }
