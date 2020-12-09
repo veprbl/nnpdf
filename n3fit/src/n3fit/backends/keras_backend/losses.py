@@ -18,6 +18,7 @@ def l_invcovmat(invcovmat_np):
         tmp = y_true - y_pred
         right_dot = tf.tensordot(invcovmat, K.transpose(tmp), axes=1)
         res = tf.tensordot(tmp, right_dot, axes=1)
+        res = tf.reduce_sum(res) # TODO at this point we have three different losses, one per replica
         return tf.reshape(res, (-1,))
 
     return true_loss

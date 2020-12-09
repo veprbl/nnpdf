@@ -56,8 +56,9 @@ class DY(Observable):
         else:
             pdf_x_pdf = op.pdf_masked_convolution(pdf_raw, self.all_masks[0])
             for fk in self.fktables:
-                res = op.tensor_product(fk, pdf_x_pdf, axes=3)
+                res = op.transpose(op.tensor_product(fk, pdf_x_pdf, axes=3))
                 results.append(res)
+
 
         # the masked convolution removes the batch dimension
         ret = self.operation(results)

@@ -360,6 +360,7 @@ def pdfNN_layer_generator(
     regularizer=None,
     regularizer_args=None,
     impose_sumrule=False,
+    rep=1,
 ):  # pylint: disable=too-many-locals
     """
     Generates the PDF model which takes as input a point in x (from 0 to 1)
@@ -503,14 +504,14 @@ def pdfNN_layer_generator(
     # Preprocessing layer (will be multiplied to the last of the denses)
     preproseed = seed + number_of_layers
     layer_preproc = Preprocessing(
-        input_shape=(1,), name="pdf_prepro", flav_info=flav_info, seed=preproseed
+        input_shape=(1,), name=f"pdf_prepro_{rep}", flav_info=flav_info, seed=preproseed
     )
 
     # Evolution layer
-    layer_evln = FkRotation(input_shape=(last_layer_nodes,), output_dim=out)
+    layer_evln = FkRotation(input_shape=(last_layer_nodes,), output_dim=out, name=f"evol_{rep}")
 
     # Basis rotation
-    basis_rotation = FlavourToEvolution(flav_info=flav_info, fitbasis=fitbasis)
+    basis_rotation = FlavourToEvolution(flav_info=flav_info, fitbasis=fitbasis, name=f"fkrot_{rep}")
 
     # Apply preprocessing and basis
     def layer_fitbasis(x):
@@ -535,6 +536,6 @@ def pdfNN_layer_generator(
         integrator_input = None
         model_input = [placeholder_input]
 
-    pdf_model = MetaModel(model_input, layer_pdf(placeholder_input), name="PDF")
+    pdf_model = MetaModel(model_input, layer_pdf(placeholder_input), name=f"PDF_{rep}")
 
     return pdf_model

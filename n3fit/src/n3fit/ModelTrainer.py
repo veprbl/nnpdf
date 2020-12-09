@@ -220,7 +220,7 @@ class ModelTrainer:
         self.model_file = model_file
         self.print_summary = True
         self.mode_hyperopt = False
-        self.impose_sumrule = True
+        self.impose_sumrule = False # TODO dont impose sumrule yet as it should be shared among replicas
         self.hyperkeys = None
         if kfold_parameters is None:
             self.kpartitions = [None]
@@ -357,7 +357,7 @@ class ModelTrainer:
                 self.training["expdata"].append(integ_dict["expdata"])
                 self.training["integdatasets"].append(integ_dict["name"])
 
-    def _model_generation(self, pdf_model, partition):
+    def _model_generation(self, pdf_models, partition):
         """
         Fills the three dictionaries (``training``, ``validation``, ``experimental``)
         with the ``model`` entry
@@ -398,11 +398,19 @@ class ModelTrainer:
 
         # The input to the full model is expected to be the input to the PDF
         # by reutilizing `pdf_model.parse_input` we ensure any auxiliary input is also accunted fro
-        full_model_input_dict = pdf_model._parse_input([input_layer], pass_content=False)
+        all_replicas_pdfs = []
+        for pdf_model in pdf_models:
+            full_model_input_dict = pdf_model._parse_input([input_layer], pass_content=False)
 
-        # The output of the pdf on input_layer will be thus a concatenation
-        # of the PDF values for all experiments
-        full_pdf = pdf_model.apply_as_layer([input_layer])
+            # The output of the pdf on input_layer will be thus a concatenation
+            # of the PDF values for all experiments
+            full_pdf = pdf_model.apply_as_layer([input_layer])
+            all_replicas_pdfs.append(full_pdf)
+
+        # TODO Stack all replicas
+        import tensorflow as tf
+        all_replicas_pdfs = tf.stack(all_replicas_pdfs, axis=-1)
+
         # The input layer is a concatenation of all experiments
         # we need now to split the output on a different array per experiment
         sp_ar = [self.input_sizes]
@@ -410,7 +418,8 @@ class ModelTrainer:
         splitting_layer = operations.as_layer(
             operations.split, op_args=sp_ar, op_kwargs=sp_kw, name="pdf_split"
         )
-        splitted_pdf = splitting_layer(full_pdf)
+
+        splitted_pdf = splitting_layer(all_replicas_pdfs)
 
         # If we are in a kfolding partition, select which datasets are out
         if partition:
@@ -612,20 +621,24 @@ class ModelTrainer:
 
         # Set the parameters of the NN
         # Generate the NN layers
-        pdf_model = model_gen.pdfNN_layer_generator(
-            nodes=nodes_per_layer,
-            activations=activation_per_layer,
-            layer_type=layer_type,
-            flav_info=self.flavinfo,
-            fitbasis=self.fitbasis,
-            seed=seed,
-            initializer_name=initializer,
-            dropout=dropout,
-            regularizer=regularizer,
-            regularizer_args=regularizer_args,
-            impose_sumrule=self.impose_sumrule,
-        )
-        return pdf_model
+        pdf_models = []
+        for i in range(3): # TODO shalt thou fit 3 replicas, no more, no less. 3 shall be the number thou shalt fit, and the number of the fitting shall be three
+            pdf_model = model_gen.pdfNN_layer_generator(
+                nodes=nodes_per_layer,
+                activations=activation_per_layer,
+                layer_type=layer_type,
+                flav_info=self.flavinfo,
+                fitbasis=self.fitbasis,
+                seed=seed,
+                initializer_name=initializer,
+                dropout=dropout,
+                regularizer=regularizer,
+                regularizer_args=regularizer_args,
+                impose_sumrule=self.impose_sumrule,
+                rep=i,
+            )
+            pdf_models.append(pdf_model)
+        return pdf_models
 
     def _assign_data(self, models, fold_k=0):
         """Assign to each model the data to compare with as well as the
@@ -688,7 +701,6 @@ class ModelTrainer:
             self.training["integmultipliers"],
             update_freq=PUSH_INTEGRABILITY_EACH,
         )
-
         training_model.perform_fit(
             epochs=epochs,
             verbose=False,
@@ -812,7 +824,7 @@ class ModelTrainer:
                 seed = np.random.randint(0, pow(2, 31))
 
             # Generate the pdf model
-            pdf_model = self._generate_pdf(
+            pdf_models = self._generate_pdf(
                 params["nodes_per_layer"],
                 params["activation_per_layer"],
                 params["initializer"],
@@ -825,7 +837,7 @@ class ModelTrainer:
 
             # Model generation joins all the different observable layers
             # together with pdf model generated above
-            models = self._model_generation(pdf_model, partition)
+            models = self._model_generation(pdf_models, partition)
 
             # Only after model generation, apply possible weight file
             if self.model_file:
@@ -858,7 +870,7 @@ class ModelTrainer:
             stopping_object = Stopping(
                 validation_model,
                 reporting,
-                pdf_model,
+                pdf_models[0], # TODO meh
                 total_epochs=epochs,
                 stopping_patience=stopping_epochs,
                 save_weights_each=self.save_weights_each,
@@ -932,7 +944,7 @@ class ModelTrainer:
         dict_out["stopping_object"] = stopping_object
         dict_out["experimental"] = self.experimental
         dict_out["training"] = self.training
-        dict_out["pdf_model"] = pdf_model
+        dict_out["pdf_model"] = pdf_models[0]
 
         # Only after the training has finished, we save all models for future reporting
         self.model_dicts = model_dicts

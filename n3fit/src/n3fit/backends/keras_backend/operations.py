@@ -254,10 +254,15 @@ def pdf_masked_convolution(raw_pdf, basis_mask):
             rank3 (len(mask_true), xgrid, xgrid)
     """
     pdf = tf.squeeze(raw_pdf, axis=0)  # remove the batchsize
-    luminosity = tensor_product(pdf, pdf, axes=0)
+    # Get around the number of replicas *shrugh*
+    all_lumi = []
+    for i in range(3): # TODO, Four shalt thou not fit, neither fit thou two, excepting that thou then proceed to three
+        luminosity = tensor_product(pdf[:,:,i], pdf[:,:,i], axes=0)
+        lumi_tmp = K.permute_dimensions(luminosity, (3, 1, 2, 0))
+        all_lumi.append(lumi_tmp)
     # (xgrid, flavour, xgrid, flavour)
     # reshape to put the flavour indices at the beginning to apply mask
-    lumi_tmp = K.permute_dimensions(luminosity, (3, 1, 2, 0))
+    lumi_tmp = tf.stack(all_lumi, axis=-1)
     pdf_x_pdf = boolean_mask(lumi_tmp, basis_mask)
     return pdf_x_pdf
 
