@@ -46,12 +46,12 @@ class DY(Observable):
                 splitted_pdf = op.split(pdf_raw, self.splitting, axis=1)
                 for mask, pdf, fk in zip(self.all_masks, splitted_pdf, self.fktables):
                     pdf_x_pdf = op.pdf_masked_convolution(pdf, mask)
-                    res = op.tensor_product(fk, pdf_x_pdf, axes=3)
+                    res = op.transpose(op.tensor_product(fk, pdf_x_pdf, axes=3))
                     results.append(res)
             else:
                 for mask, fk in zip(self.all_masks, self.fktables):
                     pdf_x_pdf = op.pdf_masked_convolution(pdf_raw, mask)
-                    res = op.tensor_product(fk, pdf_x_pdf, axes=3)
+                    res = op.transpose(op.tensor_product(fk, pdf_x_pdf, axes=3))
                     results.append(res)
         else:
             pdf_x_pdf = op.pdf_masked_convolution(pdf_raw, self.all_masks[0])

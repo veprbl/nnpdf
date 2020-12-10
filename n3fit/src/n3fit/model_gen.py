@@ -131,7 +131,7 @@ def observable_generator(spec_dict, positivity_initial=1.0, integrability=False)
 
     # Prepare a concatenation as experiments are one single entity formed by many datasets
     def gen_concat(name):
-        return operations.as_layer(operations.concatenate, op_kwargs={"axis": 1}, name=name)
+        return operations.as_layer(operations.concatenate, op_kwargs={"axis": 2}, name=name)
 
     # Tensorflow operations have ugly name,
     # we want the final observables to be named just {spec_name} (with'val/exp' if needed)
