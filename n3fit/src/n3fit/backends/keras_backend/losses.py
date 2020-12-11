@@ -4,9 +4,22 @@
 
 import tensorflow as tf
 from tensorflow.keras import backend as K
+from . import operations as op
+
+class l_invcovmat(tf.keras.layers.Layer):
+
+    def __init__(self, invcovmat_np, y_true, **kwargs):
+        self.invcovmat = K.constant(invcovmat_np)
+        self.y_true = y_true
+        super().__init__(**kwargs)
+
+    def call(self, y_pred):
+        tmp = self.y_true - y_pred
+        res = tf.einsum('bri,ij,brj->br', tmp, self.invcovmat, tmp)
+        return op.flatten(res)
 
 
-def l_invcovmat(invcovmat_np):
+def l_invcovmat_as_fun(invcovmat_np):
     """
     Returns a loss function such that:
     L = \sum_{ij} (yt - yp)_{i} invcovmat_{ij} (yt - yp)_{j}
@@ -16,10 +29,8 @@ def l_invcovmat(invcovmat_np):
     def true_loss(y_true, y_pred):
         # (yt - yp) * covmat * (yt - yp)
         tmp = y_true - y_pred
-        right_dot = tf.tensordot(invcovmat, K.transpose(tmp), axes=1)
-        res = tf.tensordot(tmp, right_dot, axes=1)
-        res = tf.reduce_sum(res) # TODO at this point we have three different losses, one per replica
-        return tf.reshape(res, (-1,))
+        res = tf.einsum('bri,ij,brj->br', tmp, invcovmat, tmp)
+        return op.flatten(res)
 
     return true_loss
 
@@ -40,7 +51,7 @@ def l_positivity(alpha=1e-7):
     def true_loss(y_true, y_pred):
         y = -y_pred
         loss = K.elu(y, alpha=alpha)
-        res = K.sum(loss)
+        return K.sum(loss)
         return tf.reshape(res, (-1,))
 
     return true_loss

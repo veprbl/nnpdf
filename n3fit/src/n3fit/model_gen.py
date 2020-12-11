@@ -141,8 +141,8 @@ def observable_generator(spec_dict, positivity_initial=1.0, integrability=False)
     concat_ex = gen_concat(ex_name)
     # For data transformation all concatenations are the same
     if spec_dict.get("data_transformation") is None:
-        concat_tr = gen_concat(tr_name)
-        concat_vl = gen_concat(vl_name)
+        concat_tr = gen_concat(tr_name + "T") # TODO I will need this name later
+        concat_vl = gen_concat(vl_name + "T")
     else:
         concat_tr = concat_ex
         concat_vl = concat_ex
@@ -216,11 +216,15 @@ def observable_generator(spec_dict, positivity_initial=1.0, integrability=False)
     else:
         obsrot_tr = None
         obsrot_vl = None
-        loss_tr = losses.l_invcovmat(invcovmat_tr)
+        # TODO
+        tr_ten = operations.numpy_to_tensor(spec_dict["expdata"])
+        vl_ten = operations.numpy_to_tensor(spec_dict["expdata_vl"])
+        exp_ten = operations.numpy_to_tensor(spec_dict["expdata_true"])
+        loss_tr = losses.l_invcovmat(invcovmat_tr, tr_ten, name=tr_name)
         # TODO At this point we need to intercept the data and compile the loss with it
         # then the validation must have a list of None as an output
-        loss_vl = losses.l_invcovmat(invcovmat_vl)
-    loss = losses.l_invcovmat(invcovmat)
+        loss_vl = losses.l_invcovmat(invcovmat_vl, vl_ten, name=vl_name)
+    loss = losses.l_invcovmat(invcovmat, exp_ten)
 
     def out_tr(pdf_layer, datasets_out=None):
         exp_result = experiment_layer(
@@ -234,14 +238,26 @@ def observable_generator(spec_dict, positivity_initial=1.0, integrability=False)
         )
         return exp_result
 
+    # TODO, now the predict() method will produce a loss!
+    # while the loss will be _just_ a sum over the last index
+    def final_tr(pdf_layer, datasets_out=None):
+        return loss_tr(out_tr(pdf_layer))
+
+    def final_vl(pdf_layer, datasets_out=None):
+        return loss_vl(out_vl(pdf_layer))
+
+    # TODO as promised above
+    n_loss_tr = lambda y,x: operations.sum(x, axis=-1)
+    n_loss_vl = loss_tr
+
     layer_info = {
         "inputs": model_inputs,
         "output": experiment_layer,
         "loss": loss,
-        "output_tr": out_tr,
-        "loss_tr": loss_tr,
-        "output_vl": out_vl,
-        "loss_vl": loss_vl,
+        "output_tr": final_tr,
+        "loss_tr": n_loss_tr,
+        "output_vl": final_vl,
+        "loss_vl": n_loss_vl,
         "experiment_xsize": full_nx,
     }
 

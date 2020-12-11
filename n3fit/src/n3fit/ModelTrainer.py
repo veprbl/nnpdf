@@ -759,7 +759,10 @@ class ModelTrainer:
         experimental = self.model_dicts["experimental"]
         train_chi2 = stopping_object.evaluate_training(training["model"])
         val_chi2, _ = stopping_object.validation.loss()
-        exp_chi2 = experimental["model"].compute_losses()["loss"] / experimental["ndata"]
+        exp_loss_raw_all = experimental["model"].predict()
+        # Sum over experiments
+        exp_loss_raw = np.sum([np.sum(i, axis=-1) for i in exp_loss_raw_all], axis=0)[0]
+        exp_chi2 = exp_loss_raw[0] / experimental["ndata"]
         return train_chi2, val_chi2, exp_chi2
 
     def hyperparametrizable(self, params):
@@ -891,9 +894,11 @@ class ModelTrainer:
             training_loss = stopping_object.tr_chi2
             validation_loss = stopping_object.vl_chi2
 
-            # Compute experimental loss
-            exp_loss_raw = models["experimental"].compute_losses()["loss"]
-            experimental_loss = exp_loss_raw / model_dicts["experimental"]["ndata"]
+            # Get the experimental chi2
+            exp_loss_raw_all = models["experimental"].predict()
+            # Sum over experiments
+            exp_loss_raw = np.sum([np.sum(i, axis=-1) for i in exp_loss_raw_all], axis=0)[0]
+            experimental_loss = exp_loss_raw[0] / model_dicts["experimental"]["ndata"]
 
             if self.mode_hyperopt:
                 hyper_loss = experimental_loss
@@ -944,7 +949,7 @@ class ModelTrainer:
         dict_out["stopping_object"] = stopping_object
         dict_out["experimental"] = self.experimental
         dict_out["training"] = self.training
-        dict_out["pdf_model"] = pdf_models[0]
+        dict_out["pdf_model"] = pdf_models
 
         # Only after the training has finished, we save all models for future reporting
         self.model_dicts = model_dicts

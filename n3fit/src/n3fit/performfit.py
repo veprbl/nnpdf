@@ -296,7 +296,7 @@ def performfit(
 
         # After the fit is run we get a 'result' dictionary with the following items:
         stopping_object = result["stopping_object"]
-        pdf_model = result["pdf_model"]
+        pdf_models = result["pdf_model"]
         true_chi2 = result["loss"]
         training = result["training"]
         log.info("Total exp chi2: %s", true_chi2)
@@ -317,22 +317,24 @@ def performfit(
         )
 
         # Create a pdf instance
-        pdf_instance = N3PDF(pdf_model)
+        for i, pdf_model in enumerate(pdf_models):
+            replica_path_set = replica_path / f"replica_{replica_number + i}"
+            pdf_instance = N3PDF(pdf_model)
 
-        # Generate the writer wrapper
-        writer_wrapper = WriterWrapper(
-            replica_number,
-            pdf_instance,
-            stopping_object,
-            theoryid.get_description().get("Q0") ** 2,
-            stopwatch.stop(),
-        )
+            # Generate the writer wrapper
+            writer_wrapper = WriterWrapper(
+                replica_number,
+                pdf_instance,
+                stopping_object,
+                theoryid.get_description().get("Q0") ** 2,
+                stopwatch.stop(),
+            )
 
-        # Now write the data down
-        training_chi2, val_chi2, exp_chi2 = the_model_trainer.evaluate(stopping_object)
-        writer_wrapper.write_data(
-            replica_path_set, output_path.name, training_chi2, val_chi2, true_chi2
-        )
+            # Now write the data down
+            training_chi2, val_chi2, exp_chi2 = the_model_trainer.evaluate(stopping_object) # TODO
+            writer_wrapper.write_data(
+                replica_path_set, output_path.name, training_chi2, val_chi2, true_chi2
+            )
 
         # Save the weights to some file for the given replica
         model_file = fitting.get("save")
