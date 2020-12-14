@@ -27,3 +27,21 @@ public: NTVNBDMNFilter():
 private:
   void ReadData();
 };
+
+class NTVNUDMN_PDF4LHCFilter: public CommonData
+{
+public: NTVNUDMN_PDF4LHCFilter():
+  CommonData("NTVNUDMN_PDF4LHC") { ReadData(); }
+
+private:
+  void ReadData();
+};
+
+class NTVNBDMN_PDF4LHCFilter: public CommonData
+{
+public: NTVNBDMN_PDF4LHCFilter():
+  CommonData("NTVNBDMN_PDF4LHC") { ReadData(); }
+
+private:
+  void ReadData();
+};

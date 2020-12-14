@@ -295,6 +295,8 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new NTVNUDMNFilter());
   target.push_back(new NTVNBDMNFeFilter());
   target.push_back(new NTVNUDMNFeFilter());
+  target.push_back(new NTVNBDMN_PDF4LHCFilter());
+  target.push_back(new NTVNUDMN_PDF4LHCFilter());
 
   // ************************* SLAC ******************************
 
