@@ -426,7 +426,7 @@ void NTVNUDMN_PDF4LHCFilter::ReadData()
   
   // Starting filter
   double mn = 0.938;
-  double BrC = 0.082;
+  double BrC = 0.092;
   
   double acc_cor[fNData];
   string line;
@@ -518,7 +518,7 @@ void NTVNBDMN_PDF4LHCFilter::ReadData()
   // Starting filter
   // Starting filter
   double mn = 0.938;
-  double BrC = 0.082;
+  double BrC = 0.092;
   
   double acc_cor[fNData];
   string line;
