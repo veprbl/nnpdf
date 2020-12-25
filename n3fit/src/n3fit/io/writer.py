@@ -88,16 +88,17 @@ class WriterWrapper:
             self.stopping_object.positivity_status(),
             self.timings,
             mapping,
+            self.stopping_object,
         )
 
         # TODO: compute the chi2s directly from the stopping object
         # export all metadata from the fit to a single yaml file
-        output_file = f"{replica_path_set}/{fitname}.json"
-        json_dict = jsonfit(
-            self.stopping_object, self.pdf_object, tr_chi2, vl_chi2, true_chi2, self.timings
-        )
-        with open(output_file, "w") as fs:
-            json.dump(json_dict, fs, indent=2)
+        # output_file = f"{replica_path_set}/{fitname}.json"
+        # json_dict = jsonfit(
+        #     self.stopping_object, self.pdf_object, tr_chi2, vl_chi2, true_chi2, self.timings
+        # )
+        # with open(output_file, "w") as fs:
+        #     json.dump(json_dict, fs, indent=2)
 
 
 def jsonfit(stopping_object, pdf_object, tr_chi2, vl_chi2, true_chi2, timing):
@@ -242,6 +243,7 @@ def storefit(
     pos_state,
     timings,
     mapping,
+    stopping_object,
 ):
     """
     One-trick function which generates all output in the NNPDF format
@@ -286,49 +288,115 @@ def storefit(
     interpolation = PchipInterpolator(mapping[0], mapping[1])
     xgrid_scaled = interpolation(np.log10(xgrid))
 
+    from sklearn.gaussian_process import GaussianProcessRegressor
+    from sklearn.gaussian_process.kernels import RBF
+
+    n_samples = 50
+    original_replica = replica
+
+    data_range_mask = xgrid[:,0]>4.1e-5
     result = pdf_object(xgrid_scaled, flavours = 'n3fit')
-    lha = evln2lha(result.T).T
 
-    data = {
-        "replica": replica,
-        "q20": q20,
-        "xgrid": xgrid.T.tolist()[0],
-        "labels": ["TBAR", "BBAR", "CBAR", "SBAR", "UBAR", "DBAR", "GLUON", "D", "U", "S", "C", "B", "T", "PHT"],
-        "pdfgrid": lha.tolist(),
-    }
+    kernel = RBF(length_scale=1, length_scale_bounds=(1e-1, 1e1))
+    std = 5e-2
+    gp = GaussianProcessRegressor(n_restarts_optimizer=100, normalize_y=True, kernel=kernel, alpha=std**2)
 
-    with open(f"{replica_path}/{fitname}.exportgrid", "w") as fs:
-        yaml.dump(data, fs)
+    gp_result = np.empty([result.shape[1], n_samples, xgrid.size])
+    for enum in [2,3,4,5,6,7,8,9,10,13]:
+        res = result[data_range_mask].T[enum]
+        lin_fit_prior_mask = (xgrid[:,0]>4.1e-5) & (xgrid[:,0]<4.1e-3)
+        
+        from scipy.optimize import curve_fit
+        
+        prior_coefs = np.polyfit(np.log(xgrid[lin_fit_prior_mask].flatten()), result[lin_fit_prior_mask].T[enum], 1)
+        res -= prior_coefs[1] + prior_coefs[0] * np.log(xgrid[data_range_mask].flatten())
+        
+        # def func(x, a):
+        #     return x**a
+        # popt, _ = curve_fit(func, xgrid[lin_fit_prior_mask].flatten(), result[lin_fit_prior_mask].T[enum])
+        # res -= func(xgrid[data_range_mask].flatten(), *popt)
+        
+        gp.fit(np.log10(xgrid[data_range_mask]), res)
+        print(gp.kernel_)
+        sample_result = gp.sample_y(np.log10(xgrid[~data_range_mask]), n_samples=n_samples)
+        for id_subreplica in range(n_samples):
+            gp_result[enum, id_subreplica] = np.concatenate( ( 
+                sample_result[:,id_subreplica], res 
+            ) )
+            gp_result[enum, id_subreplica] += prior_coefs[1] + prior_coefs[0] * np.log(xgrid.flatten()) 
+            # gp_result[enum, id_subreplica] += func(xgrid.flatten(), *popt)
+        import matplotlib.pyplot as plt
 
-    # create empty files to make postfit happy
-    emptyfiles = ["chi2exps.log", f"{fitname}.params", f"{fitname}.sumrules"]
-    for fs in emptyfiles:
-        open(f"{replica_path}/{fs}", "a").close()
+        plt.figure()
+        plt.plot(xgrid[data_range_mask], result[data_range_mask][:,enum])
+        plt.xscale('log')
+        plt.savefig(f'/home/roy/figs/{enum}.png')
 
-    # Write chi2exp
-    with open(f"{replica_path}/chi2exps.log", "w") as fs:
-        for line in all_chi2_lines:
-            fs.write(line)
+        plt.figure()
+        plt.plot(xgrid, gp_result[enum].T)
+        # plt.xlim(2e-2,1)
+        # plt.ylim(0,2.7)
+        plt.xscale('log')
+        plt.savefig(f'/home/roy/figs/2_{enum}.png')
 
-    # Write preproc information
-    with open(f"{replica_path}/{fitname}.preproc", "w") as fs:
-        for line in all_preproc_lines:
-            fs.write(line)
+    replica_path_parent = replica_path.parent
+    for id_subreplica in range(n_samples):
+        replica = (original_replica - 1) * n_samples + id_subreplica + 1
+        replica_path = replica_path_parent / f"replica_{replica}"        
+        replica_path.mkdir(exist_ok=True)
 
-    # create info file
-    arc_line = " ".join(str(i) for i in arc_lengths)
-    integrability_line = " ".join(str(i) for i in integrability_numbers)
-    with open(f"{replica_path}/{fitname}.fitinfo", "w") as fs:
-        fs.write(f"{nite} {erf_vl} {erf_tr} {chi2} {pos_state}\n")
-        fs.write(arc_line)
-        fs.write(f"\n")
-        fs.write(integrability_line)
+        lha = evln2lha(gp_result[:,id_subreplica,:]).T
 
-    # create .time file
-    with open(f"{replica_path}/{fitname}.time", "w") as fs:
-        json.dump(timings, fs, indent=2)
+        data = {
+            "replica": replica,
+            "q20": q20,
+            "xgrid": xgrid.T.tolist()[0],
+            "labels": ["TBAR", "BBAR", "CBAR", "SBAR", "UBAR", "DBAR", "GLUON", "D", "U", "S", "C", "B", "T", "PHT"],
+            "pdfgrid": lha.tolist(),
+        }
 
-    # create .version file, with the version of programs used
-    with open(f"{replica_path}/version.info", "w") as fs:
-        versions = version()
-        json.dump(versions, fs, indent=2)
+        with open(f"{replica_path}/{fitname}.exportgrid", "w") as fs:
+            yaml.dump(data, fs)
+
+        # create empty files to make postfit happy
+        emptyfiles = ["chi2exps.log", f"{fitname}.params", f"{fitname}.sumrules"]
+        for fs in emptyfiles:
+            open(f"{replica_path}/{fs}", "a").close()
+
+        # Write chi2exp
+        with open(f"{replica_path}/chi2exps.log", "w") as fs:
+            for line in all_chi2_lines:
+                fs.write(line)
+
+        # Write preproc information
+        with open(f"{replica_path}/{fitname}.preproc", "w") as fs:
+            for line in all_preproc_lines:
+                fs.write(line)
+
+        # create info file
+        arc_line = " ".join(str(i) for i in arc_lengths)
+        integrability_line = " ".join(str(i) for i in integrability_numbers)
+        with open(f"{replica_path}/{fitname}.fitinfo", "w") as fs:
+            fs.write(f"{nite} {erf_vl} {erf_tr} {chi2} {pos_state}\n")
+            fs.write(arc_line)
+            fs.write(f"\n")
+            fs.write(integrability_line)
+
+        # create .time file
+        with open(f"{replica_path}/{fitname}.time", "w") as fs:
+            json.dump(timings, fs, indent=2)
+
+        # create .version file, with the version of programs used
+        with open(f"{replica_path}/version.info", "w") as fs:
+            versions = version()
+            json.dump(versions, fs, indent=2)
+
+        # TODO: compute the chi2s directly from the stopping object
+        # export all metadata from the fit to a single yaml file
+        output_file = f"{replica_path}/{fitname}.json"
+        json_dict = jsonfit(
+            stopping_object, pdf_object, erf_tr, erf_vl, chi2, timings
+        )
+        with open(output_file, "w") as fs:
+            json.dump(json_dict, fs, indent=2)
+
