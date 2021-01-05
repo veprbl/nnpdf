@@ -530,7 +530,7 @@ def pdfNN_layer_generator(
     basis_rotation = FlavourToEvolution(flav_info=flav_info, fitbasis=fitbasis)
 
     def extrapolation(x, data_domain):
-        ret = tf.keras.layers.subtract([dense_me(x), layer_preproc(x, data_domain)])
+        ret = tf.keras.layers.multiply([dense_me(x), layer_preproc(x, data_domain)])
         return ret
 
     # Apply extrapolation and basis

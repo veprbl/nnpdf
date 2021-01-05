@@ -105,30 +105,30 @@ class Preprocessing(MetaLayer):
         less_mask = tf.math.less(x, x0)
         pdf_raw = op.concatenate(
             [
-                x ** (1 - self.kernel[0][0]) * (1 - x) ** self.kernel[1][0],  # sigma
-                x ** (1 - self.kernel[2][0]) * (1 - x) ** self.kernel[3][0],  # g
-                x ** (1 - self.kernel[4][0]) * (1 - x) ** self.kernel[5][0],  # v
-                x ** (1 - self.kernel[6][0]) * (1 - x) ** self.kernel[7][0],  # v3
-                x ** (1 - self.kernel[8][0]) * (1 - x) ** self.kernel[9][0],  # v8
-                x ** (1 - self.kernel[10][0]) * (1 - x) ** self.kernel[11][0],  # t3 = sigma
-                x ** (1 - self.kernel[12][0]) * (1 - x) ** self.kernel[13][0],  # t8 = sigma
-                x ** (1 - self.kernel[14][0]) * (1 - x) ** self.kernel[15][0],  # t15 c-
+                x ** (1 - self.kernel[0][0]),  # sigma
+                x ** (1 - self.kernel[2][0]),  # g
+                x ** (1 - self.kernel[4][0]),  # v
+                x ** (1 - self.kernel[6][0]),  # v3
+                x ** (1 - self.kernel[8][0]),  # v8
+                x ** (1 - self.kernel[10][0]),  # t3 = sigma
+                x ** (1 - self.kernel[12][0]),  # t8 = sigma
+                x ** (1 - self.kernel[14][0]),  # t15 c-
             ],
             axis=-1,
         )
         pdf_raw0 = op.concatenate(
             [
-                x0 ** (1 - self.kernel[0][0]) * (1 - x0) ** self.kernel[1][0],  # sigma
-                x0 ** (1 - self.kernel[2][0]) * (1 - x0) ** self.kernel[3][0],  # g
-                x0 ** (1 - self.kernel[4][0]) * (1 - x0) ** self.kernel[5][0],  # v
-                x0 ** (1 - self.kernel[6][0]) * (1 - x0) ** self.kernel[7][0],  # v3
-                x0 ** (1 - self.kernel[8][0]) * (1 - x0) ** self.kernel[9][0],  # v8
-                x0 ** (1 - self.kernel[10][0]) * (1 - x0) ** self.kernel[11][0],  # t3 = sigma
-                x0 ** (1 - self.kernel[12][0]) * (1 - x0) ** self.kernel[13][0],  # t8 = sigma
-                x0 ** (1 - self.kernel[14][0]) * (1 - x0) ** self.kernel[15][0],  # t15 c-
+                x0 ** (1 - self.kernel[0][0]),  # sigma
+                x0 ** (1 - self.kernel[2][0]),  # g
+                x0 ** (1 - self.kernel[4][0]),  # v
+                x0 ** (1 - self.kernel[6][0]),  # v3
+                x0 ** (1 - self.kernel[8][0]),  # v8
+                x0 ** (1 - self.kernel[10][0]),  # t3 = sigma
+                x0 ** (1 - self.kernel[12][0]),  # t8 = sigma
+                x0 ** (1 - self.kernel[14][0]),  # t15 c-
             ],
             axis=-1,
         )
-        pdf_raw1 = (pdf_raw / pdf_raw0 - 1)
-        ret = tf.where(less_mask, pdf_raw1, 0)
+        # pdf_raw1 = (pdf_raw / pdf_raw0 - 1)
+        ret = tf.where(less_mask, pdf_raw, pdf_raw0)
         return ret
