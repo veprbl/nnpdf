@@ -52,7 +52,7 @@ void HERMES_PIminus_proton_decFilter::ReadData()
   for(int i=0; i<fNData; i++)
     {
       f2 << "  - errors:" << endl;
-      f2 << "    - {label: unc, value: " << sqrt(fStat[i]*fStat[i]+fSys[0][i].add*fSys[0][i].add)
+      f2 << "    - {label: unc, value: " << sqrt(fStat[i]*fStat[i]+fSys[i][0].add*fSys[i][0].add)
 	 << "}" << endl;
       f2 << "    value: " << fData[i] << endl;
     }
@@ -107,7 +107,7 @@ void HERMES_PIplus_proton_decFilter::ReadData()
   for(int i=0; i<fNData; i++)
     {
       f2 << "  - errors:" << endl;
-      f2 << "    - {label: unc, value: " << sqrt(fStat[i]*fStat[i]+fSys[0][i].add*fSys[0][i].add)
+      f2 << "    - {label: unc, value: " << sqrt(fStat[i]*fStat[i]+fSys[i][0].add*fSys[i][0].add)
 	 << "}" << endl;
       f2 << "    value: " << fData[i] << endl;
     }
@@ -162,9 +162,13 @@ void HERMES_PIminus_deuteron_decFilter::ReadData()
   for(int i=0; i<fNData; i++)
     {
       f2 << "  - errors:" << endl;
-      f2 << "    - {label: unc, value: " << sqrt(fStat[i]*fStat[i]+fSys[0][i].add*fSys[0][i].add)
+      f2 << "    - {label: unc, value: " << sqrt(fStat[i]*fStat[i]+fSys[i][0].add*fSys[i][0].add)
 	 << "}" << endl;
       f2 << "    value: " << fData[i] << endl;
+
+      cout << fData[i] << "   "
+	   << fStat[i] << "   "
+	   << fSys[i][0].add << endl;
     }
     
   f2.close();
@@ -217,7 +221,7 @@ void HERMES_PIplus_deuteron_decFilter::ReadData()
   for(int i=0; i<fNData; i++)
     {
       f2 << "  - errors:" << endl;
-      f2 << "    - {label: unc, value: " << sqrt(fStat[i]*fStat[i]+fSys[0][i].add*fSys[0][i].add)
+      f2 << "    - {label: unc, value: " << sqrt(fStat[i]*fStat[i]+fSys[i][0].add*fSys[i][0].add)
 	 << "}" << endl;
       f2 << "    value: " << fData[i] << endl;
     }
