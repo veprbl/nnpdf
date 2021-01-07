@@ -102,7 +102,7 @@ class Preprocessing(MetaLayer):
         import tensorflow as tf
         x = inputs
         x0 = data_domain[0] * tf.keras.backend.ones_like(x)
-        less_mask = tf.math.less(x, x0)
+        less_mask = tf.math.less(x, data_domain[0])
         pdf_raw = op.concatenate(
             [
                 x ** (1 - self.kernel[0][0]),  # sigma
@@ -129,6 +129,5 @@ class Preprocessing(MetaLayer):
             ],
             axis=-1,
         )
-        # pdf_raw1 = (pdf_raw / pdf_raw0 - 1)
-        ret = tf.where(less_mask, pdf_raw, pdf_raw0)
+        ret = tf.where(less_mask, pdf_raw0, pdf_raw)
         return ret
