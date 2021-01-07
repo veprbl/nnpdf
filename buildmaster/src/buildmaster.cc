@@ -149,6 +149,11 @@ void InitCommonData(vector<CommonData*>& target)
 
   register_integrability(target);
 
+  target.push_back(new HERMES_PIplus_proton_decFilter());
+  target.push_back(new HERMES_PIminus_proton_decFilter());
+  target.push_back(new HERMES_PIplus_deuteron_decFilter());
+  target.push_back(new HERMES_PIminus_deuteron_decFilter());
+  
   // ************************* ATLAS ******************************
 
   target.push_back(new ATLASWZRAP36PBFilter());
@@ -495,9 +500,10 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new EICFilter("EIC_NC_EPD_28_PES"));
 
   //*************************HERMES****************************
-  target.push_back(new HERMES_PIplus_protonFilter());
-  target.push_back(new HERMES_PIminus_protonFilter());
-  target.push_back(new HERMES_PIplus_deuteronFilter());
-  target.push_back(new HERMES_PIminus_deuteronFilter());
+  //target.push_back(new HERMES_PIplus_protonFilter());
+  //target.push_back(new HERMES_PIminus_protonFilter());
+  //target.push_back(new HERMES_PIplus_deuteronFilter());
+  //target.push_back(new HERMES_PIminus_deuteronFilter());
+
   
 }

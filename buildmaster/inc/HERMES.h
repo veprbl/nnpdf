@@ -15,6 +15,7 @@
 
 #include "buildmaster_utils.h"
 
+/*
 class HERMES_PIplus_protonFilter: public CommonData
 {
 public: HERMES_PIplus_protonFilter():
@@ -46,6 +47,44 @@ class HERMES_PIminus_deuteronFilter: public CommonData
 {
 public: HERMES_PIminus_deuteronFilter():
   CommonData("HERMES_PIminus_deuteron") { ReadData(); }
+
+private:
+  void ReadData();
+};
+*/
+
+class HERMES_PIplus_proton_decFilter: public CommonData
+{
+public: HERMES_PIplus_proton_decFilter():
+  CommonData("HERMES_PIplus_proton_dec") { ReadData(); }
+
+private:
+  void ReadData();
+};
+
+class HERMES_PIminus_proton_decFilter: public CommonData
+{
+public: HERMES_PIminus_proton_decFilter():
+  CommonData("HERMES_PIminus_proton_dec") { ReadData(); }
+
+private:
+  void ReadData();
+};
+
+
+class HERMES_PIplus_deuteron_decFilter: public CommonData
+{
+public: HERMES_PIplus_deuteron_decFilter():
+  CommonData("HERMES_PIplus_deuteron_dec") { ReadData(); }
+
+private:
+  void ReadData();
+};
+
+class HERMES_PIminus_deuteron_decFilter: public CommonData
+{
+public: HERMES_PIminus_deuteron_decFilter():
+  CommonData("HERMES_PIminus_deuteron_dec") { ReadData(); }
 
 private:
   void ReadData();
