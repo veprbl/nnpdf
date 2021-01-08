@@ -129,5 +129,5 @@ class Preprocessing(MetaLayer):
             ],
             axis=-1,
         )
-        ret = tf.where(less_mask, pdf_raw0, pdf_raw)
+        ret = tf.where(less_mask, pdf_raw, pdf_raw0)
         return ret
