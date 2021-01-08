@@ -23,6 +23,7 @@ import numpy.linalg as la
 from validphys.core import PDF, MCStats
 from validphys.pdfbases import ALL_FLAVOURS, check_basis
 from validphys.arclength import integrability_number, arc_lengths
+from scipy.interpolate import PchipInterpolator
 
 # Order of the evolution basis output from n3fit
 EVOL_LIST = [
@@ -44,8 +45,9 @@ EVOL_LIST = [
 
 
 class N3PDF(PDF):
-    def __init__(self, pdf_model, name="n3fit"):
+    def __init__(self, pdf_model, mapping, name="n3fit"):
         self.model = pdf_model
+        self.mapping = mapping
         self.basis = check_basis("evolution", EVOL_LIST)["basis"]
         # Set the number of members to two for legacy compatibility
         # in this case replica 0 and replica 1 are the same
@@ -80,11 +82,15 @@ class N3PDF(PDF):
             numpy.array
                 (xgrid_size, flavours) pdf result
         """
+        interpolation = PchipInterpolator(self.mapping[0], self.mapping[1])
+        xarr_notscaled = interpolation(np.log10(xarr))
+        
         if flavours is None:
             flavours = EVOL_LIST
         # Ensures that the input has the shape the model expect, no matter the input
         mod_xgrid = xarr.reshape(1, -1, 1)
-        result = self.model.predict([mod_xgrid, mod_xgrid])
+        mod_xgrid_scaled = xarr_notscaled.reshape(1, -1, 1)
+        result = self.model.predict([mod_xgrid_scaled, mod_xgrid])
         if flavours != "n3fit":
             # Ensure that the result has its flavour in the basis-defined order
             ii = self.basis._to_indexes(flavours)
@@ -108,6 +114,7 @@ class N3PDF(PDF):
             array of shape (1, flavours, xgrid_size, qmat) with the values of the ``pdf_model``
             evaluated in ``xarr``
         """
+
         n3fit_result = self(xarr.reshape(1, -1, 1))
 
         # The results of n3fit are always in the 14-evolution basis used in fktables
