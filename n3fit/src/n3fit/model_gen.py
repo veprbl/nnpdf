@@ -9,7 +9,7 @@
 """
 import n3fit.msr as msr_constraints
 from n3fit.layers import DIS, DY, Mask, ObsRotation
-from n3fit.layers import Preprocessing, FkRotation, FlavourToEvolution
+from n3fit.layers import Preprocessing, FkRotation, FlavourToEvolution, Extrapolation
 
 from n3fit.backends import MetaModel, Input
 from n3fit.backends import operations
@@ -529,7 +529,15 @@ def pdfNN_layer_generator(
     # Basis rotation
     basis_rotation = FlavourToEvolution(flav_info=flav_info, fitbasis=fitbasis)
 
+    from scipy.interpolate import PchipInterpolator
+    import numpy as  np
+    interpolation = PchipInterpolator(mapping[0], mapping[1])
+    smallxlim_scaled = interpolation(np.log10(data_domain[0]))
+    smallxlim_scaled = smallxlim_scaled.item()
+    extrapolation_layer = Extrapolation(smallxlim_scaled=smallxlim_scaled)
+
     def extrapolation(x, xnotscaled, data_domain):
+        x = extrapolation_layer(x)
         ret = tf.keras.layers.multiply([dense_me(x), layer_preproc(xnotscaled, data_domain)])
         return ret
 
