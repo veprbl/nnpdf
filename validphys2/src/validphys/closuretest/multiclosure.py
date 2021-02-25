@@ -289,7 +289,7 @@ def dataset_robust_xi(internal_multiclosure_dataset_loader, diagonal_basis=True)
     cent_68_reps = np.percentile(var_diff_sqrt, (16, 84), axis=0)
     # either above lower percentile or less than upper.
     in_1_sigma = np.array(
-        (central_diff > cent_68_reps[0, ...]) | (central_diff < cent_68_reps[1, ...]),
+        (central_diff > cent_68_reps[0, ...]) & (central_diff < cent_68_reps[1, ...]),
         dtype=int
     )
     # mean across fits
