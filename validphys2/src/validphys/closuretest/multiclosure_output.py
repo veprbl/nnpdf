@@ -718,7 +718,8 @@ def plot_bias_variance_distributions_ks(
 
     The hypothesis is that the two samples should be drawn from the same
     distribution. The KS statistic and p value calculated from
-    ``scipy.stats.ks_2samp`` will be quote in the title. A low p-value indicates
+    ``scipy.stats.ks_2samp`` will be quote in the title along with the
+    T-test for the means of the two distributions. A low p-value indicates
     that we can reject the null hypothesis, that these samples came from the
     same distribution.
 
@@ -738,9 +739,10 @@ def plot_bias_variance_distributions_ks(
             label=labels
         )
         ax.legend()
-        ks, p_val = scipy.stats.ks_2samp(exp_biases, exp_vars)
+        ks, ks_p_val = scipy.stats.ks_2samp(exp_biases, exp_vars)
+        ts, ts_p_val = scipy.stats.ttest_ind(exp_biases, exp_vars)
         ax.set_title(
             f"bias vs variance for {group_spec['group_name']} - KS: {ks:.2g}, "
-            f"p-value: {p_val:.2g}"
+            f"p-value: {ks_p_val:.2g} - TS: {ts:.2g}, p-value: {ts_p_val:.2g}."
         )
         yield fig
