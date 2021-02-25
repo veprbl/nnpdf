@@ -702,3 +702,46 @@ def plot_experiments_xi_bootstrap_distribution(
         ax.set_title(r"Bootstrap distribution of $\xi_{1\sigma}$ for " + str(exp))
         ax.set_xlabel(r"$\xi_{1\sigma}$")
         yield fig
+
+@figuregen
+def plot_bias_variance_distributions_ks(
+    experiments_fits_bias_replicas_variance_samples,
+    group_dataset_inputs_by_experiment
+):
+    """For each experiment, plot the distribution across fits of bias
+    and the distribution across fits and replicas of
+
+    fit_rep_var = (E[g] - g)_i inv(cov)_ij (E[g] - g)_j
+
+    where g is the replica prediction for fit l, replica k and E[g] is the
+    mean across replicas of g for fit l.
+
+    The hypothesis is that the two samples should be drawn from the same
+    distribution. The KS statistic and p value calculated from
+    ``scipy.stats.ks_2samp`` will be quote in the title. A low p-value indicates
+    that we can reject the null hypothesis, that these samples came from the
+    same distribution.
+
+    """
+    for (exp_biases, exp_vars, _), group_spec in zip(
+            experiments_fits_bias_replicas_variance_samples,
+            group_dataset_inputs_by_experiment
+        ):
+        fig, ax = plt.subplots()
+        ax.hist(
+            exp_biases,
+            density=True,
+            label=r"central-law diffs: $\chi^2(E_{k}^{(l)}[g]; f)$"
+        )
+        ax.hist(
+            exp_vars,
+            density=True,
+            label=r"replica-central diffs: $\chi^2(g^{(l, k)}; E_{k}^{(l)}[g])$"
+        )
+        ax.legend()
+        ks, p_val = scipy.stats.ks_2samp(exp_biases, exp_vars)
+        ax.set_title(
+            f"bias vs variance for {group_spec['group_name']} - KS: {ks:.2g}, "
+            f"p-value: {p_val:.2g}"
+        )
+        yield fig
