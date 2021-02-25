@@ -296,9 +296,9 @@ def dataset_robust_xi(internal_multiclosure_dataset_loader, diagonal_basis=True)
     return in_1_sigma.mean(axis=1)
 
 
-def data_robust_xi(internal_multiclosure_data_loader):
+def data_robust_xi(internal_multiclosure_data_loader, diagonal_basis=True):
     """Like dataset_robust_xi but for all data"""
-    return dataset_robust_xi(internal_multiclosure_data_loader)
+    return dataset_robust_xi(internal_multiclosure_data_loader, diagonal_basis)
 
 
 experiments_robust_xi = collect(
