@@ -259,6 +259,53 @@ def data_xi(internal_multiclosure_data_loader):
 experiments_xi_measured = collect("data_xi", ("group_dataset_inputs_by_experiment",))
 
 
+def dataset_robust_xi(internal_multiclosure_dataset_loader, diagonal_basis=True):
+    """Like :py:func:`dataset_xi` except instead of using the variance from the
+    replicas as the bounds for the 1sigma confidence interval, use the actual
+    confidence intervals from the replicas. Might be more robust to fluctuations
+    in the replicas.
+
+    """
+    closures_th, law_th, covmat, _ = internal_multiclosure_dataset_loader
+    replicas = np.asarray([th._rawdata for th in closures_th])
+    centrals = np.mean(replicas, axis=-1)
+    underlying = law_th.central_value
+
+    _, e_vec = la.eigh(covmat)
+
+    central_diff = centrals - underlying[np.newaxis, :]
+    var_diff_sqrt = centrals[:, :, np.newaxis] - replicas
+
+    # project into basis which diagonalises covariance matrix
+    if diagonal_basis:
+        var_diff_sqrt = e_vec.T @ var_diff_sqrt.transpose(2, 1, 0)
+        central_diff = e_vec.T @ central_diff.T
+    else:
+        # transpose to reps, ndata, fits
+        var_diff_sqrt = var_diff_sqrt.transpose(2, 1, 0)
+        central_diff = central_diff.T
+
+    # first axis is percentiles
+    cent_68_reps = np.percentile(var_diff_sqrt, (16, 84), axis=0)
+    # either above lower percentile or less than upper.
+    in_1_sigma = np.array(
+        (central_diff > cent_68_reps[0, ...]) | (central_diff < cent_68_reps[1, ...]),
+        dtype=int
+    )
+    # mean across fits
+    return in_1_sigma.mean(axis=1)
+
+
+def data_robust_xi(internal_multiclosure_data_loader):
+    """Like dataset_robust_xi but for all data"""
+    return dataset_robust_xi(internal_multiclosure_data_loader)
+
+
+experiments_robust_xi = collect(
+    "data_robust_xi", ("group_dataset_inputs_by_experiment",)
+)
+
+
 @check_at_least_10_fits
 def n_fit_samples(fits):
     """Return a range object where each item is a number of fits to use for

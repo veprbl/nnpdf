@@ -248,6 +248,13 @@ def fits_measured_xi(experiments_xi_measured, experiments_data):
     df.columns = ["ndata", r"measured $\xi_{1\sigma}$"]
     return df
 
+@table
+def fits_robust_xi(experiments_robust_xi, experiments_data):
+    """Like :py:func:`fits_measured_xi` but for robust xi as defined in
+    :py:func:`dataset_robust_xi`
+    """
+    return fits_measured_xi(experiments_robust_xi, experiments_data)
+
 
 @table
 def compare_measured_expected_xi(fits_measured_xi, expected_xi_from_bias_variance):
@@ -721,7 +728,8 @@ def plot_bias_variance_distributions_ks(
     ``scipy.stats.ks_2samp`` will be quote in the title along with the
     T-test for the means of the two distributions. A low p-value indicates
     that we can reject the null hypothesis, that these samples came from the
-    same distribution.
+    same distribution. Both of the two-sample tests used are subject to some
+    assumptions which may not be valid for our case.
 
     """
     for (exp_biases, exp_vars, _), group_spec in zip(
