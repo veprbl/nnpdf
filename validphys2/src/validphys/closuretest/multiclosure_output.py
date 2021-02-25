@@ -728,15 +728,14 @@ def plot_bias_variance_distributions_ks(
             group_dataset_inputs_by_experiment
         ):
         fig, ax = plt.subplots()
+        labels = [
+            r"central-law diffs: $\chi^2(E_{k}^{(l)}[g]; f)$",
+            r"replica-central diffs: $\chi^2(g^{(l, k)}; E_{k}^{(l)}[g])$"
+        ]
         ax.hist(
-            exp_biases,
+            [exp_biases, exp_vars],
             density=True,
-            label=r"central-law diffs: $\chi^2(E_{k}^{(l)}[g]; f)$"
-        )
-        ax.hist(
-            exp_vars,
-            density=True,
-            label=r"replica-central diffs: $\chi^2(g^{(l, k)}; E_{k}^{(l)}[g])$"
+            label=labels
         )
         ax.legend()
         ks, p_val = scipy.stats.ks_2samp(exp_biases, exp_vars)
