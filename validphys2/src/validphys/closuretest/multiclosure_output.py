@@ -711,7 +711,7 @@ def plot_experiments_xi_bootstrap_distribution(
         yield fig
 
 @figuregen
-def plot_bias_variance_distributions_ks(
+def plot_bias_variance_distributions(
     experiments_fits_bias_replicas_variance_samples,
     group_dataset_inputs_by_experiment
 ):
@@ -722,14 +722,6 @@ def plot_bias_variance_distributions_ks(
 
     where g is the replica prediction for fit l, replica k and E[g] is the
     mean across replicas of g for fit l.
-
-    The hypothesis is that the two samples should be drawn from the same
-    distribution. The KS statistic and p value calculated from
-    ``scipy.stats.ks_2samp`` will be quote in the title along with the
-    T-test for the means of the two distributions. A low p-value indicates
-    that we can reject the null hypothesis, that these samples came from the
-    same distribution. Both of the two-sample tests used are subject to some
-    assumptions which may not be valid for our case.
 
     """
     for (exp_biases, exp_vars, _), group_spec in zip(
@@ -750,7 +742,6 @@ def plot_bias_variance_distributions_ks(
         ks, ks_p_val = scipy.stats.ks_2samp(exp_biases, exp_vars)
         ts, ts_p_val = scipy.stats.ttest_ind(exp_biases, exp_vars)
         ax.set_title(
-            f"bias vs variance for {group_spec['group_name']} - KS: {ks:.2g}, "
-            f"p-value: {ks_p_val:.2g} - TS: {ts:.2g}, p-value: {ts_p_val:.2g}."
+            f"Fits bias and fits, replicas variance for {group_spec['group_name']}."
         )
         yield fig
