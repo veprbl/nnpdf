@@ -239,7 +239,6 @@ def covmap(combine_by_type, dataset_names):
     for dataset in dataset_names:
         size = process_info.sizes[dataset]
         start_exp[dataset] = running_index
-        print(running_index)
         running_index += size
     start = 0
     names_by_proc_list = [
