@@ -180,7 +180,11 @@ commondata_procs = collect("commondata", ["group_dataset_inputs_by_process", "da
 def dataset_names(commondata_procs):
     """Returns a list of the names of the datasets, in the same order as
     they are inputted in the runcard"""
-    names = [commondata.name for commondata in commondata_procs]
+    names = []
+    for commondata in commondata_procs:
+        name = commondata.name
+        if name not in names:
+            names.append(name)
     return names
 
 
@@ -235,6 +239,7 @@ def covmap(combine_by_type, dataset_names):
     for dataset in dataset_names:
         size = process_info.sizes[dataset]
         start_exp[dataset] = running_index
+        print(running_index)
         running_index += size
     start = 0
     names_by_proc_list = [
