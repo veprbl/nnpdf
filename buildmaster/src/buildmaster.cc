@@ -113,6 +113,7 @@
 #include "CMS_WZ_13TEV.h"
 #include "EIC.h"
 #include "CMS_2JET_5TEV.h"
+#include "LHCB_DMESON.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -313,6 +314,11 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new LHCB_WENU_8TEV_AFilter());
   target.push_back(new LHCB_Z_13TEV_DIMUONFilter());
   target.push_back(new LHCB_Z_13TEV_DIELECTRONFilter());
+  target.push_back(new LHCB_DMESON_R_13_5Filter());
+  target.push_back(new LHCB_DMESON_N7Filter());
+  target.push_back(new LHCB_DMESON_N5Filter());
+  target.push_back(new LHCB_DMESON_N13Filter());
+
 
   // ************************* NMC ******************************
 
