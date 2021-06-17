@@ -100,6 +100,12 @@ def read_fit_pseudodata(fitcontext, context_index):
             ) from e
         tr["type"], val["type"] = "training", "validation"
 
+        if (len(tr) + len(val) != len(sorted_index)):
+            num = (len(tr) + len(val))/len(sorted_index)
+            tr = tr[-int(len(tr)/num):] # temporary hack
+            val = val[-int(len(val)/num):] # temporary hack
+
+
         pseudodata = pd.concat((tr, val))
         pseudodata.sort_index(level=range(3), inplace=True)
 
