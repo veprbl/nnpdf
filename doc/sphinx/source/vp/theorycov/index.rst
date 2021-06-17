@@ -1,6 +1,6 @@
  .. _vptheorycov-index:
  
-The theorycovariance module
+The `theorycovariance` module
 ===============================
 
 :Author: Rosalyn Pearson (r.l.pearson@ed.ac.uk)

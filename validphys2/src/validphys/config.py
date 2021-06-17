@@ -10,7 +10,7 @@ import functools
 import inspect
 import numbers
 import copy
-import os
+import glob
 from importlib.resources import read_text, contents
 
 from collections import ChainMap, defaultdict
@@ -70,15 +70,20 @@ class Environment(Environment):
         this_folder=None,
         net=True,
         upload=False,
+        dry=False,
         **kwargs,
     ):
         if this_folder:
             self.this_folder = pathlib.Path(this_folder)
 
-        if net:
-            loader_class = FallbackLoader
-        else:
+        if not net:
             loader_class = Loader
+        elif dry and net:
+            log.warning("The --dry flag overrides the --net flag. No resources will be downloaded "
+                        "while executing a dry run")
+            loader_class = Loader
+        else:
+            loader_class = FallbackLoader
 
         try:
             self.loader = loader_class(datapath, resultspath)
@@ -212,6 +217,15 @@ class CoreConfig(configparser.Config):
             )
 
         return res
+
+    def produce_inclusive_use_scalevar_uncertainties(self, use_scalevar_uncertainties: bool = False,
+                                        point_prescription: (str, None) = None):
+        """Whether to use a scale variation uncertainty theory covmat.
+        Checks whether a point prescription is included in the runcard and if so 
+        assumes scale uncertainties are to be used."""
+        if ((use_scalevar_uncertainties is False) and (point_prescription is not None)):
+                use_scalevar_uncertainties = True
+        return use_scalevar_uncertainties
 
     # TODO: load fit config from here
     @element_of("fits")
@@ -799,28 +813,33 @@ class CoreConfig(configparser.Config):
         else:
             return None
 
+    def _parse_lagrange_multiplier(self, kind, theoryid, setdict):
+        """ Lagrange multiplier constraints are mappings
+        containing a `dataset` and a `maxlambda` argument which
+        defines the maximum value allowed for the multiplier """
+        bad_msg = (
+            f"{kind} must be a mapping with a name ('dataset') and a float multiplier (maxlambda)"
+        )
+        theoryno, _ = theoryid
+        lambda_key = "maxlambda"
+        #BCH allow for old-style runcards with 'poslambda' instead of 'maxlambda'
+        if "poslambda" in setdict and "maxlambda" not in setdict:
+            log.warning("The `poslambda` argument has been deprecated in favour of `maxlambda`")
+            lambda_key = "poslambda"
+        try:
+            name = setdict["dataset"]
+            maxlambda = float(setdict[lambda_key])
+        except KeyError as e:
+            raise ConfigError(bad_msg, setdict.keys(), e.args[0]) from e
+        except ValueError as e:
+            raise ConfigError(bad_msg) from e
+        return self.loader.check_posset(theoryno, name, maxlambda)
+
     @element_of("posdatasets")
     def parse_posdataset(self, posset: dict, *, theoryid):
         """An observable used as positivity constrain in the fit.
-        It is a mapping containing 'dataset' and 'poslambda'."""
-        bad_msg = (
-            "posset must be a mapping with a name ('dataset') and "
-            "a float multiplier(poslambda)"
-        )
-
-        theoryno, theopath = theoryid
-        try:
-            name = posset["dataset"]
-            poslambda = float(posset["poslambda"])
-        except KeyError as e:
-            raise ConfigError(bad_msg, e.args[0], posset.keys()) from e
-        except ValueError as e:
-            raise ConfigError(bad_msg) from e
-
-        try:
-            return self.loader.check_posset(theoryno, name, poslambda)
-        except FileNotFoundError as e:
-            raise ConfigError(e) from e
+        It is a mapping containing 'dataset' and 'maxlambda'."""
+        return self._parse_lagrange_multiplier("posdataset", theoryid, posset)
 
     def produce_posdatasets(self, positivity):
         if not isinstance(positivity, dict) or "posdatasets" not in positivity:
@@ -833,25 +852,9 @@ class CoreConfig(configparser.Config):
     @element_of("integdatasets")
     def parse_integdataset(self, integset: dict, *, theoryid):
         """An observable corresponding to a PDF in the evolution basis,
-        used as integrability constrain in the fit. It is a mapping containing 'dataset' and 'poslambda'."""
-        bad_msg = (
-            "integset must be a mapping with a name ('dataset') and "
-            "a float multiplier(poslambda)"
-        )
-
-        theoryno, theopath = theoryid
-        try:
-            name = integset["dataset"]
-            poslambda = float(integset["poslambda"])
-        except KeyError as e:
-            raise ConfigError(bad_msg, e.args[0], integset.keys()) from e
-        except ValueError as e:
-            raise ConfigError(bad_msg) from e
-        # use the same underlying c++ code as the positivity observables
-        try:
-            return self.loader.check_posset(theoryno, name, poslambda)
-        except FileNotFoundError as e:
-            raise ConfigError(e) from e
+        used as integrability constrain in the fit.
+        It is a mapping containing 'dataset' and 'maxlambda'."""
+        return self._parse_lagrange_multiplier("integdataset", theoryid, integset)
 
     def produce_integdatasets(self, integrability):
         if not isinstance(integrability, dict) or "integdatasets" not in integrability:
@@ -903,52 +906,46 @@ class CoreConfig(configparser.Config):
     def produce_all_lumi_channels(self):
         return {"lumi_channels": self.parse_lumi_channels(list(LUMI_CHANNELS))}
 
+    def produce_loaded_user_covmat_path(self, user_covmat_path: str = "",
+                                        use_user_uncertainties: bool = False):
+        """
+        Path to the user covmat provided by user_covmat_path in the runcard.
+        If no path is provided, returns None.
+        For use in theorycovariance.construction.user_covmat.
+        """
+        if use_user_uncertainties is False:
+            return None
+        else:
+            l = self.loader
+            fileloc = l.check_vp_output_file(user_covmat_path)
+            return fileloc
+
+
     @configparser.explicit_node
     def produce_nnfit_theory_covmat(
         self,
         use_thcovmat_in_sampling: bool,
         use_thcovmat_in_fitting: bool,
-        thcovmat_type: str = "full",
+        inclusive_use_scalevar_uncertainties,
+        use_user_uncertainties: bool = False
     ):
         """
         Return the theory covariance matrix used in the fit.
-        By default it is set to be the full one, the user can
-        set it to be block-diagonal or diagonal, based on the
-        value of ``thcovmat_type``. The possible options are:
-
-        ``thcovmat_type = "full"`` (default):
-            Include all correlations. The covarance matrix is
-            computed using ``theory_covmat_custom``.
-
-        ``thcovmat_type = "diagonal"``:
-            Only diagonal entries are computes included. The
-            covariance matrix is computed using
-            ``theory_diagonal_covmat``.
-
-        ``thcovmat_type = "blockdiagonal"``:
-            Only correlations by process type are included.
-            The covariance matrix is computed using
-            ``theory_block_diag_covmat``.
         """
-        valid_type = {"full", "blockdiagonal", "diagonal"}
-        if thcovmat_type not in valid_type:
-            raise ConfigError(
-                f"Invalid thcovmat_type setting: '{valid_type}'.",
-                thcovmat_type,
-                valid_type,
-            )
-
-        from validphys.theorycovariance.construction import theory_covmat_custom
-        from validphys.theorycovariance.construction import theory_diagonal_covmat
-        from validphys.theorycovariance.construction import theory_block_diag_covmat
-
-        if thcovmat_type == "full":
-            f = theory_covmat_custom
-        if thcovmat_type == "diagonal":
-            f = theory_diagonal_covmat
-        if thcovmat_type == "blockdiagonal":
-            f = theory_block_diag_covmat
-
+        if inclusive_use_scalevar_uncertainties is True:
+            if use_user_uncertainties is True:
+                # Both scalevar and user uncertainties
+                from validphys.theorycovariance.construction import total_theory_covmat_fitting
+                f = total_theory_covmat_fitting
+            else: 
+                # Only scalevar uncertainties
+                from validphys.theorycovariance.construction import theory_covmat_custom_fitting
+                f = theory_covmat_custom_fitting
+        elif use_user_uncertainties is True:
+            # Only user uncertainties
+            from validphys.theorycovariance.construction import user_covmat_fitting
+            f = user_covmat_fitting
+     
         @functools.wraps(f)
         def res(*args, **kwargs):
             return f(*args, **kwargs)
@@ -990,18 +987,24 @@ class CoreConfig(configparser.Config):
                 thcovmat_present = False
 
         if use_thcovmat_if_present and thcovmat_present:
-            # Expected path of covmat hardcoded
+            # Expected directory of theory covmat hardcoded
             covmat_path = (
                 fit.path
                 / "tables"
-                / "datacuts_theory_theorycovmatconfig_theory_covmat.csv"
             )
-            if not os.path.exists(covmat_path):
+            # All possible valid files
+            covfiles = sorted(covmat_path.glob("*theory_covmat.csv"))
+            if not covfiles:
                 raise ConfigError(
                     "Fit appeared to use theory covmat in fit but the file was not at the "
                     f"usual location: {covmat_path}."
+                )                
+            if len(covfiles) > 1:
+                raise ConfigError(
+                    "More than one valid theory covmat file found at the "
+                    f"usual location: {covmat_path}. These are {covfiles}."
                 )
-            fit_theory_covmat = ThCovMatSpec(covmat_path)
+            fit_theory_covmat = ThCovMatSpec(covfiles[0])
         else:
             fit_theory_covmat = None
         return fit_theory_covmat
