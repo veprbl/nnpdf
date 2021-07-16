@@ -6,7 +6,7 @@
 ## Optimizers
 {@ plot_optimizers @}
 
-{@ with hyperscan::optimizer @}
+{@ with hyperscan_config::optimizer @}
 ### {@ optimizer_name @}
 {@ plot_learning_rate @}
 {@ plot_clipnorm @}

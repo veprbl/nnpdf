@@ -421,7 +421,7 @@ def hyperopt_dataframe(commandline_args):
 
 
 @table
-def best_setup(hyperopt_dataframe, hyperscan, commandline_args):
+def best_setup(hyperopt_dataframe, hyperscan_config, commandline_args):
     """
     Generates a clean table with information on the hyperparameter settings of the best setup. 
     """

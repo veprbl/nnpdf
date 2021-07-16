@@ -129,7 +129,12 @@ class HyperoptPlotApp(App):
             "debug": args["debug"],
             "loss_target": args["loss_target"]
         }
-        autosettings["hyperscan"] = filtercard["hyperscan"]
+
+        # Since we changed hyperscan to hyperscan_config we need a fallback
+        try:
+            autosettings["hyperscan_config"] = filtercard["hyperscan_config"]
+        except KeyError:
+            autosettings["hyperscan_config"] = filtercard["hyperscan"]
 
         return autosettings
 
