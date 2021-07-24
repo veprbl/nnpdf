@@ -201,6 +201,8 @@ class HyperScanner:
                 min_units=nn_dict.get("min_units"),
                 max_units=nn_dict.get("max_units"),
                 layer_types=nn_dict.get("layer_types"),
+                min_interpolation_points=nn_dict.get("min_interpolation_points"),
+                max_interpolation_points=nn_dict.get("max_interpolation_points"),
             )
 
     def dict(self):
@@ -352,6 +354,8 @@ class HyperScanner:
         min_units=15,
         max_units=25,
         layer_types=None,
+        min_interpolation_points=None,
+        max_interpolation_points=None,
     ):
         """
         Modifies the following entries of the `parameters` dictionary:
@@ -375,6 +379,15 @@ class HyperScanner:
                     "A max/min number of units must always be defined if the number of layers is to be sampled"
                     "i.e., make sure you add the keywords 'min_units' and 'max_units' to the 'architecutre' dict"
                 )
+
+        if (min_interpolation_points is None and max_interpolation_points is not None or
+            min_interpolation_points is not None and max_interpolation_points is None):
+            raise ValueError(
+                "Either a lower or upper bound for the `interpolation_points` variable is defined"
+                "in the runcard, but the domain is not closed. Make sure to declare both"
+                "`min_interpolation_points` and `max_interpolation_points`, or neither."
+            )
+
 
         activation_key = "activation_per_layer"
         nodes_key = "nodes_per_layer"
@@ -437,3 +450,13 @@ class HyperScanner:
             drop_key = "dropout"
             drop_val = hp_quniform(drop_key, 0.0, max_drop, steps=self.steps)
             self._update_param(drop_key, drop_val)
+
+        if min_interpolation_points is not None and max_interpolation_points is not None:
+            interpolation_points_key = "interpolation_points"
+            interpolation_points_val = hp_quniform(
+                interpolation_points_key,
+                min_interpolation_points,
+                max_interpolation_points,
+                steps=self.steps,
+                )
+            self._update_param(interpolation_points_key, interpolation_points_val)

@@ -77,6 +77,8 @@ hyperscan_config:
       min_units: 10
       max_units: 50
       activations: ['sigmoid', 'tanh']
+      min_interpolation_points: 5
+      max_interpolation_points: 100
 
 kfold:
   target: average
@@ -125,6 +127,7 @@ parameters: # This defines the parameter dictionary that is passed to the Model 
   stopping_patience: 0.30 # percentage of the number of epochs
   layer_type: 'dense'
   dropout: 0.0
+  interpolation_points: 40
 
 fitting:
   # NN23(QED) = sng=0,g=1,v=2,t3=3,ds=4,sp=5,sm=6,(pht=7)
