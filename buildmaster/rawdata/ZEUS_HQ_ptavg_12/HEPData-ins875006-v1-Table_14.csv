@@ -1,0 +1,51 @@
+#: table_doi: 10.17182/hepdata.71338.v1/t14
+#: name: Table 14
+#: description: Inclusive dijet cross-sections ${d\sigma/d\overline{E^{jet}_{T,B}}}$ for ${Q^{2}}$ between 250 and 500 GeV$^2$. Other details as in the caption to Table 1.
+
+#: data_file: Table14.yaml
+#: keyword reactions: E+ P --> E+ JETS X | E- P --> E- JETS X
+#: keyword observables: DSIG/DXI
+#: keyword phrases: Inclusive | Single Differential Cross Section | Jet Production | Electron production | Neutral Current | Deep Inelastic Scattering
+#: keyword cmenergies: 319.0
+#: ET(JET1,Breit) [GEV],,,> 8
+#: ET(JET2,Breit) [GEV],,,> 8
+#: ETARAP(JET,LAB),,,-1.0-2.5
+#: M(12) [GEV],,,> 20
+#: Q**2 [GeV^2],,,250.0-500.0
+#: RE,,,E P --> E JETS X
+#: SQRT(S) [GeV],,,319.0
+#: Y,,,0.2-0.6
+"$\overline{E^{jet}_{T,B}}$ [GeV]","$\overline{E^{jet}_{T,B}}$ [GeV] LOW","$\overline{E^{jet}_{T,B}}$ [GeV] HIGH","${d\sigma/d\overline{E^{jet}_{T,B}}}$ [pb/GeV]",stat +,stat -,"sys,uncorrelated +","sys,uncorrelated -","sys,ES +","sys,ES -"
+11.5,8.0,15.0,2.937,0.046,-0.046,0.076,-0.076,0.146,-0.141
+18.5,15.0,22.0,0.998,0.026,-0.026,0.011,-0.011,0.04,-0.035
+26.0,22.0,30.0,0.215,0.011,-0.011,0.008,-0.008,0.006,-0.008
+45.0,30.0,60.0,0.0195,0.0016,-0.0016,0.0015,-0.0015,0.001,-0.0006
+
+#: ET(JET1,Breit) [GEV],,,> 8
+#: ET(JET2,Breit) [GEV],,,> 8
+#: ETARAP(JET,LAB),,,-1.0-2.5
+#: M(12) [GEV],,,> 20
+#: Q**2 [GeV^2],,,250.0-500.0
+#: RE,,,E P --> E JETS X
+#: SQRT(S) [GeV],,,319.0
+#: Y,,,0.2-0.6
+"$\overline{E^{jet}_{T,B}}$ [GeV]","$\overline{E^{jet}_{T,B}}$ [GeV] LOW","$\overline{E^{jet}_{T,B}}$ [GeV] HIGH",$C_{\rm{QED}}$
+11.5,8.0,15.0,0.95
+18.5,15.0,22.0,0.95
+26.0,22.0,30.0,0.96
+45.0,30.0,60.0,0.93
+
+#: ET(JET1,Breit) [GEV],,,> 8
+#: ET(JET2,Breit) [GEV],,,> 8
+#: ETARAP(JET,LAB),,,-1.0-2.5
+#: M(12) [GEV],,,> 20
+#: Q**2 [GeV^2],,,250.0-500.0
+#: RE,,,E P --> E JETS X
+#: SQRT(S) [GeV],,,319.0
+#: Y,,,0.2-0.6
+"$\overline{E^{jet}_{T,B}}$ [GeV]","$\overline{E^{jet}_{T,B}}$ [GeV] LOW","$\overline{E^{jet}_{T,B}}$ [GeV] HIGH",$C_{\rm{hadr}}\cdot C_{\rm{Z^{0}}}$
+11.5,8.0,15.0,0.95
+18.5,15.0,22.0,0.98
+26.0,22.0,30.0,0.97
+45.0,30.0,60.0,0.95
+

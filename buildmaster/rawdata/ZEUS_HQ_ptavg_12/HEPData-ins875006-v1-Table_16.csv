@@ -1,0 +1,51 @@
+#: table_doi: 10.17182/hepdata.71338.v1/t16
+#: name: Table 16
+#: description: Inclusive dijet cross-sections ${d\sigma/d\overline{E^{jet}_{T,B}}}$ for ${Q^{2}}$ between 1000 and 2000 GeV$^2$. Other details as in the caption to Table 1.
+
+#: data_file: Table16.yaml
+#: keyword reactions: E+ P --> E+ JETS X | E- P --> E- JETS X
+#: keyword observables: DSIG/DXI
+#: keyword phrases: Inclusive | Single Differential Cross Section | Jet Production | Electron production | Neutral Current | Deep Inelastic Scattering
+#: keyword cmenergies: 319.0
+#: ET(JET1,Breit) [GEV],,,> 8
+#: ET(JET2,Breit) [GEV],,,> 8
+#: ETARAP(JET,LAB),,,-1.0-2.5
+#: M(12) [GEV],,,> 20
+#: Q**2 [GeV^2],,,1000.0-2000.0
+#: RE,,,E P --> E JETS X
+#: SQRT(S) [GeV],,,319.0
+#: Y,,,0.2-0.6
+"$\overline{E^{jet}_{T,B}}$ [GeV]","$\overline{E^{jet}_{T,B}}$ [GeV] LOW","$\overline{E^{jet}_{T,B}}$ [GeV] HIGH","${d\sigma/d\overline{E^{jet}_{T,B}}}$ [pb/GeV]",stat +,stat -,"sys,uncorrelated +","sys,uncorrelated -","sys,ES +","sys,ES -"
+11.5,8.0,15.0,0.701,0.02,-0.02,0.017,-0.017,0.025,-0.022
+18.5,15.0,22.0,0.352,0.014,-0.014,0.012,-0.013,0.011,-0.009
+26.0,22.0,30.0,0.0943,0.0064,-0.0064,0.0063,-0.0063,0.0025,-0.0026
+45.0,30.0,60.0,0.0136,0.0012,-0.0012,0.0003,-0.0004,0.0006,-0.0007
+
+#: ET(JET1,Breit) [GEV],,,> 8
+#: ET(JET2,Breit) [GEV],,,> 8
+#: ETARAP(JET,LAB),,,-1.0-2.5
+#: M(12) [GEV],,,> 20
+#: Q**2 [GeV^2],,,1000.0-2000.0
+#: RE,,,E P --> E JETS X
+#: SQRT(S) [GeV],,,319.0
+#: Y,,,0.2-0.6
+"$\overline{E^{jet}_{T,B}}$ [GeV]","$\overline{E^{jet}_{T,B}}$ [GeV] LOW","$\overline{E^{jet}_{T,B}}$ [GeV] HIGH",$C_{\rm{QED}}$
+11.5,8.0,15.0,0.93
+18.5,15.0,22.0,0.94
+26.0,22.0,30.0,0.94
+45.0,30.0,60.0,0.94
+
+#: ET(JET1,Breit) [GEV],,,> 8
+#: ET(JET2,Breit) [GEV],,,> 8
+#: ETARAP(JET,LAB),,,-1.0-2.5
+#: M(12) [GEV],,,> 20
+#: Q**2 [GeV^2],,,1000.0-2000.0
+#: RE,,,E P --> E JETS X
+#: SQRT(S) [GeV],,,319.0
+#: Y,,,0.2-0.6
+"$\overline{E^{jet}_{T,B}}$ [GeV]","$\overline{E^{jet}_{T,B}}$ [GeV] LOW","$\overline{E^{jet}_{T,B}}$ [GeV] HIGH",$C_{\rm{hadr}}\cdot C_{\rm{Z^{0}}}$
+11.5,8.0,15.0,0.95
+18.5,15.0,22.0,1.01
+26.0,22.0,30.0,1.02
+45.0,30.0,60.0,1.04
+

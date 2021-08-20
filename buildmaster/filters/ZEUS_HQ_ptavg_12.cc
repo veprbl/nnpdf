@@ -1,34 +1,38 @@
 /*
-Reference: hep-ex/0608048
-Hepdata: https://www.hepdata.net/record/ins724050
-Published in Nucl.Phys.B 765 (2007) 1-30
-DESY-HERA. Measurement of the inclusive-jet differential cross sections in 
-neutral current deep inelastic scattering of 27.5 GeV positrons and electrons 
-on 920 GeV protons at a centre of mass energy 319 GeV. The data, which cover 
-photon virtualities (Q**2) > 125 GeV**2 were collected during the 1998-2000 
-running period and have an integrated luminosity of 81.7 +- 1.8 pb-1. Jets were 
-selected in the Breit frame with a longitudinally invariant KT cluster 
-algorithm.
+Reference: 1010.6167
+Hepdata: https://www.hepdata.net/record/ins875006
+Published in Eur.Phys.J.C 70 (2010) 965-982
+DESY-HERA.  Double-differential dijet cross sections in neutral current deep 
+inelastic ep scattering have been measured with the ZEUS detector using an 
+integrated luminosity of 374 pb^-1. The measurement was performed at large 
+values of the photon virtuality, Q^2, between 125 and 20000 GeV^2. The jets 
+were reconstructed with the k_T cluster algorithm in the Breit reference frame 
+and selected by requiring their transverse energies in the Breit frame, 
+E_T,B^jet, to be larger than 8 GeV. In addition, the invariant mass of the 
+dijet system, M_jj, was required to be greater than 20 GeV.
 
-The data is taken from Hepdata, specifically from Tabs. 12-17. The cross
+The data is taken from Hepdata, specifically from Tabs. 13-18. The cross
 section is differential in pT in bins of ET and Q2.
 */
 
-#include "ZEUS_HeraI_HQ_ptji.h"
+#include "ZEUS_HQ_ptavg_12.h"
 
-void ZEUS_HeraI_HQ_ptjiFilter::ReadData()
+void ZEUS_HQ_ptavg_12Filter::ReadData()
 {
   const int ntab=6;
 
-  const double Q2[6]={187.5, 375.0, 750.0, 1500.0, 3500.0, 7500.0};
+  const double Q2[6]={187.5, 375.0, 750.0, 1500.0, 3500.0, 10500.0};
+
+  int count = 0;
+  int k;
   
   for(int i=0; i<ntab; i++)
     {
-      int index = 12+i;
+      int index = 13+i;
       fstream f1;
       stringstream datafile("");
       datafile << dataPath() << "rawdata/" << fSetName
-	       << "/HEPData-ins724050-v1-Table_" << index << ".csv";
+	       << "/HEPData-ins875006-v1-Table_" << index << ".csv";
       f1.open(datafile.str().c_str(), ios::in);
 
       if (f1.fail())
@@ -39,14 +43,21 @@ void ZEUS_HeraI_HQ_ptjiFilter::ReadData()
       
       string line;
 
-      for(int j=0; j<17; j++)
+      for(int j=0; j<18; j++)
 	{
 	  getline(f1,line);
 	}
 
-      for(int j=0; j<5; j++)
+      int p;
+      
+      if(i<4)
+	p=4;
+      else
+	p=3;
+      
+      for(int j=0; j<p; j++)
 	{
-	  int k = 5*i+j;
+	  k = count;
 	  cout << i << "  " << j << "   " << k << endl;
 	  getline(f1,line);
 	  istringstream lstream(line);
@@ -83,7 +94,8 @@ void ZEUS_HeraI_HQ_ptjiFilter::ReadData()
 
 	  fSys[k][0].mult = fSys[k][0].add/fData[k] * 100;
 	  fSys[k][1].mult = fSys[k][1].add/fData[k] * 100;
-	  
+
+	  count++;
 	}
       
       f1.close();
