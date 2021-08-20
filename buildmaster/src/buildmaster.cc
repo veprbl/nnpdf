@@ -115,7 +115,8 @@
 #include "ATLAS_DY_2D_8TEV_LOWMASS.h"
 #include "ATLAS_WMU_8TEV.h"
 #include "ZEUS_DISJETS.h"
-
+#include "ZEUS_820_HQ_ptji.h"
+#include "ZEUS_HeraI_HQ_ptji.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -317,8 +318,10 @@ vector<std::unique_ptr<CommonData>> InitCommonData()
   target.emplace_back(new HERAF2CHARMFilter());
 
   // ************************* HERA DIS + JETS ************************
-  target.push_back(new ZEUS_DISJETSFilter());
-
+  target.emplace_back(new ZEUS_DISJETSFilter());
+  target.emplace_back(new ZEUS_820_HQ_ptjiFilter());
+  target.emplace_back(new ZEUS_HeraI_HQ_ptjiFilter());
+  
   // ************************* LHCb ******************************
 
   target.emplace_back(new LHCBW36PBFilter());

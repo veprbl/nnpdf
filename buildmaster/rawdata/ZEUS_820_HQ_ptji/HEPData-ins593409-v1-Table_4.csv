@@ -1,0 +1,37 @@
+#: table_doi: 10.17182/hepdata.46572.v1/t4
+#: name: Table 4
+#: description: Inclusive jet cross section DSIG/DET in the Q**2 regions 125-500 and 250-500 GeV**2 for jets of hadrons in the Breit frame.
+
+#: data_file: Table4.yaml
+#: keyword reactions: E+ P --> E+ JET X
+#: keyword observables: DSIG/DET
+#: keyword phrases: Inclusive | Single Differential Cross Section | Jet Production | Electron production | Neutral Current | Deep Inelastic Scattering
+#: keyword cmenergies: 300.0
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,820.0
+#: ETARAP(P=4),,,-2 TO 1.8
+#: Q**2 [GEV**2],,,125 TO 250
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,300.0
+#: SYS,,,In the tables of jet distributions, the second systematic, DSYS, error isdue to the jet-energy-scale uncertainty. In the tables of ALPHA_S, the second D SYS error is due to the uncertainty in the theoretical model used.
+ET(P=4) [GEV],ET(P=4) [GEV] LOW,ET(P=4) [GEV] HIGH,D(SIG)/DET [PB/GEV],stat +,stat -,sys_1 +,sys_1 -,sys_2 +,sys_2 -
+9.0,8.0,10.0,32.9,0.71,-0.71,0.48,-1.73,1.35,-1.38
+12.0,10.0,14.0,13.02,0.32,-0.32,0.11,-0.37,0.73,-0.69
+16.0,14.0,18.0,3.75,0.16,-0.16,0.03,-0.06,0.23,-0.24
+21.5,18.0,25.0,0.895,0.059,-0.059,0.071,-0.015,0.059,-0.047
+62.5,25.0,100.0,0.0197,0.0027,-0.0027,0.0002,0.0,0.0008,-0.0008
+
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,820.0
+#: ETARAP(P=4),,,-2 TO 1.8
+#: Q**2 [GEV**2],,,250 TO 500
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,300.0
+#: SYS,,,In the tables of jet distributions, the second systematic, DSYS, error isdue to the jet-energy-scale uncertainty. In the tables of ALPHA_S, the second D SYS error is due to the uncertainty in the theoretical model used.
+ET(P=4) [GEV],ET(P=4) [GEV] LOW,ET(P=4) [GEV] HIGH,D(SIG)/DET [PB/GEV],stat +,stat -,sys_1 +,sys_1 -,sys_2 +,sys_2 -
+9.0,8.0,10.0,17.33,0.52,-0.52,0.27,-0.54,0.59,-0.65
+12.0,10.0,14.0,8.57,0.28,-0.28,0.08,-0.25,0.39,-0.31
+16.0,14.0,18.0,3.64,0.18,-0.18,0.04,-0.34,0.15,-0.18
+21.5,18.0,25.0,1.007,0.072,-0.072,0.009,-0.092,0.068,-0.048
+62.5,25.0,100.0,0.0294,0.0036,-0.0036,0.0002,-0.0032,0.0012,-0.0013
+

@@ -1,0 +1,23 @@
+#: table_doi: 10.17182/hepdata.45641.v1/t16
+#: name: Table 16
+#: description: Inclusive jet cross sections as a function of jet ET in the Breit frames in the Q**2 region 2000 to 5000 GeV**2.
+
+#: data_file: Table16.yaml
+#: keyword reactions: E- P --> E- JET X | E+ P --> E+ JET X
+#: keyword observables: DSIG/DET
+#: keyword phrases: Inclusive | Single Differential Cross Section | Jet Production | Electron production | Neutral Current | Deep Inelastic Scattering
+#: keyword cmenergies: 319.0
+#: ABS(COS(GAMMA(H))),,,< 0.65
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=BREIT),,,-2 TO 1.5
+#: Q**2 [GEV**2],,,2000 TO 5000
+#: RE,,,E+- P --> E+- JET X
+#: SQRT(S) [GeV],,,319.0
+ET(P=4) [GEV],ET(P=4) [GEV] LOW,ET(P=4) [GEV] HIGH,D(SIG)/DET(P=4) [PB/GEV],stat +,stat -,sys_1 +,sys_1 -,sys_2 +,sys_2 -
+9.0,8.0,10.0,1.292,0.095,-0.095,0.12,-0.12,0.033,-0.022
+12.0,10.0,14.0,0.858,0.06,-0.06,0.024,-0.024,0.007,-0.006
+16.0,14.0,18.0,0.612,0.052,-0.052,0.07,-0.07,0.023,-0.017
+21.5,18.0,25.0,0.242,0.024,-0.024,0.028,-0.028,0.009,-0.006
+62.5,25.0,100.0,0.0185,0.0021,-0.0021,0.0023,-0.0023,0.0004,-0.0005
+
