@@ -47,7 +47,6 @@ void ZEUS_HeraI_HQ_ptjiFilter::ReadData()
       for(int j=0; j<5; j++)
 	{
 	  int k = 5*i+j;
-	  cout << i << "  " << j << "   " << k << endl;
 	  getline(f1,line);
 	  istringstream lstream(line);
 	  char comma;

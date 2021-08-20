@@ -46,7 +46,6 @@ void ZEUS_820_HQ_ptjiFilter::ReadData()
       for(int j=0; j<5; j++)
 	{
 	  int k = 10*i+j;
-	  cout << i << "  " << j << "   " << k << endl;
 	  getline(f1,line);
 	  istringstream lstream(line);
 	  char comma;
@@ -95,7 +94,6 @@ void ZEUS_820_HQ_ptjiFilter::ReadData()
       for(int j=0; j<5; j++)
 	{
 	  int k = 10*i+j+count;
-	  cout << i << "  " << j << "   " << k << endl;
 	  getline(f1,line);
 	  istringstream lstream(line);
 	  char comma;

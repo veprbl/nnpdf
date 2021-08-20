@@ -58,7 +58,6 @@ void ZEUS_HQ_ptavg_12Filter::ReadData()
       for(int j=0; j<p; j++)
 	{
 	  k = count;
-	  cout << i << "  " << j << "   " << k << endl;
 	  getline(f1,line);
 	  istringstream lstream(line);
 	  char comma;
