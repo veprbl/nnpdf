@@ -67,13 +67,13 @@ void ZEUS_820_HQ_ptjiFilter::ReadData()
 	  fKin2[k] = Q2[2*i]; //Q2
 	  fKin3[k] = 300.;    //GeV
 
-	  symmetriseErrors(sys1p, -sys1m, &shift, &delta);
+	  symmetriseErrors(sys1p, sys1m, &delta, &shift);
 	  fSys[k][0].add = delta;
 	  fData[k] += shift;
 	  fSys[k][0].type = ADD;
 	  fSys[k][0].name = "UNCORR";
 
-	  symmetriseErrors(sys2p, -sys2m, &shift, &delta);
+	  symmetriseErrors(sys2p, sys2m, &delta, &shift);
 	  fSys[k][1].add = delta;
 	  fData[k] += shift;
 	  fSys[k][1].type = MULT;
@@ -115,13 +115,13 @@ void ZEUS_820_HQ_ptjiFilter::ReadData()
 	  fKin2[k] = Q2[2*i+1]; //Q2 
 	  fKin3[k] = 300.;      //GeV
 
-	  symmetriseErrors(sys1p, -sys1m, &shift, &delta);
+	  symmetriseErrors(sys1p, sys1m, &delta, &shift);
 	  fSys[k][0].add = delta;
 	  fData[k] += shift;
 	  fSys[k][0].type = ADD;
 	  fSys[k][0].name = "UNCORR";
 
-	  symmetriseErrors(sys2p, -sys2m, &shift, &delta);
+	  symmetriseErrors(sys2p, sys2m, &delta, &shift);
 	  fSys[k][1].add = delta;
 	  fData[k] += shift;
 	  fSys[k][1].type = MULT;

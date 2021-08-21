@@ -119,6 +119,7 @@
 #include "ZEUS_HeraI_HQ_ptji.h"
 #include "ZEUS_HQ_ptavg_12.h"
 #include "H1_HeraI_LQ_ptij.h"
+#include "H1_LQ_ptji.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -326,6 +327,10 @@ vector<std::unique_ptr<CommonData>> InitCommonData()
   target.emplace_back(new ZEUS_HQ_ptavg_12Filter());
   target.emplace_back(new H1_HeraI_LQ_ptij_1JETFilter());
   target.emplace_back(new H1_HeraI_LQ_ptij_2JETFilter());
+  target.emplace_back(new H1_LQ_ptji_1JETFilter());
+  target.emplace_back(new H1_LQ_ptji_2JETFilter());
+  target.emplace_back(new H1_LQ_ptji_1JET_NORMFilter());
+  target.emplace_back(new H1_LQ_ptji_2JET_NORMFilter());
   
   // ************************* LHCb ******************************
 
