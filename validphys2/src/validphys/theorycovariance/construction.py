@@ -407,7 +407,7 @@ def covs_pt_prescrip(
             central2, *others2 = process_info.theory[name2]
             deltas2 = list((other - central2 for other in others2))
             if l == 3:
-                if point_prescription == "alpha_s":
+                if point_prescription in ["alpha_s", "alpha_s_reduced"]:
                     s = covmat_alphas(name1, name2, deltas1, deltas2)
                 elif point_prescription == "3f point":
                     s = covmat_3fpt(name1, name2, deltas1, deltas2)

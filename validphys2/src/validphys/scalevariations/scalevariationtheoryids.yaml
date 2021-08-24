@@ -15,5 +15,8 @@ scale_variations_for:
     variations:
       # alpha_s 3pt variations
       (0.116): 81
+      (0.117): 82
       (0.118): 53
+      (0.119): 83
       (0.120): 84
+  
