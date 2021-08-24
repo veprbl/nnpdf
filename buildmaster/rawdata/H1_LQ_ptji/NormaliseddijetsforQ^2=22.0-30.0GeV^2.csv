@@ -1,0 +1,56 @@
+#: table_doi: 10.17182/hepdata.86390.v1/t37
+#: name: Normalised dijets for $Q^2$ = 22.0-30.0 GeV$^2$
+#: description: Normalised dijet cross sections measured as a function of $\langle P_T \rangle_2$ for $Q^2$ = 22.0-30.0 GeV$^2$.  The correction factors on the theoretical cross sections $c^{\rm had}$ are listed together with their uncertainties.  The radiative correction factors $c^{\rm rad}$ are already included in the quoted cross sections.  Note that the uncertainties labelled $\delta^{E_{e^\prime}}$ and $\delta^{\theta_{e^\prime}}$ in Table 10 of the paper (arXiv:1611.03421v3) should be swapped.  See Table 5 of arXiv:1406.4709v2 for details of the correlation model.
+#: data_file: data37.yaml
+#: keyword cmenergies: 319.0
+#: keyword observables: SIG/SIG
+#: keyword phrases: Inclusive | Double Differential Cross Section | Jet Production | Neutral Current | Deep Inelastic Scattering
+#: keyword reactions: E+ P --> E+ JETS X | E- P --> E- JETS X
+#: $Q^2$ [GeV$^2$],,,22.0-30.0
+#: $y$,,,0.2-0.6
+#: $\sqrt{s}$ [GeV],,,319.0
+#: RE,,,$e^\pm\,p \to e^\pm\,(\ge 2\,{\rm jets})\,X$
+#: $\eta_{\rm lab}^{\rm jet}$,,,-1.0-2.5
+#: $P_T^{\rm jet}$ [GeV],,,> 4
+#: $N_{\rm jet}$,,,$\ge 2$
+#: $\langle P_T \rangle_2$ [GeV],,,5.0-50.0
+$\langle P_T \rangle_2$ [GeV],$\langle P_T \rangle_2$ [GeV] LOW,$\langle P_T \rangle_2$ [GeV] HIGH,$\sigma/\sigma_{\rm NC}$,stat +,stat -,Uncorr +,Uncorr -,Model +,Model -,ModelRW +,ModelRW -,JES +,JES -,RCES +,RCES -,ElEn +,ElEn -,ElTh +,ElTh -,Lumi +,Lumi -,LArN +,LArN -,StatMC +,StatMC -,RadErr +,RadErr -
+6.0,5.0,7.0,4.13e-02,4.20%,-4.20%,1.00%,-1.00%,-1.41%,1.41%,-0.73%,0.73%,4.15%,-3.76%,-3.92%,6.36%,0.79%,0.45%,-0.01%,-0.00%,0.77%,-0.77%,0.60%,-0.60%,1.67%,-1.67%,0.31%,-0.31%
+9.0,7.0,11.0,2.99e-02,2.40%,-2.40%,1.00%,-1.00%,-0.63%,0.63%,1.88%,-1.88%,-0.97%,1.52%,-0.41%,1.16%,0.34%,-0.05%,-0.15%,0.29%,0.77%,-0.77%,0.60%,-0.60%,0.75%,-0.75%,0.30%,-0.30%
+14.0,11.0,17.0,7.62e-03,3.13%,-3.13%,1.00%,-1.00%,-3.63%,3.63%,4.31%,-4.31%,-3.20%,3.45%,0.62%,-0.44%,0.14%,-0.18%,-0.06%,0.25%,0.77%,-0.77%,0.60%,-0.60%,0.79%,-0.79%,0.54%,-0.54%
+21.0,17.0,25.0,1.39e-03,6.51%,-6.51%,1.00%,-1.00%,-4.36%,4.36%,3.43%,-3.43%,-5.43%,4.51%,1.22%,-0.66%,0.79%,-0.03%,0.08%,0.39%,0.77%,-0.77%,0.60%,-0.60%,1.61%,-1.61%,0.89%,-0.89%
+30.0,25.0,35.0,2.41e-04,13.52%,-13.52%,1.00%,-1.00%,-7.57%,7.57%,6.34%,-6.34%,-4.27%,4.84%,1.61%,0.18%,-0.01%,-0.20%,-0.39%,-0.08%,0.77%,-0.77%,0.60%,-0.60%,3.77%,-3.77%,4.28%,-4.28%
+42.5,35.0,50.0,4.73e-05,27.75%,-27.75%,1.00%,-1.00%,-10.12%,10.12%,8.18%,-8.18%,-3.83%,9.10%,-1.88%,2.76%,-0.80%,-0.88%,1.46%,-1.86%,0.77%,-0.77%,0.60%,-0.60%,8.82%,-8.82%,8.68%,-8.68%
+
+#: $Q^2$ [GeV$^2$],,,22.0-30.0
+#: $y$,,,0.2-0.6
+#: $\sqrt{s}$ [GeV],,,319.0
+#: RE,,,$e^\pm\,p \to e^\pm\,(\ge 2\,{\rm jets})\,X$
+#: $\eta_{\rm lab}^{\rm jet}$,,,-1.0-2.5
+#: $P_T^{\rm jet}$ [GeV],,,> 4
+#: $N_{\rm jet}$,,,$\ge 2$
+#: $\langle P_T \rangle_2$ [GeV],,,5.0-50.0
+$\langle P_T \rangle_2$ [GeV],$\langle P_T \rangle_2$ [GeV] LOW,$\langle P_T \rangle_2$ [GeV] HIGH,$c^{\rm had}$,error +,error -
+6.0,5.0,7.0,0.898,2.08%,-2.08%
+9.0,7.0,11.0,0.929,2.25%,-2.25%
+14.0,11.0,17.0,0.946,2.40%,-2.40%
+21.0,17.0,25.0,0.960,1.99%,-1.99%
+30.0,25.0,35.0,0.954,2.49%,-2.49%
+42.5,35.0,50.0,0.951,1.15%,-1.15%
+
+#: $Q^2$ [GeV$^2$],,,22.0-30.0
+#: $y$,,,0.2-0.6
+#: $\sqrt{s}$ [GeV],,,319.0
+#: RE,,,$e^\pm\,p \to e^\pm\,(\ge 2\,{\rm jets})\,X$
+#: $\eta_{\rm lab}^{\rm jet}$,,,-1.0-2.5
+#: $P_T^{\rm jet}$ [GeV],,,> 4
+#: $N_{\rm jet}$,,,$\ge 2$
+#: $\langle P_T \rangle_2$ [GeV],,,5.0-50.0
+$\langle P_T \rangle_2$ [GeV],$\langle P_T \rangle_2$ [GeV] LOW,$\langle P_T \rangle_2$ [GeV] HIGH,$c^{\rm rad}$
+6.0,5.0,7.0,1.030
+9.0,7.0,11.0,1.028
+14.0,11.0,17.0,1.023
+21.0,17.0,25.0,1.031
+30.0,25.0,35.0,1.025
+42.5,35.0,50.0,0.964
+
