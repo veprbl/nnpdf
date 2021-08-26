@@ -70,12 +70,17 @@ void H1_HeraI_LQ_ptij_1JETFilter::ReadData()
 	  fSys[k][j].add = fSys[k][j].mult/100.*fData[k];
 	  fSys[k][j].type = ADD;
 	}
+
+      fSys[k][5].mult = 1.5;
+      fSys[k][5].add = fSys[k][5].mult*fData[k]/100.;
+      fSys[k][5].type = MULT;
       
       fSys[k][0].name = "UNCORR";
       fSys[k][1].name = "MODEL_H1_HeraI_LQ";
       fSys[k][2].name = "ElEnSC_H1_HeraI_LQ";
       fSys[k][3].name = "ElPolAngle_H1_HeraI_LQ";
       fSys[k][4].name = "HadEnSC_H1_HeraI_LQ";
+      fSys[k][5].name = "HERA1_LUMI";
 
     }
 
@@ -138,12 +143,17 @@ void H1_HeraI_LQ_ptij_2JETFilter::ReadData()
 	  fSys[k][j].add = fSys[k][j].mult/100.*fData[k];
 	  fSys[k][j].type = ADD;
 	}
+
+      fSys[k][5].mult = 1.5;
+      fSys[k][5].add = fSys[k][5].mult*fData[k]/100.;
+      fSys[k][5].type = MULT;
       
       fSys[k][0].name = "UNCORR";
       fSys[k][1].name = "MODEL_H1_HeraI_LQ";
       fSys[k][2].name = "ElEnSC_H1_HeraI_LQ";
       fSys[k][3].name = "ElPolAngle_H1_HeraI_LQ";
       fSys[k][4].name = "HadEnSC_H1_HeraI_LQ";
+      fSys[k][5].name = "HERA1_LUMI";
 
     }
 

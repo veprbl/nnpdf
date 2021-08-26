@@ -1,0 +1,114 @@
+#: table_doi: 10.17182/hepdata.45527.v1/t4
+#: name: Table 4
+#: description: Double differential cross section as a function of ET integrated over the ET bin range and the Q**2 range 400 to 700 GeV**2.
+
+#: data_file: Table4.yaml
+#: keyword reactions: E+ P --> E+ JET X
+#: keyword observables: SIG
+#: keyword phrases: Inclusive | Integrated Cross Section | Cross Section | Jet Production | Electron production | Neutral Current | Deep Inelastic Scattering
+#: keyword cmenergies: 318.0
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=LAB),,,-1.0 TO 2.5
+#: Q**2 [GEV**2],,,400 TO 700
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,318.0
+#: Y,,,0.2 TO 0.7
+#: ,,,Axis error includes +- 1.5/1.5 contribution (Contribution to the total correlated uncertainty from the luminsoity measurement uncertainty.)
+ET [GEV],ET [GEV] LOW,ET [GEV] HIGH,SIG [PB],stat +,stat -,sys +,sys -
+9.0,7.0,11.0,48.5,1.12,-1.12,2.15,-2.15
+14.5,11.0,18.0,26.81,0.8,-0.8,1.99,-1.99
+24.0,18.0,30.0,8.46,0.46,-0.46,0.78,-0.78
+40.0,30.0,50.0,1.69,0.22,-0.22,0.16,-0.16
+
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=LAB),,,-1.0 TO 2.5
+#: Q**2 [GEV**2],,,400 TO 700
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,318.0
+#: Y,,,0.2 TO 0.7
+ET [GEV],ET [GEV] LOW,ET [GEV] HIGH,DUNC [PCT]
+9.0,7.0,11.0,3.8
+14.5,11.0,18.0,5.9
+24.0,18.0,30.0,8.4
+40.0,30.0,50.0,14.9
+
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=LAB),,,-1.0 TO 2.5
+#: Q**2 [GEV**2],,,400 TO 700
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,318.0
+#: Y,,,0.2 TO 0.7
+ET [GEV],ET [GEV] LOW,ET [GEV] HIGH,DCORR [PCT]
+9.0,7.0,11.0,3.3
+14.5,11.0,18.0,5.3
+24.0,18.0,30.0,6.6
+40.0,30.0,50.0,6.9
+
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=LAB),,,-1.0 TO 2.5
+#: Q**2 [GEV**2],,,400 TO 700
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,318.0
+#: Y,,,0.2 TO 0.7
+ET [GEV],ET [GEV] LOW,ET [GEV] HIGH,DMOD [PCT]
+9.0,7.0,11.0,1.8
+14.5,11.0,18.0,3.8
+24.0,18.0,30.0,3.1
+40.0,30.0,50.0,3.2
+
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=LAB),,,-1.0 TO 2.5
+#: Q**2 [GEV**2],,,400 TO 700
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,318.0
+#: Y,,,0.2 TO 0.7
+ET [GEV],ET [GEV] LOW,ET [GEV] HIGH,DES [PCT]
+9.0,7.0,11.0,0.2
+14.5,11.0,18.0,0.2
+24.0,18.0,30.0,0.4
+40.0,30.0,50.0,0.5
+
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=LAB),,,-1.0 TO 2.5
+#: Q**2 [GEV**2],,,400 TO 700
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,318.0
+#: Y,,,0.2 TO 0.7
+ET [GEV],ET [GEV] LOW,ET [GEV] HIGH,DANG [PCT]
+9.0,7.0,11.0,0.5
+14.5,11.0,18.0,0.4
+24.0,18.0,30.0,0.1
+40.0,30.0,50.0,0.5
+
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=LAB),,,-1.0 TO 2.5
+#: Q**2 [GEV**2],,,400 TO 700
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,318.0
+#: Y,,,0.2 TO 0.7
+ET [GEV],ET [GEV] LOW,ET [GEV] HIGH,DHFS [PCT]
+9.0,7.0,11.0,2.4
+14.5,11.0,18.0,3.5
+24.0,18.0,30.0,5.6
+40.0,30.0,50.0,5.9
+
+#: E(P=1) [GeV],,,27.5
+#: E(P=2) [GeV],,,920.0
+#: ETARAP(P=4,RF=LAB),,,-1.0 TO 2.5
+#: Q**2 [GEV**2],,,400 TO 700
+#: RE,,,E+ P --> E+ JET X
+#: SQRT(S) [GeV],,,318.0
+#: Y,,,0.2 TO 0.7
+ET [GEV],ET [GEV] LOW,ET [GEV] HIGH,HCF
+9.0,7.0,11.0,1.093
+14.5,11.0,18.0,1.035
+24.0,18.0,30.0,1.025
+40.0,30.0,50.0,1.035
+
