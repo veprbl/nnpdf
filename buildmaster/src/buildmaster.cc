@@ -121,6 +121,7 @@
 #include "H1_HeraI_LQ_ptij.h"
 #include "H1_HeraI_HQ_ptij.h"
 #include "H1_LQ_ptji.h"
+#include "H1_HQ_ptji.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -333,6 +334,8 @@ vector<std::unique_ptr<CommonData>> InitCommonData()
   target.emplace_back(new H1_LQ_ptji_2JETFilter());
   target.emplace_back(new H1_LQ_ptji_1JET_NORMFilter());
   target.emplace_back(new H1_LQ_ptji_2JET_NORMFilter());
+  target.emplace_back(new H1_HQ_ptji_1JETFilter());
+  target.emplace_back(new H1_HQ_ptji_2JETFilter());
   
   // ************************* LHCb ******************************
 
