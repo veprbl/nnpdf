@@ -63,8 +63,8 @@ void ZEUS_820_HQ_ptjiFilter::ReadData()
 		  >> sys2p >> comma
 		  >> sys2m;
 
-	  fKin1[k] = Et;
-	  fKin2[k] = Q2[2*i]; //Q2
+	  fKin2[k] = Et;
+	  fKin1[k] = Q2[2*i]; //Q2
 	  fKin3[k] = 300.;    //GeV
 
 	  symmetriseErrors(sys1p, sys1m, &delta, &shift);

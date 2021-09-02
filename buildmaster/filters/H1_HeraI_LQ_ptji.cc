@@ -42,10 +42,10 @@ void H1_HeraI_LQ_ptij_1JETFilter::ReadData()
       istringstream lstream(line);
       char comma;
       double ddum;
-      lstream >> fKin2[k] >> comma
+      lstream >> fKin1[k] >> comma
 	      >> ddum >> comma
 	      >> ddum >> comma
-	      >> fKin1[k] >> comma
+	      >> fKin2[k] >> comma
 	      >> ddum >> comma
 	      >> ddum >> comma
 	      >> fData[k] >> comma
@@ -115,10 +115,10 @@ void H1_HeraI_LQ_ptij_2JETFilter::ReadData()
       istringstream lstream(line);
       char comma;
       double ddum;
-      lstream >> fKin2[k] >> comma
+      lstream >> fKin1[k] >> comma
 	      >> ddum >> comma
 	      >> ddum >> comma
-	      >> fKin1[k] >> comma
+	      >> fKin2[k] >> comma
 	      >> ddum >> comma
 	      >> ddum >> comma
 	      >> fData[k] >> comma
