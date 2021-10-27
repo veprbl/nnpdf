@@ -318,6 +318,9 @@ void InitCommonData(vector<CommonData*>& target)
   target.push_back(new LHCB_DMESON_N7Filter());
   target.push_back(new LHCB_DMESON_N5Filter());
   target.push_back(new LHCB_DMESON_N13Filter());
+  target.push_back(new LHCB_DMESON_R_nuclear_forwardFilter());
+  target.push_back(new LHCB_DMESON_R_nuclear_backwardFilter());
+
 
 
   // ************************* NMC ******************************

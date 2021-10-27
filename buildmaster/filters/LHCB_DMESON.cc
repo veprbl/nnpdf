@@ -275,3 +275,101 @@ void LHCB_DMESON_N13Filter::ReadData()
         fSys[i][0].name = "UNCORR";
     }
 }
+
+void LHCB_DMESON_R_nuclear_forwardFilter::ReadData()
+{
+    // Opening files
+    fstream rRatio;
+
+    // Data
+    stringstream DataFile("");
+    DataFile << dataPath() << "rawdata/" << fSetName 
+	    << "/data_Fwd.csv";
+    rRatio.open(DataFile.str().c_str(), ios::in);
+
+    if (rRatio.fail()) {
+        cerr << "Error opening data file " << DataFile.str() << endl;
+        exit(-1);
+    }
+
+    // Starting filter
+    string line;
+    double ratio, sys_uncorr, sys_corr;
+    double dummy;
+
+    for (int i = 0; i < fNData; i++)
+    {
+        getline(rRatio,line);                  
+        istringstream lstream(line); 
+
+        fKin1[i] = 1;         //dummy value
+        fKin2[i] = 1;         //dummy value    
+        fKin3[i] = 1;         //dummy value      
+
+        lstream >> dummy >> dummy;
+
+        lstream >> ratio >> sys_uncorr >> sys_corr;
+        fData[i] = ratio;
+        fStat[i] = 0.;
+
+        fSys[i][0].add  = sys_uncorr;
+        fSys[i][0].mult = fSys[i][0].add/fData[i]*1e2;
+        fSys[i][0].type = ADD;  
+        fSys[i][0].name = "UNCORR";
+
+        fSys[i][1].add  = sys_corr;
+        fSys[i][1].mult = fSys[i][0].add/fData[i]*1e2;
+        fSys[i][1].type = ADD;  
+        fSys[i][1].name = "CORR";
+    }
+}
+
+
+void LHCB_DMESON_R_nuclear_backwardFilter::ReadData()
+{
+    // Opening files
+    fstream rRatio;
+
+    // Data
+    stringstream DataFile("");
+    DataFile << dataPath() << "rawdata/" << fSetName 
+	    << "/data_Bwd.csv";
+    rRatio.open(DataFile.str().c_str(), ios::in);
+
+    if (rRatio.fail()) {
+        cerr << "Error opening data file " << DataFile.str() << endl;
+        exit(-1);
+    }
+
+    // Starting filter
+    string line;
+    double ratio, sys_uncorr, sys_corr;
+    double dummy;
+
+    for (int i = 0; i < fNData; i++)
+    {
+        getline(rRatio,line);                  
+        istringstream lstream(line); 
+
+        fKin1[i] = 1;         //dummy value
+        fKin2[i] = 1;         //dummy value    
+        fKin3[i] = 1;         //dummy value      
+
+        lstream >> dummy >> dummy;
+
+        lstream >> ratio >> sys_uncorr >> sys_corr;
+        fData[i] = ratio;
+        fStat[i] = 0.;
+
+
+        fSys[i][0].add  = sys_uncorr;
+        fSys[i][0].mult = fSys[i][0].add/fData[i]*1e2;
+        fSys[i][0].type = ADD;  
+        fSys[i][0].name = "UNCORR";
+
+        fSys[i][1].add  = sys_corr;
+        fSys[i][1].mult = fSys[i][0].add/fData[i]*1e2;
+        fSys[i][1].type = ADD;  
+        fSys[i][1].name = "CORR";
+    }
+}

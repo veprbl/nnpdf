@@ -35,3 +35,19 @@ class LHCB_DMESON_N13Filter: public CommonData
 private:
   void ReadData();
 };
+
+class LHCB_DMESON_R_nuclear_forwardFilter: public CommonData
+{ public: LHCB_DMESON_R_nuclear_forwardFilter():
+  CommonData("LHCB_DMESON_R_nuclear_forward") { ReadData(); }
+
+private:
+  void ReadData();
+}; 
+
+class LHCB_DMESON_R_nuclear_backwardFilter: public CommonData
+{ public: LHCB_DMESON_R_nuclear_backwardFilter():
+  CommonData("LHCB_DMESON_R_nuclear_backward") { ReadData(); }
+
+private:
+  void ReadData();
+}; 
