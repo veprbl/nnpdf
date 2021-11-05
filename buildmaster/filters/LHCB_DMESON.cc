@@ -60,66 +60,6 @@ void LHCB_DMESON_R_13_5Filter::ReadData()
         fSys[i][0].type = ADD;  
         fSys[i][0].name = "UNCORR";
     }
-    /*
-    // Defining covariance matrix
-    double** covmat = new double*[fNData];
-    for (int i = 0; i < fNData; i++) 
-        covmat[i] = new double[fNData];
- 
-    // Reading Covariance Matrix
-    for (int i = 0; i < fNData; i++)
-    {
-        for (int j = 0; j < fNData; j++) 
-	    {
-	        rCorr >> covmat[i][j];
-	        //covmat[i][j]=covmat[i][j]*totsys[i]*totsys[j];
-	        //covmat[j][i]=covmat[i][j];
-	    }
-    }
-
-    for (int i = 0; i < fNData; i++)
-    {
-        for (int j = 0; j < fNData; j++) 
-	    {
-	        cout << covmat[i][j] << " ";
-	    }
-        cout << endl;
-    }
-
-    
-    // Generate artificial systematics
-    double** syscor = new double*[fNData];
-    for(int i = 0; i < fNData; i++)
-        syscor[i] = new double[fNData];
-  
-    if(!genArtSys(fNData,covmat,syscor))
-    {
-        cerr << " in " << fSetName 
-	    << " : cannot generate artificial systematics" << endl;
-        exit(-1);
-    }
-    
-    // Copy the artificial systematics in the fSys matrix
-    for (int i = 0; i < fNData; i++)
-        for (int l = 0; l < fNSys; l++)
-        {
-            fSys[i][l].add  = syscor[i][l];
-            fSys[i][l].mult = fSys[i][l].add/fData[i]*1e2;
-            fSys[i][l].type = ADD;  
-            fSys[i][l].name = "CORR";
-        }
-  
-    rData.close();
-    rCorr.close();
-  
-    for(int i = 0; i < fNData; i++) 
-        delete[] covmat[i];
-    delete[] covmat;
-  
-    for(int i = 0; i < fNData; i++) 
-        delete[] syscor[i];
-    delete[] syscor;
-    */
 }
 
 
