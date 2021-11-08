@@ -234,19 +234,19 @@ void LHCB_DMESON_R_nuclear_forwardFilter::ReadData()
 
     // Starting filter
     string line;
-    double ratio, sys_uncorr, sys_corr;
-    double dummy;
+    double ratio, sys_uncorr, sys_corr, y, pT;
+    double mc = 1.51;
 
     for (int i = 0; i < fNData; i++)
     {
         getline(rRatio,line);                  
         istringstream lstream(line); 
 
-        fKin1[i] = 1;         //dummy value
-        fKin2[i] = 1;         //dummy value    
-        fKin3[i] = 1;         //dummy value      
+        lstream >> pT >> y;
 
-        lstream >> dummy >> dummy;
+        fKin1[i] = y;         //rapidity
+        fKin2[i] = pow(pT,2) + pow(mc,2);    // pT^2 + mc^2    
+        fKin3[i] = 5000;         // \sqrt(s) GeV      
 
         lstream >> ratio >> sys_uncorr >> sys_corr;
         fData[i] = ratio;
@@ -283,19 +283,19 @@ void LHCB_DMESON_R_nuclear_backwardFilter::ReadData()
 
     // Starting filter
     string line;
-    double ratio, sys_uncorr, sys_corr;
-    double dummy;
+    double ratio, sys_uncorr, sys_corr, y, pT;
+    double mc = 1.51;
 
     for (int i = 0; i < fNData; i++)
     {
         getline(rRatio,line);                  
         istringstream lstream(line); 
 
-        fKin1[i] = 1;         //dummy value
-        fKin2[i] = 1;         //dummy value    
-        fKin3[i] = 1;         //dummy value      
+        lstream >> pT >> y;
 
-        lstream >> dummy >> dummy;
+        fKin1[i] = y;         //rapidity
+        fKin2[i] = pow(pT,2) + pow(mc,2);    // pT^2 + mc^2    
+        fKin3[i] = 5000;         // \sqrt(s) GeV      
 
         lstream >> ratio >> sys_uncorr >> sys_corr;
         fData[i] = ratio;
