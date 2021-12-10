@@ -62,11 +62,10 @@ def _basic_obs_obs_correlation(obsarr1, obsarr2):
 
 #TODO: Implement for other error types. Do not use the _rawdata.
 @check_pdf_is_montecarlo
-def obs_pdf_correlations(pdf, results, xplotting_grid):
+def obs_pdf_correlations(pdf, th_results, xplotting_grid):
     """Return the correlations between each point in a dataset and the PDF
     values on a grid of (x,f) points in a format similar to `xplotting_grid`."""
-    _ , th = results
-    corrs = _basic_obs_pdf_correlation(xplotting_grid.grid_values, th._rawdata)
+    corrs = _basic_obs_pdf_correlation(xplotting_grid.grid_values, th_results._rawdata)
     return xplotting_grid._replace(grid_values=corrs)
 
 

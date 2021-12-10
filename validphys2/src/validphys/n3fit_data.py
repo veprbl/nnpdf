@@ -13,6 +13,7 @@ import logging
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from reportengine import collect
 from reportengine.table import table
@@ -21,6 +22,9 @@ from validphys.n3fit_data_utils import (
     common_data_reader_experiment,
     positivity_reader,
 )
+from validphys import pdfgrids
+from validphys.results import th_results
+from validphys.correlations import obs_pdf_correlations
 
 log = logging.getLogger(__name__)
 
@@ -51,8 +55,102 @@ def replica_mcseed(replica, mcseed, genrep):
         res = np.random.randint(0, pow(2, 31))
     return res
 
+#################################################################################################
+def create_a_ndated_split(ndata_per_dataset, split=0.75):
+    full_mask = [np.random.rand(n) < split for n in ndata_per_dataset]
+    return full_mask
 
-def tr_masks(data, replica_trvlseed):
+def compute_reward(full_data, tr_data, vl_data, min_points=1):
+    full_p = np.sum(full_data, axis=0) >= min_points
+    tr_p = np.sum(tr_data, axis=0) >= min_points
+    vl_p = np.sum(vl_data, axis=0) >= min_points
+    
+    reward = -2.0*np.sum(tr_p^full_p) - np.sum(vl_p^full_p)
+    
+    return reward
+
+def genetic_split_1(ndata_per_dataset, full_dataset, split=0.75, mutants=10, generations=10, parents=3):
+    
+    results = []
+    prev_results = []
+    
+    for g in range(generations):
+        
+        generation_mask = create_a_ndated_split(ndata_per_dataset, split=split)
+        prev_results.append(generation_mask)
+        parent_masks = np.stack(prev_results)
+        
+        for _ in range(mutants):
+            
+            if g == 0:
+                # In the first generation all masks are completely new
+                new_mask = create_a_ndated_split(ndata_per_dataset, split=split)
+            else:
+                # Take randomly from one of the older masks or the new one
+                idx = np.random.randint(0, len(prev_results), len(generation_mask))
+                new_mask = np.diag(parent_masks[idx,:])
+
+            mask = np.concatenate(new_mask)
+
+            tr_data = full_dataset[mask]
+            vl_data = full_dataset[~mask]
+
+            reward = compute_reward(full_dataset, tr_data, vl_data)
+
+            results.append((reward, new_mask))
+
+        results.sort(key=lambda i: i[0])
+        results = results[-parents:]
+        prev_results = [i[1] for i in results]
+
+    best_mask = results[-1][1]
+    return best_mask
+
+def _balanced_trvl(all_datasets, pdf, split=0.75, initial_threshold=0.9, mutants=10, generations=10, parents=3, npoints=50):
+    """Uses a genetic algorithm to generate a balanced tr/vl split.
+    The split is taken uniformly over all datapoitns 
+    (i.e., each datapoint has a ``split`` probability of ending up in training)
+    """
+    min_threshold = 0.49
+    step_threshold = 0.05
+    min_points = 4
+
+    xgrid = pdfgrids.xgrid(npoints=npoints)
+    validphys_xgrid = pdfgrids.xplotting_grid(pdf, 1.6, xgrid)
+    # Step 1: compute correlations
+    ndata_per_dataset = []
+    all_corrs = []
+
+    for dataset in tqdm(all_datasets):
+        ndata_per_dataset.append(len(dataset.cuts.load()))
+        results = th_results(dataset, pdf)
+        corr = obs_pdf_correlations(pdf, results, validphys_xgrid)
+        all_corrs.append(corr.grid_values)
+
+    all_corrs = np.abs(np.concatenate(all_corrs, axis=0))
+
+    noncorr = 1.0
+    threshold_store = noncorr*np.ones((8, npoints))
+    threshold = initial_threshold
+    while threshold >= min_threshold:
+        raw_nnpdf_correlations = (all_corrs > threshold).astype(int)
+        data_pfpx = np.sum(raw_nnpdf_correlations, axis=0)
+        threshold_store[np.logical_and(threshold_store==noncorr, data_pfpx>=min_points)] = threshold
+        
+        if np.all(threshold_store!=noncorr):
+            break
+        threshold -= step_threshold
+
+    final_nnpdf_data = (all_corrs > threshold_store).astype(int)
+
+    trsplit = genetic_split_1(ndata_per_dataset, final_nnpdf_data, split=split, mutants=mutants, generations=generations, parents=parents)
+
+    return trsplit
+
+#################################################################################################
+
+
+def tr_masks(data, replica_trvlseed, t0set, balanced=True):
     """Generate the boolean masks used to split data into training and
     validation points. Returns a list of 1-D boolean arrays, one for each
     dataset. Each array has length equal to N_data, the datapoints which
@@ -66,6 +164,8 @@ def tr_masks(data, replica_trvlseed):
     # TODO: update this to new random infrastructure.
     np.random.seed(nameseed)
     trmask_partial = []
+    if balanced:
+        tmp = _balanced_trvl(data.datasets, t0set)
     for dataset in data.datasets:
         # TODO: python commondata will not require this rubbish.
         # all data if cuts are None

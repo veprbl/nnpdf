@@ -474,6 +474,9 @@ def groups_corrmat(groups_covmat):
 def procs_corrmat(procs_covmat):
     return groups_corrmat(procs_covmat)
 
+def th_results(dataset: (DataSetSpec), pdf: PDF):
+    """Returns just the th prediction part of the result"""
+    return ThPredictionsResult.from_convolution(pdf, dataset)
 
 def results(dataset: (DataSetSpec), pdf: PDF, covariance_matrix, sqrt_covmat):
     """Tuple of data and theory results for a single pdf. The data will have an associated
