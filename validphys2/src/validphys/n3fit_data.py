@@ -96,6 +96,9 @@ def genetic_split_1(ndata_per_dataset, full_dataset, split=0.75, mutants=10, gen
             vl_data = full_dataset[~mask]
 
             reward = compute_reward(full_dataset, tr_data, vl_data)
+            if reward == 0:
+                # A reward of 0 right now means perfection so why continue?
+                return new_mask
 
             results.append((reward, new_mask))
 
@@ -103,10 +106,12 @@ def genetic_split_1(ndata_per_dataset, full_dataset, split=0.75, mutants=10, gen
         results = results[-parents:]
         prev_results = [i[1] for i in results]
 
+    print(f"Final reward: {results[-1][0]}")
+
     best_mask = results[-1][1]
     return best_mask
 
-def _balanced_trvl(all_datasets, pdf, split=0.75, initial_threshold=0.9, mutants=10, generations=10, parents=3, npoints=50):
+def _balanced_trvl(all_datasets, pdf, split=0.75, initial_threshold=0.9, mutants=20, generations=20, parents=3, npoints=50):
     """Uses a genetic algorithm to generate a balanced tr/vl split.
     The split is taken uniformly over all datapoitns 
     (i.e., each datapoint has a ``split`` probability of ending up in training)
@@ -149,8 +154,8 @@ def _balanced_trvl(all_datasets, pdf, split=0.75, initial_threshold=0.9, mutants
 
 #################################################################################################
 
-
-def tr_masks(data, replica_trvlseed, t0set, balanced=True):
+all_cuts = {}
+def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, balanced=True):
     """Generate the boolean masks used to split data into training and
     validation points. Returns a list of 1-D boolean arrays, one for each
     dataset. Each array has length equal to N_data, the datapoints which
@@ -164,8 +169,14 @@ def tr_masks(data, replica_trvlseed, t0set, balanced=True):
     # TODO: update this to new random infrastructure.
     np.random.seed(nameseed)
     trmask_partial = []
-    if balanced:
-        tmp = _balanced_trvl(data.datasets, t0set)
+    if balanced and not all_cuts:
+        from validphys.api import API
+        all_data = [API.dataset(dataset_input={'dataset': d.name}, theoryid=int(theoryid.id), use_cuts=use_cuts.name.lower()) for d in tqdm(dataset_inputs)]
+        masks = _balanced_trvl(all_data, t0set)
+        for d, m in zip(dataset_inputs, masks):
+            all_cuts[d.name] = m
+    if all_cuts:
+        return [all_cuts[i.name] for i in data]
     for dataset in data.datasets:
         # TODO: python commondata will not require this rubbish.
         # all data if cuts are None
