@@ -111,12 +111,14 @@ def genetic_split_1(ndata_per_dataset, full_dataset, split=0.75, mutants=10, gen
     return best_mask
 
 
-def _show_correlation_maps(all_data, tr_data, vl_data, xgrid, flavs, r):
+def _show_correlation_maps(all_data, tr_data, vl_data, flavs, xgrid, save_path):
     all_summed = np.sum(all_data, axis=0) >= 1
-    all_tr = np.sum(tr_data, axis=0) >= 1
-    all_vl = np.sum(vl_data, axis=0) >= 1
+    tr_summed = np.sum(tr_data, axis=0) >= 1
+    vl_summed = np.sum(vl_data, axis=0) >= 1
 
     import matplotlib.pyplot as plt
+
+    plt.rcParams["figure.figsize"] = (20,4)
 
     def show(data, title):
         plt.xscale("log")
@@ -133,16 +135,15 @@ def _show_correlation_maps(all_data, tr_data, vl_data, xgrid, flavs, r):
     plt.subplot(1,3,3)
     show(tr_summed, "Training")
 
-    plt.savefig("/home/cruzmartinez/NNPDF/Garaje/December/211211-jcm-001/nnfit/repplica_{r}/corr.png")
+    plt.savefig(save_path / "corr.png")
         
         
 
-def _balanced_trvl(all_datasets, pdf, replica, split=0.75, initial_threshold=0.9, mutants=20, generations=20, parents=3, npoints=50):
+def _balanced_trvl(all_datasets, pdf, save_path, split=0.75, min_threshold=0.59, initial_threshold=0.9, mutants=20, generations=20, parents=3, npoints=50):
     """Uses a genetic algorithm to generate a balanced tr/vl split.
     The split is taken uniformly over all datapoitns 
     (i.e., each datapoint has a ``split`` probability of ending up in training)
     """
-    min_threshold = 0.59
     step_threshold = 0.05
     min_points = 4
 
@@ -177,16 +178,16 @@ def _balanced_trvl(all_datasets, pdf, replica, split=0.75, initial_threshold=0.9
     trsplit = genetic_split_1(ndata_per_dataset, final_nnpdf_data, split=split, mutants=mutants, generations=generations, parents=parents)
 
     mask = np.concatenate(trsplit)
-    tr = all_datasets[mask]
-    vl = all_datasets[~mask]
-    _show_correlation_maps(all_datasets, tr, vl, corr.flavours, corr.xgrid, replica)
+    tr = final_nnpdf_data[mask]
+    vl = final_nnpdf_data[~mask]
+    _show_correlation_maps(final_nnpdf_data, tr, vl, corr.flavours, corr.xgrid, save_path)
 
     return trsplit
 
 #################################################################################################
 
 all_cuts = {}
-def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, balanced=True):
+def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, replica_path, replica, min_threshold=0.59, balanced=True):
     """Generate the boolean masks used to split data into training and
     validation points. Returns a list of 1-D boolean arrays, one for each
     dataset. Each array has length equal to N_data, the datapoints which
@@ -203,11 +204,10 @@ def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, 
     if balanced and not all_cuts:
         from validphys.api import API
         all_data = [API.dataset(dataset_input={'dataset': d.name}, theoryid=int(theoryid.id), use_cuts=use_cuts.name.lower()) for d in tqdm(dataset_inputs)]
-        masks = _balanced_trvl(all_data, t0set)
+        save_path = replica_path / f"replica_{replica}"
+        masks = _balanced_trvl(all_data, t0set, save_path, min_threshold=0.59)
         for d, m in zip(dataset_inputs, masks):
             all_cuts[d.name] = m
-    import sys
-    sys.exit()
     if all_cuts:
         return [all_cuts[i.name] for i in data]
     for dataset in data.datasets:
