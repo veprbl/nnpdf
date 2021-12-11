@@ -50,7 +50,6 @@ class N3FitError(Exception):
 
     pass
 
-
 class N3FitEnvironment(Environment):
     """Container for information to be filled at run time"""
 

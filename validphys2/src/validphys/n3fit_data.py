@@ -70,7 +70,6 @@ def compute_reward(full_data, tr_data, vl_data, min_points=1):
     return reward
 
 def genetic_split_1(ndata_per_dataset, full_dataset, split=0.75, mutants=10, generations=10, parents=3):
-    
     results = []
     prev_results = []
     
@@ -111,17 +110,44 @@ def genetic_split_1(ndata_per_dataset, full_dataset, split=0.75, mutants=10, gen
     best_mask = results[-1][1]
     return best_mask
 
-def _balanced_trvl(all_datasets, pdf, split=0.75, initial_threshold=0.9, mutants=20, generations=20, parents=3, npoints=50):
+
+def _show_correlation_maps(all_data, tr_data, vl_data, xgrid, flavs, r):
+    all_summed = np.sum(all_data, axis=0) >= 1
+    all_tr = np.sum(tr_data, axis=0) >= 1
+    all_vl = np.sum(vl_data, axis=0) >= 1
+
+    import matplotlib.pyplot as plt
+
+    def show(data, title):
+        plt.xscale("log")
+        plt.pcolormesh(xgrid, flavs, data, shading="nearest")
+        plt.xlabel("x")
+        plt.ylabel("x")
+        plt.title(title)
+        plt.colorbar()
+
+    plt.subplot(1,3,1)
+    show(all_summed, "Total")
+    plt.subplot(1,3,2)
+    show(vl_summed, "Validation")
+    plt.subplot(1,3,3)
+    show(tr_summed, "Training")
+
+    plt.savefig("/home/cruzmartinez/NNPDF/Garaje/December/211211-jcm-001/nnfit/repplica_{r}/corr.png")
+        
+        
+
+def _balanced_trvl(all_datasets, pdf, replica, split=0.75, initial_threshold=0.9, mutants=20, generations=20, parents=3, npoints=50):
     """Uses a genetic algorithm to generate a balanced tr/vl split.
     The split is taken uniformly over all datapoitns 
     (i.e., each datapoint has a ``split`` probability of ending up in training)
     """
-    min_threshold = 0.49
+    min_threshold = 0.59
     step_threshold = 0.05
     min_points = 4
 
     xgrid = pdfgrids.xgrid(npoints=npoints)
-    validphys_xgrid = pdfgrids.xplotting_grid(pdf, 1.6, xgrid)
+    validphys_xgrid = pdfgrids.xplotting_grid(pdf, 1.6, xgrid, basis='EVOL')
     # Step 1: compute correlations
     ndata_per_dataset = []
     all_corrs = []
@@ -150,6 +176,11 @@ def _balanced_trvl(all_datasets, pdf, split=0.75, initial_threshold=0.9, mutants
 
     trsplit = genetic_split_1(ndata_per_dataset, final_nnpdf_data, split=split, mutants=mutants, generations=generations, parents=parents)
 
+    mask = np.concatenate(trsplit)
+    tr = all_datasets[mask]
+    vl = all_datasets[~mask]
+    _show_correlation_maps(all_datasets, tr, vl, corr.flavours, corr.xgrid, replica)
+
     return trsplit
 
 #################################################################################################
@@ -175,6 +206,8 @@ def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, 
         masks = _balanced_trvl(all_data, t0set)
         for d, m in zip(dataset_inputs, masks):
             all_cuts[d.name] = m
+    import sys
+    sys.exit()
     if all_cuts:
         return [all_cuts[i.name] for i in data]
     for dataset in data.datasets:
