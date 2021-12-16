@@ -14,11 +14,11 @@
 
 // ************** Positivity *******
 
-#include "POS.h"
+//#include "POS.h"
 
 // ************** Integrability ********
 
-#include "INT.h"
+//#include "INT.h"
 
 // ************* DATA **************
 #include "NMC.h"
@@ -114,6 +114,7 @@
 #include "CMS_2JET_5TEV.h"
 #include "ATLAS_DY_2D_8TEV_LOWMASS.h"
 #include "ATLAS_WMU_8TEV.h"
+#include "HERMES.h"
 
 /**
  * \param argv the filename containing the configuration
@@ -143,6 +144,7 @@ vector<std::unique_ptr<CommonData>> InitCommonData()
 {
   vector<std::unique_ptr<CommonData>> target;
 
+  /*
   // ************************* POS ******************************
 
   register_positivity(target);
@@ -553,5 +555,9 @@ vector<std::unique_ptr<CommonData>> InitCommonData()
   // **************** CMS Dijet production pp 5TEV *****************************
   target.emplace_back(new CMS_2JET_5TEVFilter()); // DIJET
 
+  */
+  // **************** HERMES ***************************************************
+  target.emplace_back(new HERMES_KA_MINUS_DEUTERONFilter());
+  
   return target;
 }
