@@ -760,11 +760,11 @@ def experiments_chi2_stats(total_chi2_data):
     rep_mean = rep_data.central_value().mean()
     return OrderedDict(
         [
-            ("central_mean", m),
+            ("central_mean", m / npoints),
             ("npoints", npoints),
             ("chi2_per_data", m / npoints),
-            ("perreplica_mean", rep_mean),
-            ("perreplica_std", rep_data.std_error().mean()),
+            ("perreplica_mean", rep_mean / npoints),
+            ("perreplica_std", rep_data.std_error().mean() / npoints),
         ]
     )
 
@@ -787,11 +787,11 @@ def chi2_stats(abs_chi2_data):
     rep_mean = rep_data.central_value().mean()
     return OrderedDict(
         [
-            ("central_mean", m),
+            ("central_mean", m / npoints),
             ("npoints", npoints),
             ("chi2_per_data", m / npoints),
-            ("perreplica_mean", rep_mean),
-            ("perreplica_std", rep_data.std_error().mean()),
+            ("perreplica_mean", rep_mean / npoints),
+            ("perreplica_std", rep_data.std_error().mean() / npoints),
         ]
     )
 

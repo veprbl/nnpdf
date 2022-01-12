@@ -623,6 +623,26 @@ def dbarubar_ratio(func, xmat, qmat):
     den = gv[:, [1], ...]
     return num / den
 
+@scalar_function_transformation(label=r"s+\bar{s}")
+def total_strangeness(func, xmat, qmat):
+    gv = func([+3, -3], xmat, qmat)
+    s = gv[:, [0], ...]
+    sbar = gv[:, [1], ...]
+    return s+sbar
+
+@scalar_function_transformation(label=r"d_V")
+def dV(func, xmat, qmat):
+    gv = func([+1, -1], xmat, qmat)
+    d = gv[:, [0], ...]
+    dbar = gv[:, [1], ...]
+    return d+dbar
+
+@scalar_function_transformation(label=r"\bar{d}-\bar{u}")
+def dbmub(func, xmat, qmat):
+    gv = func([-1, -2], xmat, qmat)
+    dbar = gv[:, [0], ...]
+    ubar = gv[:, [1], ...]
+    return dbar-ubar
   
 @scalar_function_transformation(label="Rs", element_representations={"Rs": "R_{s}"})
 def strange_fraction(func, xmat, qmat):

@@ -59,16 +59,20 @@ def _chi2_distribution_plots(chi2_data, stats, pdf, plot_type):
     fig, ax = plt.subplots()
     label = pdf.name
     alldata, central, npoints = chi2_data
+    central_mean, npts, chi2_per_data, perreplica_mean, perreplica_std = stats.items()
     if not isinstance(alldata, MCStats):
         ax.set_facecolor("#ffcccc")
         log.warning("Chi² distribution plots have a "
                 "different meaning for non MC sets.")
         label += " (%s!)" % pdf.ErrorType
-    label += '\n'+ '\n'.join(str(chi2_stat_labels[k])+(' %.2f' % v) for (k,v) in stats.items())
+    #label += '\n'+ '\n'.join(str(chi2_stat_labels[k])+(' %.3f' % v) for (k,v) in stats.items())
     ax.set_xlabel(r"Replica $\chi^2$")
 
     if plot_type == "hist":
-        ax.hist(alldata.data, label=label, zorder=100)
+        ax.hist(alldata.data/npoints, label=r"$\chi^2$ rep. distr.", range=(1.225,1.305), bins=10)
+        ax.axvline(x=central_mean[1], color='k', linestyle='-.', label=r"$\chi^2_{0,\rm data}=$ %.3f" % central_mean[1])
+        ax.axvline(x=perreplica_mean[1], color='k', linestyle='--', label=r"$\langle\chi^2\rangle_{\rm rep., data}=$ %.3f" % perreplica_mean[1] + r"$\pm$ %.3f" % perreplica_std[1])
+        ax.text(1.28,25, r"$N_{\rm rep}=100$, $N_{\rm data}=$"+str(npts[1]), fontsize=10)
     elif plot_type == "kde":
         # We need the squeeze here to change shape from (x, 1) to (x,)
         ax = plotutils.kde_plot(alldata.data.squeeze(), label=label)
