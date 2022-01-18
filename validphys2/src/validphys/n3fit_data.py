@@ -243,7 +243,9 @@ def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, 
         trmask_partial.append(mask)
     return trmask_partial
 
-def kfold_masks(kpartitions, data):
+magical_kfolding_masks = {}
+
+def kfold_masks(kpartitions, data, dataset_inputs, theoryid, use_cuts, replica_path, replica, t0set):
     """Collect the masks (if any) due to kfolding for this data.
     These will be applied to the experimental data before starting
     the training of each fold.
@@ -293,20 +295,34 @@ def kfold_masks(kpartitions, data):
     list_folds = []
     if kpartitions is not None:
         for partition in kpartitions:
-            data_fold = partition.get("datasets", [])
-            mask = []
-            for dataset in data.datasets:
-                # TODO: python commondata will not require this rubbish.
-                # all data if cuts are None
-                cuts = dataset.cuts
-                ndata = len(cuts.load()) if cuts else dataset.commondata.ndata
-                # If the dataset is in the fold, its mask is full of 0s
-                if str(dataset) in data_fold:
-                    mask.append(np.zeros(ndata, dtype=np.bool))
-                # otherwise of ones
-                else:
-                    mask.append(np.ones(ndata, dtype=np.bool))
-            list_folds.append(np.concatenate(mask))
+            if partition.get("mode") == "autobalance":
+                if not magical_kfolding_masks:
+                    from validphys.api import API
+                    all_data = [API.dataset(dataset_input={'dataset': d.name}, theoryid=int(theoryid.id), use_cuts=use_cuts.name.lower()) for d in tqdm(dataset_inputs)]
+                    save_path = replica_path / f"replica_{replica}"
+                    magical_mask = _balanced_trvl(all_data, t0set, save_path, min_threshold=0.59)
+                    for d, m in zip(dataset_inputs, magical_mask):
+                        magical_kfolding_masks[d.name] = m
+                mask = []
+                for dataset in data.datasets:
+                    mask.append(magical_kfolding_masks[dataset.name])
+                list_folds.append(mask)
+            else:
+                data_fold = partition.get("datasets", [])
+                mask = []
+                for dataset in data.datasets:
+                    # TODO: python commondata will not require this rubbish.
+                    # all data if cuts are None
+                    cuts = dataset.cuts
+                    ndata = len(cuts.load()) if cuts else dataset.commondata.ndata
+                    # If the dataset is in the fold, its mask is full of 0s
+                    if str(dataset) in data_fold:
+                        mask.append(np.zeros(ndata, dtype=np.bool))
+                    # otherwise of ones
+                    else:
+                        mask.append(np.ones(ndata, dtype=np.bool))
+                list_folds.append(np.concatenate(mask))
+    import ipdb; ipdb.set_trace()
     return list_folds
 
 
