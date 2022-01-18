@@ -206,7 +206,7 @@ def _balanced_trvl(all_datasets, pdf, save_path, split=0.75, min_threshold=0.54,
 #################################################################################################
 
 all_cuts = {}
-def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, replica_path, replica, min_threshold=0.59, balanced=True):
+def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, replica_path, replica, min_threshold=0.59, balanced=False):
     """Generate the boolean masks used to split data into training and
     validation points. Returns a list of 1-D boolean arrays, one for each
     dataset. Each array has length equal to N_data, the datapoints which
@@ -224,7 +224,7 @@ def tr_masks(data, replica_trvlseed, t0set, dataset_inputs, theoryid, use_cuts, 
         from validphys.api import API
         all_data = [API.dataset(dataset_input={'dataset': d.name}, theoryid=int(theoryid.id), use_cuts=use_cuts.name.lower()) for d in tqdm(dataset_inputs)]
         save_path = replica_path / f"replica_{replica}"
-        masks = _balanced_trvl(all_data, t0set, save_path, min_threshold=0.59)
+        masks = _balanced_trvl(all_data, t0set, save_path, min_threshold=min_threshold)
         for d, m in zip(dataset_inputs, masks):
             all_cuts[d.name] = m
     if all_cuts:
