@@ -322,7 +322,6 @@ def kfold_masks(kpartitions, data, dataset_inputs, theoryid, use_cuts, replica_p
                     else:
                         mask.append(np.ones(ndata, dtype=np.bool))
                 list_folds.append(np.concatenate(mask))
-    import ipdb; ipdb.set_trace()
     return list_folds
 
 
