@@ -306,7 +306,6 @@ def kfold_masks(kpartitions, data, dataset_inputs, theoryid, use_cuts, replica_p
                 mask = []
                 for dataset in data.datasets:
                     mask.append(magical_kfolding_masks[dataset.name])
-                list_folds.append(mask)
             else:
                 data_fold = partition.get("datasets", [])
                 mask = []
@@ -321,7 +320,7 @@ def kfold_masks(kpartitions, data, dataset_inputs, theoryid, use_cuts, replica_p
                     # otherwise of ones
                     else:
                         mask.append(np.ones(ndata, dtype=np.bool))
-                list_folds.append(np.concatenate(mask))
+            list_folds.append(np.concatenate(mask))
     return list_folds
 
 
