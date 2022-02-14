@@ -115,6 +115,7 @@
 #include "CMS_HMDY_13TEV.h"
 #include "ATLAS_DY_2D_8TEV_LOWMASS.h"
 #include "ATLAS_WMU_8TEV.h"
+#include "ATLAS_STXS.h"
 /**
  * \param argv the filename containing the configuration
  */
@@ -189,6 +190,8 @@ vector<std::unique_ptr<CommonData>> InitCommonData()
   target.emplace_back(new ATLAS_WP_JET_8TEV_PTJFilter());
   target.emplace_back(new ATLAS_WM_JET_8TEV_PTJFilter());
   target.emplace_back(new ATLAS_WMU_8TEVFilter());
+  target.emplace_back(new ATLAS_STXS_2020Filter());
+
 
   // ************************* BCDMS ******************************
 
