@@ -78,7 +78,7 @@ void ATLAS_STXS_2020Filter::ReadData()
     {
       fSys[i][l].add  = syscor[i][l];
       fSys[i][l].mult = fSys[i][l].add/fData[i]*1e2;
-      fSys[i][l].type = MULT;  
+      fSys[i][l].type = ADD;  
       fSys[i][l].name = "CORR";
     }
   
