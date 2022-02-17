@@ -169,6 +169,7 @@ class CoreConfig(configparser.Config):
     @element_of("theoryids")
     @_id_with_label
     def parse_theoryid(self, theoryID: (str, int)):
+        Here is a new line
         """A number corresponding to the database theory ID where the
         corresponding theory folder is installed in te data directory."""
         try:
@@ -402,9 +403,12 @@ class CoreConfig(configparser.Config):
 
     @element_of("dataset_inputs")
     def parse_dataset_input(self, dataset: Mapping):
-        """The mapping that corresponds to the dataset specifications in the
-        fit files"""
-        known_keys = {"dataset", "sys", "cfac", "frac", "weight", "custom_group"}
+        """
+        The mapping that corresponds to the dataset specifications in the
+        fit files. Key "fit_cfac" added to determine if the C-factors of a dataset
+        are used to fit Wilson coefficients
+        """
+        known_keys = {"dataset", "sys", "cfac", "frac", "weight", "custom_group", "fit_cfac"}
         try:
             name = dataset["dataset"]
             if not isinstance(name, str):
@@ -434,13 +438,21 @@ class CoreConfig(configparser.Config):
             log.warning(
                 ConfigError(f"Key '{k}' in dataset_input not known.", k, known_keys)
             )
+
+        fit_cfac = dataset.get("fit_cfac") 
+        if fit_cfac is not None:
+            _, fit_cfac_ns = tuple(self.parse_from_(None, fit_cfac, write=False))
+        else:
+            fit_cfac_ns = None
+
         return DataSetInput(
             name=name,
             sys=sysnum,
             cfac=cfac,
             frac=frac,
             weight=weight,
-            custom_group=custom_group
+            custom_group=custom_group,
+            fit_cfac=fit_cfac_ns
         )
 
     def parse_use_fitcommondata(self, do_use: bool):
@@ -615,6 +627,7 @@ class CoreConfig(configparser.Config):
         cfac = dataset_input.cfac
         frac = dataset_input.frac
         weight = dataset_input.weight
+        fit_cfac = dataset_input.fit_cfac
 
         try:
             ds = self.loader.check_dataset(
@@ -627,6 +640,7 @@ class CoreConfig(configparser.Config):
                 use_fitcommondata=use_fitcommondata,
                 fit=fit,
                 weight=weight,
+                fit_cfac = fit_cfac
             )
         except DataNotFoundError as e:
             raise ConfigError(str(e), name, self.loader.available_datasets)
