@@ -169,7 +169,6 @@ class CoreConfig(configparser.Config):
     @element_of("theoryids")
     @_id_with_label
     def parse_theoryid(self, theoryID: (str, int)):
-        Here is a new line
         """A number corresponding to the database theory ID where the
         corresponding theory folder is installed in te data directory."""
         try:
