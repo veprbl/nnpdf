@@ -346,8 +346,8 @@ class CommonDataSpec(TupleComp):
 
 
 class DataSetInput(TupleComp):
-    """Represents whatever the user enters in the YAML to specidy a
-    dataset."""
+    """Represents whatever the user enters in the YAML to specify a
+    dataset. Added the fit_cfac feature to be consistent with the new known keys."""
     def __init__(self, *, name, sys, cfac, frac, weight, custom_group, fit_cfac):
         self.name=name
         self.sys=sys
@@ -356,7 +356,7 @@ class DataSetInput(TupleComp):
         self.weight = weight
         self.custom_group = custom_group
         self.fit_cfac = fit_cfac
-        super().__init__(name, sys, cfac, frac, weight, custom_group)
+        super().__init__(name, sys, cfac, frac, weight, custom_group, fit_cfac)
 
     def __str__(self):
         return self.name
@@ -472,7 +472,7 @@ def cut_mask(cuts):
 class DataSetSpec(TupleComp):
 
     def __init__(self, *, name, commondata, fkspecs, thspec, cuts,
-                 frac=1, op=None, weight=1, fit_cfac):
+                 frac=1, op=None, weight=1, fit_cfac = None):
         self.name = name
         self.commondata = commondata
 

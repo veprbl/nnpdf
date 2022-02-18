@@ -474,13 +474,15 @@ class Loader(LoaderBase):
     def check_fit_cfac(self, setname, fit_cfacs, theoryid):
         _, theopath = self.check_theoryID(theoryid)
         fit_cfac_path_mapping = {}
-        for fit_cfac in fit_cfacs:
-            cfactorpath = theopath / 'cfactor' / f'CF_{fit_cfac}_{setname}.dat'
-            if not cfactorpath.exists():
-                msg = f"Could not find fit cfactor {fit_cfac} for {setname} in {theopath}"
-                raise CfactorNotFound(msg)
-            fit_cfac_path_mapping[fit_cfac] = cfactorpath
-
+        if fit_cfacs is None:
+            return None
+        else:
+            for fit_cfac in fit_cfacs:
+                cfactorpath = theopath / 'cfactor' / f'CF_{fit_cfac}_{setname}.dat'
+                if not cfactorpath.exists():
+                    msg = f"Could not find fit cfactor {fit_cfac} for {setname} in {theopath}"
+                    raise CfactorNotFound(msg)
+                fit_cfac_path_mapping[fit_cfac] = cfactorpath
         return fit_cfac_path_mapping
 
 
