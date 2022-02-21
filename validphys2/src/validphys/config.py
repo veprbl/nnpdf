@@ -399,7 +399,21 @@ class CoreConfig(configparser.Config):
         """ Set the PDF and basis from the fit config. """
         return {**fitpdf, **basisfromfit}
 
+    def parse_fit_cfactors(self, fit_cfactors_ns: list):
+        """
+        This method retrieves the value of the "fit_cfac" key
+        from the dataset input.
+        """
+        return fit_cfactors_ns
 
+    def produce_number_fitcfactors(self, fit_cfactors: None):
+        """
+        Returns the number of Wilson coefficients in a given fit. 
+        """
+        if fit_cfactors is not None:
+            return len(fit_cfactors)
+        return 0
+    
     @element_of("dataset_inputs")
     def parse_dataset_input(self, dataset: Mapping):
         """
@@ -440,7 +454,9 @@ class CoreConfig(configparser.Config):
 
         fit_cfac = dataset.get("fit_cfac") 
         if fit_cfac is not None:
-            _, fit_cfac_ns = tuple(self.parse_from_(None, fit_cfac, write=False))
+            if not isinstance(fit_cfac, bool):
+                raise ConfigError(f"fit_cfac must be bool not {type(fit_cfac)}")
+            fit_cfac_ns = self.parse_from_(None, "fit_cfactors", write=False)
         else:
             fit_cfac_ns = None
 
