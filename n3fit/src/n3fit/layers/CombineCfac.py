@@ -1,7 +1,7 @@
 import tensorflow as tf 
-from keras.layers import Linear  
+from tensorflow.keras.layers import Layer  
 
-class CombineCfacLayer(Linear):
+class CombineCfacLayer(Layer):
    """
    Creates the extra layer to fit SMEFT c-factors
    on top of NNPDF4.0's architecture.  
@@ -10,11 +10,11 @@ class CombineCfacLayer(Linear):
    ----------
             ncfacs: int 
                Defines the number of Wilson 
-               coefficients to be included in a fit. 
+               coefficients to be included in a the fit. 
    """
    
    def __init__(self, ncfacs):
-      super(Linear, self).__init__()
+      super().__init__()
 
       init_value = tf.random_normal_initializer()
       self.w = tf.Variable(
