@@ -17,6 +17,7 @@ from n3fit.backends import MetaModel, clear_backend_state, callbacks
 from n3fit.backends import operations as op
 from n3fit.stopping import Stopping
 from n3fit.vpinterface import N3PDF
+from n3fit.layers.CombineCfac import CombineCfacLayer
 import n3fit.hyper_optimization.penalties
 import n3fit.hyper_optimization.rewards
 
@@ -88,6 +89,7 @@ class ModelTrainer:
         flavinfo,
         fitbasis,
         nnseeds,
+        nfitcfactors = 0,
         pass_status="ok",
         failed_status="fail",
         debug=False,
@@ -112,6 +114,8 @@ class ModelTrainer:
                 the name of the basis being fitted
             nnseeds: list(int)
                 the seed used to initialise the NN for each model to be passed to model_gen
+            nfitcfactors: int
+                number of SMEFT C-factors to include in a given fit 
             pass_status: str
                 flag to signal a good run
             failed_status: str
@@ -144,6 +148,7 @@ class ModelTrainer:
         self.failed_status = failed_status
         self.debug = debug
         self.all_datasets = []
+        self.nfitcfactors = nfitcfactors
         self._scaler = None
         self._parallel_models = parallel_models
 
@@ -455,12 +460,16 @@ class ModelTrainer:
         self._reset_observables()
         log.info("Generating layers")
 
+        # Generate layer of trainable SMEFT C-factors 
+        combiner = CombineCfacLayer(self.nfitcfactors)
+        self.combiner = combiner
+
         # Now we need to loop over all dictionaries (First exp_info, then pos_info and integ_info)
         for exp_dict in self.exp_info:
             if not self.mode_hyperopt:
                 log.info("Generating layers for experiment %s", exp_dict["name"])
 
-            exp_layer = model_gen.observable_generator(exp_dict)
+            exp_layer = model_gen.observable_generator(exp_dict, post_observable=combiner)
 
             # Save the input(s) corresponding to this experiment
             self.input_list += exp_layer["inputs"]

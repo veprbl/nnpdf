@@ -20,6 +20,10 @@ from n3fit.backends import operations as op
 from n3fit.backends import MetaLayer, Lambda
 from n3fit.backends import base_layer_selector, regularizer_selector
 
+import logging
+import tensorflow as tf
+
+log = logging.getLogger(__name__)
 
 @dataclass
 class ObservableWrapper:
@@ -44,6 +48,7 @@ class ObservableWrapper:
     positivity: bool = False
     data: np.array = None
     rotation: ObsRotation = None  # only used for diagonal covmat
+    fit_cfac: dict  = None
 
     def _generate_loss(self, mask=None):
         """Generates the corresponding loss function depending on the values the wrapper
@@ -77,6 +82,9 @@ class ObservableWrapper:
         ret = op.concatenate(output_layers, axis=2)
         if self.rotation is not None:
             ret = self.rotation(ret)
+        if self.fit_cfac is not None:
+            log.info(f"Applying fit_cfac layer")
+            ret = post_observable(ret, cfactor_values=coefficients)
         return ret
 
     def __call__(self, pdf_layer, mask=None):
@@ -86,7 +94,7 @@ class ObservableWrapper:
 
 
 def observable_generator(
-    spec_dict, positivity_initial=1.0, integrability=False
+    spec_dict, positivity_initial=1.0, integrability=False, post_observable=None
 ):  # pylint: disable=too-many-locals
     """
     This function generates the observable model for each experiment.
@@ -137,6 +145,11 @@ def observable_generator(
     for dataset_dict in spec_dict["datasets"]:
         # Get the generic information of the dataset
         dataset_name = dataset_dict["name"]
+
+        # Get C-factors for a fit including SMEFT coefficients
+        fit_cfac = dataset_dict.get('fit_cfac')
+        if fit_cfac is not None:
+            coefficients = tf.constant([i.central_value for i in fit_cfac.values()])
 
         # Look at what kind of layer do we need for this dataset
         if dataset_dict["hadronic"]:

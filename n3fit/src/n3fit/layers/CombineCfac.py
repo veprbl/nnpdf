@@ -21,6 +21,14 @@ class CombineCfacLayer(Layer):
       """
       The operation that the SIMUnet layer performs on inputs.
       At this point we only include linear interference with the SMEFT. 
+      Parameters
+      ----------
+         inputs: float 
+            Represents the SM (c_factor_values = 0)
+            theoretical prediction for a given observable. 
+         cfactor_values: tf.Variable
+            Set of trainable SMEFT C-factors that affect a given
+            observable. 
 
       """
       return (1 + tf.reduce_sum(w[:, tf.newaxis] * cfactor_values, axis=0)) * inputs
