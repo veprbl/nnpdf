@@ -406,7 +406,7 @@ class CoreConfig(configparser.Config):
         """
         return fit_cfactors_ns
 
-    def produce_number_fitcfactors(self, fit_cfactors: None):
+    def produce_nfitcfactors(self, fit_cfactors=None):
         """
         Returns the number of Wilson coefficients in a given fit. 
         """
