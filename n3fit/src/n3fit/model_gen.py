@@ -48,7 +48,7 @@ class ObservableWrapper:
     positivity: bool = False
     data: np.array = None
     rotation: ObsRotation = None  # only used for diagonal covmat
-    fit_cfac: dict  = None
+    fit_cfac: dict  = None 
 
     def _generate_loss(self, mask=None):
         """Generates the corresponding loss function depending on the values the wrapper

@@ -19,6 +19,7 @@ def performfit(
     *,
     n3fit_checks_action, # wrapper for all checks
     replicas, # checks specific to performfit
+    nfitcfactors = None,
     replicas_nnseed_fitting_data_dict,
     posdatasets_fitting_pos_dict,
     integdatasets_fitting_integ_dict,
@@ -189,6 +190,7 @@ def performfit(
             basis,
             fitbasis,
             nnseeds,
+            nfitcfactors=nfitcfactors,
             debug=debug,
             kfold_parameters=kfold_parameters,
             max_cores=maxcores,
