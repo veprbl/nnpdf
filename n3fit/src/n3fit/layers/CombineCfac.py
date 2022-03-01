@@ -17,7 +17,7 @@ class CombineCfacLayer(Layer):
          trainable = True
          )
    
-   def call(self, inputs, cfactor_values):
+   def __call__(self, inputs, cfactor_values):
       """
       The operation that the SIMUnet layer performs on inputs.
       At this point we only include linear interference with the SMEFT. 

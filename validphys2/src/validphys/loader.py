@@ -480,9 +480,7 @@ class Loader(LoaderBase):
             for fit_cfac in fit_cfacs:
                 cfactorpath = theopath / 'cfactor' / f'CF_{fit_cfac}_{setname}.dat'
                 if not cfactorpath.exists():
-                    msg = (f"Could not find fit cfactor {fit_cfac} for {setname} in {theopath}. "
-                           f"The path {cfactorpath} does not exist."
-                    )
+                    msg = f"Could not find fit cfactor {fit_cfac} for {setname} in {theopath}. "
                     raise CfactorNotFound(msg)
                 fit_cfac_path_mapping[fit_cfac] = cfactorpath
         return fit_cfac_path_mapping
