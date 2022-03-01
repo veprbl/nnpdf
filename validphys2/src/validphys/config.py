@@ -456,7 +456,7 @@ class CoreConfig(configparser.Config):
         if fit_cfac is not None:
             if not isinstance(fit_cfac, bool):
                 raise ConfigError(f"fit_cfac must be bool not {type(fit_cfac)}")
-            fit_cfac_ns = self.parse_from_(None, "fit_cfactors", write=False)
+            _, fit_cfac_ns = self.parse_from_(None, "fit_cfactors", write=False)
         else:
             fit_cfac_ns = None
 
