@@ -71,14 +71,17 @@ def fk_parser(fk, is_hadronic=False):
     }
     return dict_out
 
-def parse_fit_cfac(fit_cfac, ndata):
+def parse_fit_cfac(fit_cfac, cuts, ndata):
     if fit_cfac is None:
         return None
+    if hasattr(cuts, 'load'):
+        cuts = cuts.load()
     name_cfac_map = {}
     for name, path in fit_cfac.items():
         with open(path, 'rb') as stream:
             cfac = parse_cfactor(stream)
-            cfac.central_value -= 1
+            cfac.central_value = 1 - cfac.central_value[cuts]
+            cfac.uncertainty = cfac.uncertainty[cuts]
         name_cfac_map[name] = cfac
     return name_cfac_map
 
@@ -105,6 +108,7 @@ def common_data_reader_dataset(dataset_c, dataset_spec):
 
     instead of the dictionary object that model_gen needs
     """
+    cuts = dataset_spec.cuts
     how_many = dataset_c.GetNSigma()
     dict_fktables = []
     for i in range(how_many):
@@ -120,7 +124,7 @@ def common_data_reader_dataset(dataset_c, dataset_spec):
         "name": dataset_c.GetSetName(),
         "frac": dataset_spec.frac,
         "ndata": ndata,
-        "fit_cfac":parse_fit_cfac(dataset_spec.fit_cfac, ndata)
+        "fit_cfac":parse_fit_cfac(dataset_spec.fit_cfac, cuts, ndata)
     }
 
     return [dataset_dict]
