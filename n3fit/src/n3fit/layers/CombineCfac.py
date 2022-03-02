@@ -31,7 +31,7 @@ class CombineCfacLayer(Layer):
             observable. 
 
       """
-      return (1 + tf.reduce_sum(w[:, tf.newaxis] * cfactor_values, axis=0)) * inputs
+      return (1 + tf.reduce_sum(self.w[:, tf.newaxis] * cfactor_values, axis=0)) * inputs
 
                               
 
