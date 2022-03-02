@@ -149,7 +149,7 @@ def observable_generator(
         # Get C-factors for a fit including SMEFT coefficients
         fit_cfac = dataset_dict.get('fit_cfac')
         if fit_cfac is not None:
-            coefficients = tf.constant([i.central_value for i in fit_cfac.values()])
+            coefficients = tf.constant([i.central_value for i in fit_cfac.values()], dtype="float32")
 
         # Look at what kind of layer do we need for this dataset
         if dataset_dict["hadronic"]:
