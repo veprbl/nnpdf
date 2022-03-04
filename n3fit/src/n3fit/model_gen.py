@@ -63,7 +63,7 @@ class ObservableWrapper:
             loss = losses.LossIntegrability(name=self.name, c=self.multiplier)
         return loss
 
-    def _generate_experimental_layer(self, pdf):
+    def _generate_experimental_layer(self, pdf, split='ex'):
         """Generates the experimental layer from the PDF"""
         # First split the layer into the different datasets (if needed!)
         if len(self.dataset_xsizes) > 1:
@@ -84,7 +84,13 @@ class ObservableWrapper:
             ret = self.rotation(ret)
         if self.fit_cfac is not None:
             log.info(f"Applying fit_cfac layer")
-            ret = post_observable(ret, cfactor_values=coefficients)
+            if split == 'ex':
+                cfacs = coefficients
+            elif split == 'tr':
+                cfacs = coefficients[:, dataset_dict['ds_tr_mask']]
+            elif split == 'vl':
+                cfacs = coefficients[:, ~dataset_dict['ds_tr_mask']]
+            ret = post_observable(ret, cfactor_values=tf.constant(cfacs, dtype="float32"))
         return ret
 
     def __call__(self, pdf_layer, mask=None):
@@ -149,7 +155,7 @@ def observable_generator(
         # Get C-factors for a fit including SMEFT coefficients
         fit_cfac = dataset_dict.get('fit_cfac')
         if fit_cfac is not None:
-            coefficients = tf.constant([i.central_value for i in fit_cfac.values()], dtype="float32")
+            coefficients = np.array([i.central_value for i in fit_cfac.values()])
 
         # Look at what kind of layer do we need for this dataset
         if dataset_dict["hadronic"]:
