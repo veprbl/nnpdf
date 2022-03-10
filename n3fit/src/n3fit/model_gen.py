@@ -43,7 +43,7 @@ class ObservableWrapper:
     data: np.array = None
     rotation: ObsRotation = None  # only used for diagonal covmat
     fit_cfac: dict = None # Only for fits including SMEFT coefficients
-    split: str = 'ex' # Split for SMEFT C-factors
+    split: str = 'ex' # tr/val split for SMEFT C-factors
 
     def _generate_loss(self, mask=None):
         """Generates the corresponding loss function depending on the values the wrapper
@@ -85,7 +85,7 @@ class ObservableWrapper:
                 cfacs = coefficients[:, dataset_dict['ds_tr_mask']]
             elif split == 'vl':
                 cfacs = coefficients[:, ~dataset_dict['ds_tr_mask']]
-            ret = post_observable(ret, cfactor_values=tf.constant(cfacs, dtype='float32'))
+            ret = op.concatenate(post_observable(ret, cfactor_values=tf.constant(cfacs, dtype='float32')))
         return ret
 
     def __call__(self, pdf_layer, mask=None):
