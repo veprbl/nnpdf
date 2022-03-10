@@ -57,6 +57,11 @@ class ObservableWrapper:
         elif self.integrability:
             loss = losses.LossIntegrability(name=self.name, c=self.multiplier)
         return loss
+    
+    # Obtain a concatenation as a Keras layer. 
+    # (This function might have to go to backend operations)
+    def gen_concat(name):
+        return op.as_layer(op.concatenate, op_kwargs={'axis':1}, name=name)
 
     def _generate_experimental_layer(self, pdf, split='ex'):
         """Generates the experimental layer from the PDF"""
@@ -74,9 +79,9 @@ class ObservableWrapper:
         # Every obs gets its share of the split
         output_layers = [obs(p_pdf) for p_pdf, obs in zip(split_pdf, self.observables)]
         # Concatenate all datasets (so that experiments are one single entity)
-        ret = op.concatenate(output_layers, axis=2)
-        if self.rotation is not None:
-            ret = self.rotation(ret)
+        # ret = op.concatenate(output_layers, axis=2)
+        # if self.rotation is not None:
+        #    ret = self.rotation(ret)
         if self.fit_cfac is not None:
             log.info(f"Applying fit_cfac layer")
             if split == 'ex':
@@ -85,7 +90,14 @@ class ObservableWrapper:
                 cfacs = coefficients[:, dataset_dict['ds_tr_mask']]
             elif split == 'vl':
                 cfacs = coefficients[:, ~dataset_dict['ds_tr_mask']]
-            ret = op.concatenate(post_observable(ret, cfactor_values=tf.constant(cfacs, dtype='float32')))
+            # ret = op.concatenate(post_observable(ret, cfactor_values=tf.constant(cfacs, dtype='float32')))
+            f = gen_concat('pre_combine')
+            concated = f(output_layers)
+            ret = op.concatenate(post_observable(concated, cfactor_values=tf.constant(cfacs, dtype='float32')), axis=2)
+        else:
+            ret = op.concatenate(output_layers, axis=2)
+        if self.rotation is not None:
+            ret = self.rotation(ret)
         return ret
 
     def __call__(self, pdf_layer, mask=None):
