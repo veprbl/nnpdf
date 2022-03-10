@@ -1,20 +1,16 @@
 """
     Library of functions which generate the NN objects
-
     Contains:
         # observable_generator:
             Generates the output layers as functions
         # pdfNN_layer_generator:
             Generates the PDF NN layer to be fitted
-
-
 """
 from dataclasses import dataclass
 import numpy as np
 from n3fit.msr import msr_impose
 from n3fit.layers import DIS, DY, ObsRotation, losses
 from n3fit.layers import Preprocessing, FkRotation, FlavourToEvolution
-
 from n3fit.backends import MetaModel, Input
 from n3fit.backends import operations as op
 from n3fit.backends import MetaLayer, Lambda
@@ -31,13 +27,11 @@ class ObservableWrapper:
     It can take normal datasets or Lagrange-multiplier-like datasets
     (such as positivity or integrability)
     """
-
     # IDEALLY:
     # In principle this is something that could be automatically provided by validphyts
     # __but__ it requires backend (i.e., tensorflow) information
     # but maybe it can be constructed in such a way that the backend is lazyly imported
     # and make this part of the experiment spec
-
     name: str
     observables: list
     dataset_xsizes: list
@@ -48,7 +42,8 @@ class ObservableWrapper:
     positivity: bool = False
     data: np.array = None
     rotation: ObsRotation = None  # only used for diagonal covmat
-    fit_cfac: dict  = None 
+    fit_cfac: dict = None # Only for fits including SMEFT coefficients
+    split: str = 'ex' # Split for SMEFT C-factors
 
     def _generate_loss(self, mask=None):
         """Generates the corresponding loss function depending on the values the wrapper
@@ -90,7 +85,7 @@ class ObservableWrapper:
                 cfacs = coefficients[:, dataset_dict['ds_tr_mask']]
             elif split == 'vl':
                 cfacs = coefficients[:, ~dataset_dict['ds_tr_mask']]
-            ret = post_observable(ret, cfactor_values=tf.constant(cfacs, dtype="float32"))
+            ret = post_observable(ret, cfactor_values=tf.constant(cfacs, dtype='float32'))
         return ret
 
     def __call__(self, pdf_layer, mask=None):
@@ -106,31 +101,23 @@ def observable_generator(
     This function generates the observable model for each experiment.
     These are models which takes as input a PDF tensor (1 x size_of_xgrid x flavours) and outputs
     the result of the observable for each contained dataset (n_points,)
-
     An experiment contains an fktable, which is loaded by the convolution layer
     (be it hadronic or DIS) and a inv covmat which loaded by the loss.
-
     This function also outputs three "output objects" (which are functions that generate layers)
     that use the training and validation mask to create a training_output, validation_output
     and experimental_output
-
     If the dataset is a positivity dataset acts in consequence.
-
     The output is a dictionary (`layer_info`), each one of the three output functions
     have a signature:
-
         `def out_tr(pdf_layer, dataset_out=None)`
-
     The `pdf_layer` must be a layer of shape (1, size_of_xgrid, flavours)
     `datasets_out` is the list of dataset to be masked to 0 when generating the layer
-
     Parameters
     ----------
         spec_dict: dict
             a dictionary-like object containing the information of the experiment
         positivity_initial: float
             set the positivity lagrange multiplier for epoch 1
-
     Returns
     ------
         layer_info: dict
@@ -152,7 +139,7 @@ def observable_generator(
         # Get the generic information of the dataset
         dataset_name = dataset_dict["name"]
 
-        # Get C-factors for a fit including SMEFT coefficients
+        # Get the SMEFT C-factors to fit, if they exist
         fit_cfac = dataset_dict.get('fit_cfac')
         if fit_cfac is not None:
             coefficients = np.array([i.central_value for i in fit_cfac.values()])
@@ -162,17 +149,14 @@ def observable_generator(
             Obs_Layer = DY
         else:
             Obs_Layer = DIS
-
         # Set the operation (if any) to be applied to the fktables of this dataset
         operation_name = dataset_dict["operation"]
-
         # Now generate the observable layer, which takes the following information:
         # operation name
         # dataset name
         # list of fktable_dictionaries
         #   these will then be used to check how many different pdf inputs are needed
         #   (and convolutions if given the case)
-
         if spec_dict["positivity"]:
             # Positivity (and integrability, which is a special kind of positivity...)
             # enters only at the "training" part of the models
@@ -211,7 +195,6 @@ def observable_generator(
                 operation_name,
                 name=f"val_{dataset_name}",
             )
-
         # To know how many xpoints we compute we are duplicating functionality from obs_layer
         if obs_layer_tr.splitting is None:
             xgrid = dataset_dict["fktables"][0]["xgrid"]
@@ -221,11 +204,9 @@ def observable_generator(
             xgrids = [i["xgrid"] for i in dataset_dict["fktables"]]
             model_inputs += xgrids
             dataset_xsizes.append(sum([i.shape[1] for i in xgrids]))
-
         model_obs_tr.append(obs_layer_tr)
         model_obs_vl.append(obs_layer_vl)
         model_obs_ex.append(obs_layer_ex)
-
     full_nx = sum(dataset_xsizes)
     if spec_dict["positivity"]:
         out_positivity = ObservableWrapper(
@@ -236,7 +217,6 @@ def observable_generator(
             positivity=not integrability,
             integrability=integrability,
         )
-
         layer_info = {
             "inputs": model_inputs,
             "output_tr": out_positivity,
@@ -244,7 +224,6 @@ def observable_generator(
         }
         # For positivity we end here
         return layer_info
-
     # Generate the loss function and rotations of the final data (if any)
     if spec_dict.get("data_transformation_tr") is not None:
         obsrot_tr = ObsRotation(spec_dict.get("data_transformation_tr"))
@@ -252,7 +231,6 @@ def observable_generator(
     else:
         obsrot_tr = None
         obsrot_vl = None
-
     out_tr = ObservableWrapper(
         spec_name,
         model_obs_tr,
@@ -260,6 +238,7 @@ def observable_generator(
         invcovmat=spec_dict["invcovmat"],
         data=spec_dict["expdata"],
         rotation=obsrot_tr,
+        split='tr'
     )
     out_vl = ObservableWrapper(
         f"{spec_name}_val",
@@ -268,6 +247,7 @@ def observable_generator(
         invcovmat=spec_dict["invcovmat_vl"],
         data=spec_dict["expdata_vl"],
         rotation=obsrot_vl,
+        split='vl'
     )
     out_exp = ObservableWrapper(
         f"{spec_name}_exp",
@@ -278,7 +258,6 @@ def observable_generator(
         data=spec_dict["expdata_true"],
         rotation=None,
     )
-
     layer_info = {
         "inputs": model_inputs,
         "output": out_exp,
@@ -287,8 +266,6 @@ def observable_generator(
         "experiment_xsize": full_nx,
     }
     return layer_info
-
-
 # Network generation functions
 def generate_dense_network(
     nodes_in,
@@ -301,7 +278,6 @@ def generate_dense_network(
 ):
     """
     Generates a dense network
-
     the dropout rate, if selected, is set
     for the next to last layer (i.e., the last layer of the dense network before getting to
     the output layer for the basis choice)
@@ -316,10 +292,8 @@ def generate_dense_network(
         # if we have dropout set up, add it to the list
         if dropout_rate > 0 and i == dropout_layer:
             list_of_pdf_layers.append(base_layer_selector("dropout", rate=dropout_rate))
-
         # select the initializer and move the seed
         init = MetaLayer.select_initializer(initializer_name, seed=seed + i)
-
         # set the arguments that will define the layer
         arguments = {
             "kernel_initializer": init,
@@ -328,32 +302,25 @@ def generate_dense_network(
             "input_shape": (nodes_in,),
             "kernel_regularizer": regularizer,
         }
-
         layer = base_layer_selector("dense", **arguments)
-
         list_of_pdf_layers.append(layer)
         nodes_in = int(nodes_out)
     return list_of_pdf_layers
-
-
 def generate_dense_per_flavour_network(
     nodes_in, nodes, activations, initializer_name="glorot_normal", seed=0, basis_size=8
 ):
     """
     For each flavour generates a dense network of the chosen size
-
     """
     list_of_pdf_layers = []
     number_of_layers = len(nodes)
     current_seed = seed
     for i, (nodes_out, activation) in enumerate(zip(nodes, activations)):
-
         initializers = []
         for _ in range(basis_size):
             # select the initializer and move the seed
             initializers.append(MetaLayer.select_initializer(initializer_name, seed=current_seed))
             current_seed += 1
-
         # set the arguments that will define the layer
         # but careful, the last layer must be nodes = 1
         # TODO the mismatch is due to the fact that basis_size
@@ -368,25 +335,18 @@ def generate_dense_per_flavour_network(
             "input_shape": (nodes_in,),
             "basis_size": basis_size,
         }
-
         layer = base_layer_selector("dense_per_flavour", **arguments)
-
         if i == number_of_layers - 1:
             # For the last layer, apply concatenate
             concat = base_layer_selector("concatenate")
-
             def output_layer(ilayer):
                 result = layer(ilayer)
                 return concat(result)
-
             list_of_pdf_layers.append(output_layer)
         else:
             list_of_pdf_layers.append(layer)
-
         nodes_in = int(nodes_out)
     return list_of_pdf_layers
-
-
 def pdfNN_layer_generator(
     inp=2,
     nodes=None,
@@ -410,16 +370,11 @@ def pdfNN_layer_generator(
     It generates the preprocessing of the x into a set (x, log(x)),
     the arbitrary NN to fit the form of the PDF
     and the preprocessing factors.
-
     The funtional form of the output of this function is of:
-
         f_{i}(x) = R_{ji} N(x)_{j} * x^{1-alpha_{j}} * (1-x)^{beta_{j}}
-
     Where i goes from 1 to 14 while j goes from 1 to the size of the basis. R_{ji}
     is the rotation from the fitting basis to the physical basis needed for the
     convolution with the fktables.
-
-
     `layer_type` defines the architecture of the Neural Network, currently
     the following two options are implemented:
         - `dense`
@@ -431,32 +386,23 @@ def pdfNN_layer_generator(
             This means at the end of the PDF (and before the preprocessing)
             we have 8 (or whatever number) nodes just as before, but from the input
             to the output the nodes are disconnected
-
     This is a complicated function comprised of several sections:
-
     1. As initialization a number of checks are carried outs to ensure the number of layers
     and the number of activation functions match up.
-
     2. The neural network NN(x) is constructed depending on the requested layer_type
-
     3. Break the input into (x, log(x)) and passes down to the NN.
     The output of the NN in the previous step is a list of independent layers.
     A function is constructed that joins all those layers. The function takes a
     tensor as the input and applies all layers for NN in order.
-
     4. Create a preprocessing layer (that takes as input the same tensor x as the NN)
     and multiply it to the NN. We have now:
         N(x)_{j} * x^{1-alpha_{j}} * (1-x)^{beta_{j}}
-
     5. Create a rotation layer (that takes as input the previous step) and applies it
     so that we get f(x)_{i}
-
     Finally we output the final answer as well as the list of all generating functions
     in the model for easy usage within `n3fit`.
-
     Example
     -------
-
     >>> import numpy as np
     >>> from n3fit.vpinterface import N3PDF
     >>> from n3fit.model_gen import pdfNN_layer_generator
@@ -464,7 +410,6 @@ def pdfNN_layer_generator(
     >>> fake_fl = [{'fl' : i, 'largex' : [0,1], 'smallx': [1,2]} for i in ['u', 'ubar', 'd', 'dbar', 'c', 'cbar', 's', 'sbar']]
     >>> fake_x = np.linspace(1e-3,0.8,3)
     >>> pdf_model = pdfNN_layer_generator(nodes=[8], activations=['linear'], seed=[2,3], flav_info=fake_fl, parallel_models=2)
-
     Parameters
     ----------
         inp: int
@@ -495,7 +440,6 @@ def pdfNN_layer_generator(
             will be a (1, None, 2) tensor where dim [:,:,0] is scaled
         parallel_models: int
             How many models should be trained in parallel
-
     Returns
     -------
        pdf_models: list with a number equal to `parallel_models` of type n3fit.backends.MetaModel
@@ -506,36 +450,27 @@ def pdfNN_layer_generator(
         seed = parallel_models * [None]
     elif isinstance(seed, int):
         seed = parallel_models * [seed]
-
     if nodes is None:
         nodes = [15, 8]
     ln = len(nodes)
-
     if impose_sumrule is None:
         impose_sumrule = "All"
-
     if scaler:
         inp = 1
-
     if activations is None:
         activations = ["tanh", "linear"]
     elif callable(activations):
         # hyperopt passes down a function to generate dynamically the list of
         # activations functions
         activations = activations(ln)
-
     if regularizer_args is None:
         regularizer_args = dict()
-
     number_of_layers = len(nodes)
     # The number of nodes in the last layer is equal to the number of fitted flavours
     last_layer_nodes = nodes[-1]  # (== len(flav_info))
-
     # Generate the generic layers that will not depend on extra considerations
-
     # First prepare the input for the PDF model and any scaling if needed
     placeholder_input = Input(shape=(None, 1), batch_size=1)
-
     subtract_one = False
     process_input = Lambda(lambda x: x)
     input_x_eq_1 = [1.0]
@@ -551,25 +486,20 @@ def pdfNN_layer_generator(
         # If the input is of type (x, logx)
         # create a x --> (x, logx) layer to preppend to everything
         process_input = Lambda(lambda x: op.concatenate([x, op.op_log(x)], axis=-1))
-
     model_input = [placeholder_input]
     if subtract_one:
         layer_x_eq_1 = op.numpy_to_input(np.array(input_x_eq_1).reshape(1, 1))
         model_input.append(layer_x_eq_1)
-
     # Evolution layer
     layer_evln = FkRotation(input_shape=(last_layer_nodes,), output_dim=out)
-
     # Basis rotation
     basis_rotation = FlavourToEvolution(flav_info=flav_info, fitbasis=fitbasis)
-
     # Normalization and sum rules
     if impose_sumrule:
         sumrule_layer, integrator_input = msr_impose(mode=impose_sumrule, scaler=scaler)
         model_input.append(integrator_input)
     else:
         sumrule_layer = lambda x: x
-
     # Now we need a trainable network per model to be trained in parallel
     pdf_models = []
     for i, layer_seed in enumerate(seed):
@@ -596,17 +526,14 @@ def pdfNN_layer_generator(
                 seed=layer_seed,
                 basis_size=last_layer_nodes,
             )
-
         def dense_me(x):
             """Takes an input tensor `x` and applies all layers
             from the `list_of_pdf_layers` in order"""
             processed_x = process_input(x)
             curr_fun = list_of_pdf_layers[0](processed_x)
-
             for dense_layer in list_of_pdf_layers[1:]:
                 curr_fun = dense_layer(curr_fun)
             return curr_fun
-
         preproseed = layer_seed + number_of_layers
         layer_preproc = Preprocessing(
             flav_info=flav_info,
@@ -615,7 +542,6 @@ def pdfNN_layer_generator(
             seed=preproseed,
             large_x=not subtract_one,
         )
-
         # Apply preprocessing and basis
         def layer_fitbasis(x):
             """The tensor x has a expected shape of (1, None, {1,2})
@@ -623,25 +549,20 @@ def pdfNN_layer_generator(
             """
             x_scaled = op.op_gather_keep_dims(x, 0, axis=-1)
             x_original = op.op_gather_keep_dims(x, -1, axis=-1)
-
             nn_output = dense_me(x_scaled)
             if subtract_one:
                 nn_at_one = dense_me(layer_x_eq_1)
                 nn_output = op.op_subtract([nn_output, nn_at_one])
-
             ret = op.op_multiply([nn_output, layer_preproc(x_original)])
             if basis_rotation.is_identity():
                 # if we don't need to rotate basis we don't want spurious layers
                 return ret
             return basis_rotation(ret)
-
         # Rotation layer, changes from the 8-basis to the 14-basis
         def layer_pdf(x):
             return layer_evln(layer_fitbasis(x))
-
         # Final PDF (apply normalization)
         final_pdf = sumrule_layer(layer_pdf)
-
         # Create the model
         pdf_model = MetaModel(
             model_input, final_pdf(placeholder_input), name=f"PDF_{i}", scaler=scaler
