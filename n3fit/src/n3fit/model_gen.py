@@ -91,7 +91,7 @@ class ObservableWrapper:
             elif split == 'vl':
                 cfacs = coefficients[:, ~dataset_dict['ds_tr_mask']]
             # ret = op.concatenate(post_observable(ret, cfactor_values=tf.constant(cfacs, dtype='float32')))
-            f = gen_concat('pre_combine')
+            f = gen_concat(f"pre_combine_{spec_name}")
             concated = f(output_layers)
             ret = op.concatenate(post_observable(concated, cfactor_values=tf.constant(cfacs, dtype='float32')), axis=2)
         else:
@@ -110,7 +110,7 @@ def observable_generator(
     spec_dict, positivity_initial=1.0, integrability=False, post_observable=None
 ):  # pylint: disable=too-many-locals
     """
-    This function generates the observable model for each experiment.
+        This function generates the observable model for each experiment.
     These are models which takes as input a PDF tensor (1 x size_of_xgrid x flavours) and outputs
     the result of the observable for each contained dataset (n_points,)
     An experiment contains an fktable, which is loaded by the convolution layer
