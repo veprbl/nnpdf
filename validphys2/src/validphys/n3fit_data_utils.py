@@ -72,6 +72,19 @@ def fk_parser(fk, is_hadronic=False):
     return dict_out
 
 def parse_fit_cfac(fit_cfac, cuts, ndata):
+    """
+    Get the name of the C-factors that we use in fits
+    Parameters
+    ----------
+        - fit_cfac: dict
+            dictionary with the C-factors that enter a fit. 
+        - cuts:
+    Returns
+    -------
+        - name_cfac_map: dict
+            Dictionary with the central values and uncertainties
+            of the C-factors. 
+    """
     if fit_cfac is None:
         return None
     if hasattr(cuts, 'load'):
@@ -80,7 +93,7 @@ def parse_fit_cfac(fit_cfac, cuts, ndata):
     for name, path in fit_cfac.items():
         with open(path, 'rb') as stream:
             cfac = parse_cfactor(stream)
-            cfac.central_value = 1 - cfac.central_value[cuts]
+            cfac.central_value = (cfac.central_value[cuts] - 1) / (-10.0 ** (-4))
             cfac.uncertainty = cfac.uncertainty[cuts]
         name_cfac_map[name] = cfac
     return name_cfac_map

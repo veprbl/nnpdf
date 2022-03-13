@@ -11,6 +11,7 @@
 import logging
 from itertools import zip_longest
 import numpy as np
+import pandas as pd
 from scipy.interpolate import PchipInterpolator
 import n3fit.model_gen as model_gen
 from n3fit.backends import MetaModel, clear_backend_state, callbacks
@@ -90,6 +91,7 @@ class ModelTrainer:
         fitbasis,
         nnseeds,
         nfitcfactors = 0,
+        fitcfactor_labels=None,
         pass_status="ok",
         failed_status="fail",
         debug=False,
@@ -149,6 +151,7 @@ class ModelTrainer:
         self.debug = debug
         self.all_datasets = []
         self.nfitcfactors = nfitcfactors
+        self.fitcfactor_labels = fitcfactor_labels
         self._scaler = None
         self._parallel_models = parallel_models
 
@@ -947,4 +950,8 @@ class ModelTrainer:
         # (which contains metadata about the stopping)
         # and the pdf models (which are used to generate the PDF grids and compute arclengths)
         dict_out = {"status": passed, "stopping_object": stopping_object, "pdf_models": pdf_models}
+
+        # Add another item to the dictionary if we fit SMEFT C-factors
+        dict_out["fit_cfactors"] = pd.DataFrame(self.combiner.get_weights(), columns=self.fitcfactor_labels)
+
         return dict_out
