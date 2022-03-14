@@ -270,6 +270,9 @@ def performfit(
             # Create a pdf instance
             pdf_instance = N3PDF(pdf_model, fit_basis=basis)
 
+            # Add SMEFT C-factor results if they exist
+            fit_cfactors = result["fit_cfactors"]
+
             # Generate the writer wrapper
             writer_wrapper = WriterWrapper(
                 replica_number,
@@ -286,7 +289,7 @@ def performfit(
 
             # And write the data down
             writer_wrapper.write_data(
-                replica_path_set, output_path.name, training_chi2, val_chi2, exp_chi2
+                replica_path_set, output_path.name, training_chi2, val_chi2, exp_chi2, fit_cfactors=fit_cfactors
             )
             log.info(
                     "Best fit for replica #%d, chi2=%.3f (tr=%.3f, vl=%.3f)",
