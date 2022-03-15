@@ -10,9 +10,10 @@ import hashlib
 import numpy as np
 import pandas as pd
 
-from validphys.covmats import INTRA_DATASET_SYS_NAME
+from validphys.covmats import INTRA_DATASET_SYS_NAME, sqrt_covmat
 
 from reportengine import collect
+
 
 FILE_PREFIX = "datacuts_theory_fitting_"
 
@@ -163,9 +164,10 @@ def make_replica(groups_dataset_inputs_loaded_cd_with_cuts, replica_mcseed,  dat
                 check_positive_masks.append(np.zeros_like(pseudodata, dtype=bool))
             else:
                 check_positive_masks.append(np.ones_like(pseudodata, dtype=bool))
-
+        import ipdb; ipdb.set_trace()
         covmat = dataset_inputs_t0_covmat_from_systematics
-        shifts = covmat @ rng.normal(size=covmat.shape[1])
+        covmat_sqrt = sqrt_covmat(covmat)
+        shifts = covmat_sqrt @ rng.normal(size=covmat.shape[1])
         all_pseudodata = (
             np.concatenate(pseudodatas, axis=0)
             + shifts
