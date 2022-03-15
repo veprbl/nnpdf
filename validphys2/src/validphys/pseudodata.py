@@ -164,7 +164,7 @@ def make_replica(groups_dataset_inputs_loaded_cd_with_cuts, replica_mcseed,  dat
                 check_positive_masks.append(np.zeros_like(pseudodata, dtype=bool))
             else:
                 check_positive_masks.append(np.ones_like(pseudodata, dtype=bool))
-        import ipdb; ipdb.set_trace()
+       
         covmat = dataset_inputs_t0_covmat_from_systematics
         covmat_sqrt = sqrt_covmat(covmat)
         shifts = covmat_sqrt @ rng.normal(size=covmat.shape[1])
