@@ -112,21 +112,11 @@ class N3LHAPDFSet(LHAPDFSet):
         else:
             result = self._lhapdf_set[replica - 1].predict([mod_xgrid])
 
-        # Split PDF according to the number of nuclei involved
-        # TODO: Make the following split more consistent. The below might break!!
-        split_size = int(result.shape[-1] / len(EVOL_LIST))
-        pdf_per_amn = np.split(result, split_size, axis=-1)
-
         if flavours != "n3fit":
             # Ensure that the result has its flavour in the basis-defined order
             ii = self.basis._to_indexes(flavours)
-            copy_pdf_per_amn = []
-            for reslt in pdf_per_amn:
-                reslt[:, :, ii] = reslt
-                copy_pdf_per_amn.append(reslt)
-            # Overwrite previous result
-            pdf_per_amn = copy_pdf_per_amn
-        return pdf_per_amn
+            result[:, :, ii] = result
+        return result
 
     def grid_values(self, flavours, xarr, qmat=None):
         """
@@ -167,6 +157,7 @@ class N3LHAPDFSet(LHAPDFSet):
             ret = ret.repeat(lq, -1)
         return ret
 
+
 class N3PDF(PDF):
     """
     Creates a N3PDF object, extension of the validphys PDF object to perform calculation
@@ -182,9 +173,9 @@ class N3PDF(PDF):
             name of the N3PDF object
     """
 
-    def __init__(self, pdf_models, map_pdfs, fit_basis=None, name="n3fit", Q=1.65):
-        self.map_pdfs = map_pdfs
+    def __init__(self, pdf_models, outvalue, fit_basis=None, name="n3fit", Q=1.65):
         self.fit_basis = fit_basis
+        self._map_pdfs = outvalue
 
         if isinstance(pdf_models, Iterable):
             self._models = pdf_models
@@ -224,23 +215,22 @@ class N3PDF(PDF):
         alphas_and_betas = None
         if self.fit_basis is not None:
             output_dictionaries = []
-            for idx in range(len(self.map_pdfs)):
-                for d in self.fit_basis:
-                    flavour = d["fl"] + "_idx_" + str(idx)
-                    alpha = preprocessing_layer.get_weight_by_name(f"alpha_{flavour}")
-                    beta = preprocessing_layer.get_weight_by_name(f"beta_{flavour}")
-                    if alpha is not None:
-                        alpha = float(alpha.numpy())
-                    if beta is not None:
-                        beta = float(beta.numpy())
-                    output_dictionaries.append(
-                        {
-                            "fl": flavour,
-                            "smallx": alpha,
-                            "largex": beta,
-                            "trainable": d.get("trainable", True),
-                        }
-                    )
+            for d in self.fit_basis:
+                flavour = d["fl"] + "_idx_" + str(self._map_pdfs)
+                alpha = preprocessing_layer.get_weight_by_name(f"alpha_{flavour}")
+                beta = preprocessing_layer.get_weight_by_name(f"beta_{flavour}")
+                if alpha is not None:
+                    alpha = float(alpha.numpy())
+                if beta is not None:
+                    beta = float(beta.numpy())
+                output_dictionaries.append(
+                    {
+                        "fl": flavour,
+                        "smallx": alpha,
+                        "largex": beta,
+                        "trainable": d.get("trainable", True),
+                    }
+                )
             alphas_and_betas = output_dictionaries
         return alphas_and_betas
 

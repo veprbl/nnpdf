@@ -15,9 +15,7 @@ from n3fit import vpinterface
 
 
 class WriterWrapper:
-    def __init__(
-        self, replica_number, pdf_object, map_pdfs, stopping_object, q2, timings
-    ):
+    def __init__(self, replica_number, pdf_object, stopping_object, q2, timings):
         """
         Initializes the writer for one given replica. This is decoupled from the writing
         of the fit in order to fix some of the variables which would be, in principle,
@@ -41,7 +39,6 @@ class WriterWrapper:
         self.stopping_object = stopping_object
         self.q2 = q2
         self.timings = timings
-        self.map_pdfs = map_pdfs
 
     def write_data(self, replica_path_set, fitname, tr_chi2, vl_chi2, true_chi2):
         """
@@ -60,11 +57,10 @@ class WriterWrapper:
             `true_chi2`
                 chi2 of the replica to the central experimental data
         """
-        # # Compute the arclengths
-        # arc_lengths = vpinterface.compute_arclength(self.pdf_object)
-        # # Compute the integrability numbers
-        # integrability_numbers = vpinterface.integrability_numbers(self.pdf_object)
-        arc_lengths, integrability_numbers = [], []
+        # Compute the arclengths
+        arc_lengths = vpinterface.compute_arclength(self.pdf_object)
+        # Compute the integrability numbers
+        integrability_numbers = vpinterface.integrability_numbers(self.pdf_object)
         # Construct the chi2exp file
         allchi2_lines = self.stopping_object.chi2exps_str()
         # Construct the preproc file (the information is only in the json file)
@@ -81,7 +77,6 @@ class WriterWrapper:
         # export PDF grid to file
         storefit(
             self.pdf_object,
-            self.map_pdfs,
             self.replica_number,
             replica_path_set,
             fitname,
@@ -114,7 +109,7 @@ class WriterWrapper:
 
 
 class SuperEncoder(json.JSONEncoder):
-    """ Custom json encoder to get around the fact that np.float32 =/= float """
+    """Custom json encoder to get around the fact that np.float32 =/= float"""
 
     def default(self, o):
         if isinstance(o, np.float32):
@@ -147,7 +142,8 @@ def jsonfit(
     """
     all_info = {}
     # Generate preprocessing information
-    all_info["preprocessing"] = pdf_object.get_preprocessing_factors()
+    # all_info["preprocessing"] = pdf_object.get_preprocessing_factors()
+    all_info["preprocessing"] = []
     # .fitinfo-like info
     all_info["stop_epoch"] = stop_epoch
     all_info["best_epoch"] = replica_status.best_epoch
@@ -155,10 +151,8 @@ def jsonfit(
     all_info["erf_vl"] = vl_chi2
     all_info["chi2"] = true_chi2
     all_info["pos_state"] = replica_status.positivity_status
-    # all_info["arc_lengths"] = vpinterface.compute_arclength(pdf_object).tolist()
-    # all_info["integrability"] = vpinterface.integrability_numbers(pdf_object).tolist()
-    all_info["arc_lengths"] = []
-    all_info["integrability"] = []
+    all_info["arc_lengths"] = vpinterface.compute_arclength(pdf_object).tolist()
+    all_info["integrability"] = vpinterface.integrability_numbers(pdf_object).tolist()
     all_info["timing"] = timing
     # Versioning info
     all_info["version"] = version()
@@ -166,7 +160,7 @@ def jsonfit(
 
 
 def version():
-    """ Generates a dictionary with misc version info for this run """
+    """Generates a dictionary with misc version info for this run"""
     versions = {}
     try:
         # Wrap tf in try-except block as it could possible to run n3fit without tf
@@ -328,7 +322,6 @@ def evln2lha(evln):
 
 def storefit(
     pdf_object,
-    map_pdfs,
     replica,
     replica_path,
     fitname,
@@ -584,36 +577,34 @@ def storefit(
         ]
     ).reshape(-1, 1)
 
-    for i, result in enumerate(pdf_object(xgrid, flavours="n3fit")):
-        result = result.squeeze()
-        lha = evln2lha(result.T).T
+    result = pdf_object(xgrid, flavours="n3fit").squeeze()
+    lha = evln2lha(result.T).T
 
-        data = {
-            "replica": replica,
-            "q20": q20,
-            "xgrid": xgrid.T.tolist()[0],
-            "labels": [
-                "TBAR",
-                "BBAR",
-                "CBAR",
-                "SBAR",
-                "UBAR",
-                "DBAR",
-                "GLUON",
-                "D",
-                "U",
-                "S",
-                "C",
-                "B",
-                "T",
-                "PHT",
-            ],
-            "pdfgrid": lha.tolist(),
-        }
+    data = {
+        "replica": replica,
+        "q20": q20,
+        "xgrid": xgrid.T.tolist()[0],
+        "labels": [
+            "TBAR",
+            "BBAR",
+            "CBAR",
+            "SBAR",
+            "UBAR",
+            "DBAR",
+            "GLUON",
+            "D",
+            "U",
+            "S",
+            "C",
+            "B",
+            "T",
+            "PHT",
+        ],
+        "pdfgrid": lha.tolist(),
+    }
 
-        pdfgrid_name = fitname + "_A" + str(map_pdfs[i])
-        with open(f"{replica_path}/{pdfgrid_name}.exportgrid", "w") as fs:
-            yaml.dump(data, fs)
+    with open(f"{replica_path}/{fitname}.exportgrid", "w") as fs:
+        yaml.dump(data, fs)
 
     # create empty files to make postfit happy
     emptyfiles = ["chi2exps.log", f"{fitname}.params", f"{fitname}.sumrules"]

@@ -9,7 +9,9 @@ import numpy as np
 import n3fit.checks
 from n3fit.add_nuclear_info import add_nuclear_dependence
 from n3fit.add_nuclear_info import list_active_nuclei
+from n3fit.splitmodels import split_pdfmodels
 from n3fit.vpinterface import N3PDF
+from n3fit.vpinterface import N3LHAPDFSet
 
 log = logging.getLogger(__name__)
 
@@ -278,35 +280,45 @@ def performfit(
 
             # Create a pdf instance
             q0 = theoryid.get_description().get("Q0")
-            pdf_instance = N3PDF(pdf_model, map_pdfs, fit_basis=basis, Q=q0)
-
-            # Generate the writer wrapper
-            writer_wrapper = WriterWrapper(
-                replica_number,
-                pdf_instance,
-                map_pdfs,
-                stopping_object,
-                q0**2,
-                final_time,
-            )
+            splitted_models = split_pdfmodels(pdf_model, map_pdfs)
 
             # Get the right chi2s
             training_chi2 = np.take(all_training_chi2, i)
             val_chi2 = np.take(all_val_chi2, i)
             exp_chi2 = np.take(all_exp_chi2, i)
 
-            # And write the data down
-            writer_wrapper.write_data(
-                replica_path_set, output_path.name, training_chi2, val_chi2, exp_chi2
-            )
+            # Loop over the sliced models
+            for output_map_value, slice in enumerate(splitted_models[:2]):
+                pdf_instance = N3PDF(
+                    slice,
+                    output_map_value,
+                    fit_basis=basis,
+                    Q=q0
+                )
+
+                # Generate the writer wrapper
+                writer_wrapper = WriterWrapper(
+                    replica_number,
+                    pdf_instance,
+                    stopping_object,
+                    q0**2,
+                    final_time,
+                )
+
+                # Rename Output file name
+                output_name = output_path.name + "_A" + str(output_map_value)
+
+                # And write the data down
+                writer_wrapper.write_data(
+                    replica_path_set, output_name, training_chi2, val_chi2, exp_chi2
+                )
             log.info(
                     "Best fit for replica #%d, chi2=%.3f (tr=%.3f, vl=%.3f)",
                     replica_number,
                     exp_chi2,
                     training_chi2,
                     val_chi2
-                    )
-
+            )
 
             # Save the weights to some file for the given replica
             if save:
