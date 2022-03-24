@@ -232,18 +232,8 @@ def observable_generator(
         obsrot_vl = None
 
     # Post-observable treatment, if there are SMEFT C-factors to fit
-    #if fit_cfac is not None:
-        #log.info("Applying fit_cfac layer")
-        #if split == 'ex':
-            #cfacs = coefficients
-        #elif split == 'tr':
-            #cfacs = coefficients[:, dataset_dict['ds_tr_mask']]
-        #elif split == 'vl':
-            #cfacs = coefficients[:, ~dataset_dict['ds_tr_mask']]
-        #model_obs_ex = post_observable(model_obs_ex, cfactor_values=tf.constant(cfacs, dtype='float32'))
-
     for idx, (dataset_dict, output_layer) in enumerate(zip(spec_dict['datasets'], model_obs_ex)):
-        fit_cfac = dataset_dict['fit_cfac']
+        fit_cfac = dataset_dict.get('fit_cfac')
         if fit_cfac is not None:
             coefficients = np.array([i.central_value for i in fit_cfac.values()])
             if split == 'ex':
