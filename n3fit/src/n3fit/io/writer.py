@@ -15,7 +15,7 @@ from n3fit import vpinterface
 
 
 class WriterWrapper:
-    def __init__(self, replica_number, pdf_object, stopping_object, q2, timings):
+    def __init__(self, replica_number, stopping_object, q2, timings):
         """
         Initializes the writer for one given replica. This is decoupled from the writing
         of the fit in order to fix some of the variables which would be, in principle,
@@ -25,8 +25,6 @@ class WriterWrapper:
         ----------
             `replica_number`
                 index of the replica
-            `pdf_object`
-                function to evaluate with a grid in x to generate a pdf
             `stopping_object`
                 a stopping.Stopping object
             `q2`
@@ -35,10 +33,30 @@ class WriterWrapper:
                 dictionary of the timing of the different events that happened
         """
         self.replica_number = replica_number
-        self.pdf_object = pdf_object
+        self.pdf_object = None
         self.stopping_object = stopping_object
         self.q2 = q2
         self.timings = timings
+        self._replica_status = None
+
+    @property
+    def replica_status(self):
+        """Get the replica status from the stoppting object."""
+        if self._replica_status is None:
+            self._replica_status = self.stopping_object.get_next_replica()
+        return self._replica_status
+
+    def set_pdf(self, pdf_object):
+        """Overwrite the `pdf_object` that will be called when looping the various
+        output PDF models. This is only called after the `stopping_object` has been
+        called.
+
+        Parameters:
+        -----------
+            `pdf_object`
+                function to evaluate with a grid in x to generate a pdf
+        """
+        self.pdf_object = pdf_object
 
     def write_data(self, replica_path_set, fitname, tr_chi2, vl_chi2, true_chi2):
         """
@@ -72,7 +90,7 @@ class WriterWrapper:
         stop_epoch = self.stopping_object.stop_epoch
 
         # Get the replica status for this object
-        replica_status = self.stopping_object.get_next_replica()
+        replica_status = self.replica_status
 
         # export PDF grid to file
         storefit(

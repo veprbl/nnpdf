@@ -287,8 +287,16 @@ def performfit(
             val_chi2 = np.take(all_val_chi2, i)
             exp_chi2 = np.take(all_exp_chi2, i)
 
+            # Generate the writer wrapper
+            writer_wrapper = WriterWrapper(
+                replica_number,
+                stopping_object,
+                q0**2,
+                final_time,
+            )
+
             # Loop over the sliced models
-            for output_map_value, slice in enumerate(splitted_models[:2]):
+            for output_map_value, slice in enumerate(splitted_models):
                 pdf_instance = N3PDF(
                     slice,
                     output_map_value,
@@ -296,14 +304,7 @@ def performfit(
                     Q=q0
                 )
 
-                # Generate the writer wrapper
-                writer_wrapper = WriterWrapper(
-                    replica_number,
-                    pdf_instance,
-                    stopping_object,
-                    q0**2,
-                    final_time,
-                )
+                writer_wrapper.set_pdf(pdf_instance)
 
                 # Rename Output file name
                 output_name = output_path.name + "_A" + str(output_map_value)
