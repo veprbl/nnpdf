@@ -306,8 +306,11 @@ def performfit(
 
                 writer_wrapper.set_pdf(pdf_instance)
 
-                # Rename Output file name
-                output_name = output_path.name + "_A" + str(output_map_value)
+                # The renaming scheme below is just to legacy compatibility in order to still
+                # produce a free-proton fit. In the future, the naming should be consistent
+                # acrross all proton and nuclear PDFs.
+                xoutput_name = output_path.name + "_A" + str(map_pdfs[output_map_value])
+                output_name = output_path.name if output_map_value == 0 else xoutput_name
 
                 # And write the data down
                 writer_wrapper.write_data(
