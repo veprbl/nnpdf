@@ -36,6 +36,20 @@ FitSumRulesGrid = namedtuple('FitSumRulesGrid', FIT_SUMRULES)
 #t = blessings.Terminal()
 log = logging.getLogger(__name__)
 
+def read_fit_cfactors(fit):
+    """
+    Read the parquet saved fit cfactors, accounting for the
+    postfit reshuffling, and return a concatenated dataframe for
+    replicas as indices and fit cfactors as columns. 
+    """
+    paths = replica_paths(fit)
+    paths = list(map(lambda x: x / 'fit_cfactors.parquet', paths))
+    fit_cfactors = pd.concat([pd.read_parquet(i) for i in paths])
+
+    rows, _  = fit_cfactors.shape
+    fit_cfactors.index = range(1, rows + 1)
+    return fit_cfactors
+
 def num_fitted_replicas(fit):
     """Function to obtain the number of nnfit replicas. That is
     the number of replicas before postfit was run.
