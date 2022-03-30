@@ -44,7 +44,10 @@ def read_fit_cfactors(fit):
     """
     paths = replica_paths(fit)
     paths = list(map(lambda x: x / 'fit_cfactors.parquet', paths))
-    fit_cfactors = pd.concat([pd.read_parquet(i) for i in paths])
+    try:
+        fit_cfactors = pd.concat([pd.read_parquet(i) for i in paths])
+    except FileNotFoundError:
+        raise FileNotFoundError(f"the fit {fit.name} does not have fit cfactors.")
 
     rows, _  = fit_cfactors.shape
     fit_cfactors.index = range(1, rows + 1)
