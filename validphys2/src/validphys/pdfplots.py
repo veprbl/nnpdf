@@ -474,6 +474,22 @@ class BandPDFPlotter(PDFPlotter):
                                              }
                                  )
 
+@figuregen
+def plot_fit_cfactors(read_fit_cfactors):
+    """
+    Plot a histogram for each fit_cfactor coefficient.
+    """
+    for label, column in read_fit_cfactors.iteritems():
+        fig, ax = plt.subplots()
+
+        ax.hist(column.values)
+
+        ax.ticklabel_format(axis='x', style='sci', scilimits=(0,0))
+        ax.set_title(f"Distribution for {label} coefficient")
+        ax.set_xlabel(label)
+        ax.set_ylabel("Count")
+
+        yield fig
 
 @figuregen
 @check_pdf_normalize_to
