@@ -36,7 +36,7 @@ class Rotation(MetaLayer):
             return np.allclose(self.rotation_matrix, iden)
 
     def call(self, x_raw):
-        split_size = int(x_raw.shape[-1] / self.rotation_matrix.shape[-1])
+        split_size = int(x_raw.shape[-1] / self.rotation_matrix.shape[0])
         # Returns a list containing the splitting `x_raw`
         splitted_xraw = op.split(x_raw, split_size, axis=-1)
         # Rotate each element by performing the tensor product
@@ -70,6 +70,8 @@ class FkRotation(MetaLayer):
     # the matrix should be: (8, 14) so that we can just do tf.tensordot(pdf, rotmat, axes=1)
     # i.e., create the matrix and inherit from the Rotation layer above
     def __init__(self, output_dim=14, name="evolution", **kwargs):
+        # TODO: Use `output_dim` to perform a more flexible matrix multiplication
+        # depending on the structure of the NN outputs.
         self.output_dim = output_dim
         super().__init__(name=name, **kwargs)
 
