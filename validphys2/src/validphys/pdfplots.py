@@ -491,6 +491,23 @@ def plot_fit_cfactors(read_fit_cfactors):
 
         yield fig
 
+@figure
+def plot_2d_fit_cfactors(read_fit_cfactors):
+    """
+    Plot 2D distributions of fit_cfactors. 
+    """
+    rows, columns = read_fit_cfactors.shape
+    if columns != 2:
+        raise RuntimeError(f"Ensure that the number of fitted cfactors is 2, not {columns}")
+    fig, ax = plt.subplots()
+    ax.scatter(read_fit_cfactors.iloc[:, 0], read_fit_cfactors.iloc[:, 1])
+    labels = read_fit_cfactors.columns
+
+    ax.set_xlabel(labels[0])
+    ax.set_ylabel(labels[1])
+
+    return fig
+
 @figuregen
 @check_pdf_normalize_to
 @check_pdfs_noband

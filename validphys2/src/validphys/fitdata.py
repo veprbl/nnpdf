@@ -38,14 +38,14 @@ log = logging.getLogger(__name__)
 
 def read_fit_cfactors(fit):
     """
-    Read the parquet saved fit cfactors, accounting for the
+    Read the csv saved fit cfactors, accounting for the
     postfit reshuffling, and return a concatenated dataframe for
     replicas as indices and fit cfactors as columns. 
     """
     paths = replica_paths(fit)
-    paths = list(map(lambda x: x / 'fit_cfactors.parquet', paths))
+    paths = list(map(lambda x: x / 'fit_cfactors.csv', paths))
     try:
-        fit_cfactors = pd.concat([pd.read_parquet(i) for i in paths])
+        fit_cfactors = pd.concat([pd.read_csv(i, index_col=0) for i in paths])
     except FileNotFoundError:
         raise FileNotFoundError(f"the fit {fit.name} does not have fit cfactors.")
 
