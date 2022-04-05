@@ -868,6 +868,7 @@ class ModelTrainer:
                 stopping_patience=stopping_epochs,
                 threshold_positivity=threshold_pos,
                 threshold_chi2=threshold_chi2,
+                combiner = self.combiner
             )
 
             # Compile each of the models with the right parameters

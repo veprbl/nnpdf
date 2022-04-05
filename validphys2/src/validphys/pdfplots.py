@@ -475,9 +475,11 @@ class BandPDFPlotter(PDFPlotter):
                                  )
 
 @figuregen
-def plot_fit_cfactors(read_fit_cfactors):
+def plot_nd_fit_cfactors(read_fit_cfactors):
     """
     Plot a histogram for each fit_cfactor coefficient.
+    nd is used for n-dimensional. If two fit cfactors are present, 
+    use instead :py:func:`validphys.results.plot_2d_fit_cfactors`
     """
     for label, column in read_fit_cfactors.iteritems():
         fig, ax = plt.subplots()

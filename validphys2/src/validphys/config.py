@@ -1657,6 +1657,22 @@ class CoreConfig(configparser.Config):
             return validphys.results.total_phi_data_from_experiments
         return validphys.results.dataset_inputs_phi_data
 
+    @configparser.explicit_node
+    def produce_plot_fit_cfactors(self, fit):
+        """
+        Plot a 2D histogram if two fit_cfactors were used, otherwise
+        use figuregen to plot the histograms along each axis individually.
+        """
+        with self.set_context(ns=self._curr_ns.new_child(fit.as_input())):
+            _, self.nfitcfactors = self.parse_from_(None, "nfitcfactors", write=False)
+        if self.nfitcfactors == 2:
+            from validphys.pdfplots import plot_2d_fit_cfactors
+            return plot_2d_fit_cfactors
+        from validphys.pdfplots import plot_nd_fit_cfactors
+        return plot_nd_fit_cfactors
+
+
+
 
 
 class Config(report.Config, CoreConfig, ParamfitsConfig):

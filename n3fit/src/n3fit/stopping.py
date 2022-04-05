@@ -438,6 +438,7 @@ class Stopping:
         stopping_patience=7000,
         threshold_chi2=10.0,
         dont_stop=False,
+        combiner=None
     ):
         # Save the validation object
         self._validation = validation_model
@@ -459,6 +460,7 @@ class Stopping:
         self.stop_now = False
         self.stopping_patience = stopping_patience
         self.total_epochs = total_epochs
+        self.combiner = combiner
 
     @property
     def vl_chi2(self):
@@ -592,6 +594,9 @@ class Stopping:
             total_str += ", ".join(partials) + "\n"
         total_str += f"Validation chi2 at this point: {vl_chi2}"
         log.info(total_str)
+
+        if self.combiner is not None:
+            log.info(self.combiner.get_weights())
 
     def stop_here(self):
         """Returns the stopping status
