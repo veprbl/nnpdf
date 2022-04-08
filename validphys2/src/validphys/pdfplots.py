@@ -491,6 +491,7 @@ def plot_nd_fit_cfactors(read_fit_cfactors):
         ax.set_title(f"Distribution for {label} coefficient")
         ax.set_xlabel(label)
         ax.set_ylabel("Count")
+        ax.grid(False)
 
         yield fig
 
@@ -521,6 +522,8 @@ def plot_2d_fit_cfactors(read_fit_cfactors):
     ax_hist_y.minorticks_on()
     ax_hist_x.tick_params(axis='x', which='minor', bottom=False)
     ax_hist_y.tick_params(axis='y', which='minor', left=False)
+    ax_hist_x.grid(False)
+    ax_hist_y.grid(False)
 
     fig.subplots_adjust(hspace=0, wspace=0)
     fig.canvas.draw()
