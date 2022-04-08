@@ -15,6 +15,7 @@ from types import SimpleNamespace
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors as mcolors
+from matplotlib.gridspec import GridSpec
 
 from reportengine.figure import figure, figuregen
 from reportengine.checks import make_argcheck
@@ -479,7 +480,7 @@ def plot_nd_fit_cfactors(read_fit_cfactors):
     """
     Plot a histogram for each fit_cfactor coefficient.
     nd is used for n-dimensional. If two fit cfactors are present, 
-    use instead :py:func:`validphys.results.plot_2d_fit_cfactors`
+    use instead :py:func:'validphys.results.plot_2d_fit_cfactors'
     """
     for label, column in read_fit_cfactors.iteritems():
         fig, ax = plt.subplots()
@@ -499,15 +500,48 @@ def plot_2d_fit_cfactors(read_fit_cfactors):
     Plot 2D distributions of fit_cfactors. 
     """
     rows, columns = read_fit_cfactors.shape
+    labels = read_fit_cfactors.columns
     if columns != 2:
         raise RuntimeError(f"Ensure that the number of fitted cfactors is 2, not {columns}")
-    fig, ax = plt.subplots()
-    ax.scatter(read_fit_cfactors.iloc[:, 0], read_fit_cfactors.iloc[:, 1])
-    labels = read_fit_cfactors.columns
+    fig = plt.figure()
+    gs = GridSpec(4, 4)
 
-    ax.set_xlabel(labels[0])
-    ax.set_ylabel(labels[1])
+    ax_scatter = fig.add_subplot(gs[1:4, 0:3])
+    ax_hist_x = fig.add_subplot(gs[0, 0:3])
+    ax_hist_y = fig.add_subplot(gs[1:4, 3])
+    
+    ax_scatter.scatter(read_fit_cfactors.iloc[:, 0], read_fit_cfactors.iloc[:, 1] )
+    
+    ax_hist_x.hist(read_fit_cfactors.iloc[:, 0])
+    ax_hist_y.hist(read_fit_cfactors.iloc[:, 1], orientation = "horizontal")
 
+    ax_hist_x.set_xticklabels([])
+    ax_hist_y.set_yticklabels([])
+    ax_hist_x.minorticks_on()
+    ax_hist_y.minorticks_on()
+    ax_hist_x.tick_params(axis='x', which='minor', bottom=False)
+    ax_hist_y.tick_params(axis='y', which='minor', left=False)
+
+    fig.subplots_adjust(hspace=0, wspace=0)
+    fig.canvas.draw()
+
+    # We need this hack to prevent the offset_text 
+    # from being hidden beneath the upper histogram. This bit of
+    # code moves the offset_text multiplier (e.g. 10^-5) and puts 
+    # it in the axis labels so it reads e.g. W/10^-5.
+    x_offset_text = ax_scatter.xaxis.get_offset_text()
+    y_offset_text = ax_scatter.yaxis.get_offset_text()
+    x_offset_text.set_visible(False)
+    y_offset_text.set_visible(False)
+
+    if x_offset_text.get_text():
+        ax_scatter.set_xlabel(labels[0] + "/" + x_offset_text.get_text().replace('\\times', ''))
+    else:
+        ax_scatter.set_xlabel(labels[0])
+    if y_offset_text.get_text():
+        ax_scatter.set_ylabel(labels[1] + "/" + y_offset_text.get_text().replace('\\times', ''))
+    else:
+        ax_scatter.set_ylabel(labels[1])
     return fig
 
 @figuregen
