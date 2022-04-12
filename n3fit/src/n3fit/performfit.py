@@ -194,7 +194,7 @@ def performfit(
             nnseeds,
             nfitcfactors=nfitcfactors,
             fitcfactor_labels=fit_cfactors,
-            cfactor_scale=cfactor_scale
+            cfactor_scale=cfactor_scale,
             debug=debug,
             kfold_parameters=kfold_parameters,
             max_cores=maxcores,
