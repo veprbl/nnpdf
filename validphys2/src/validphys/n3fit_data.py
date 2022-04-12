@@ -191,7 +191,7 @@ def _mask_fk_tables(dataset_dicts, tr_masks):
 def _load_closure_cfactor(path, value, cuts):
     with open(path, 'rb') as stream:
         cfac = parse_cfactor(stream)
-    central_value = (cfac.central_value[cuts] - 1) / (-10**(-4))
+    central_value = (cfac.central_value[cuts] - 1) / (-10e-4)
     # Flatten in case cuts is None
     return (central_value * value).flatten()
 
