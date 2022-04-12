@@ -6,7 +6,7 @@ class CombineCfacLayer(Layer):
    Creates SIMUnet's combination layer.  
    """
    
-   def __init__(self, ncfacs):
+   def __init__(self, ncfacs, cfac_units):
       # Initialize a Layer instance
       super().__init__()    
       # Initialize vector of trainable weights
@@ -14,6 +14,7 @@ class CombineCfacLayer(Layer):
          initial_value=tf.zeros(shape=(ncfacs,), dtype='float32'),
          trainable = True
          )
+      self.scale = cfac_units
    
    def __call__(self, inputs, cfactor_values):
       """
@@ -29,7 +30,7 @@ class CombineCfacLayer(Layer):
             observable. 
 
       """
-      return (1 + tf.reduce_sum(self.w[:, tf.newaxis] * cfactor_values, axis=0)) * inputs
+      return (1 + tf.reduce_sum(self.w[:, tf.newaxis] * cfactor_values, axis=0) / self.scale) * inputs
 
                               
 

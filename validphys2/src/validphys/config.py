@@ -414,6 +414,12 @@ class CoreConfig(configparser.Config):
             return len(fit_cfactors)
         return 0
 
+    def parse_cfactor_scale(self, cfactorscale: float):
+        return cfactorscale
+
+    def produce_cfactor_scale(self, cfactorscale=1.0):
+        return cfactorscale
+
     def parse_fix_fit_cfactors_to(self, fit_cfactors_fixed_values: dict, fit_cfactors):
         fit_cfactors = set(fit_cfactors)
         for operator, value in fit_cfactors_fixed_values.items():

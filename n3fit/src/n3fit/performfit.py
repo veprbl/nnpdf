@@ -21,6 +21,7 @@ def performfit(
     replicas, # checks specific to performfit
     nfitcfactors = 0,
     fit_cfactors=None,
+    cfactor_scale=1.0,
     replicas_nnseed_fitting_data_dict,
     posdatasets_fitting_pos_dict,
     integdatasets_fitting_integ_dict,
@@ -193,6 +194,7 @@ def performfit(
             nnseeds,
             nfitcfactors=nfitcfactors,
             fitcfactor_labels=fit_cfactors,
+            cfactor_scale=cfactor_scale
             debug=debug,
             kfold_parameters=kfold_parameters,
             max_cores=maxcores,

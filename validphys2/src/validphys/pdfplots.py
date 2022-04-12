@@ -14,7 +14,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm, colors as mcolors
+from matplotlib import cm, colors as mcolors, use
 from matplotlib.gridspec import GridSpec
 
 from reportengine.figure import figure, figuregen
@@ -511,7 +511,8 @@ def plot_2d_fit_cfactors(read_fit_cfactors):
     ax_hist_x = fig.add_subplot(gs[0, 0:3])
     ax_hist_y = fig.add_subplot(gs[1:4, 3])
     
-    ax_scatter.scatter(read_fit_cfactors.iloc[:, 0], read_fit_cfactors.iloc[:, 1] )
+    ax_scatter.scatter(read_fit_cfactors.iloc[:, 0], read_fit_cfactors.iloc[:, 1])
+    ax_scatter.ticklabel_format(axis='both', scilimits=(0,0), style='sci', useOffset=True)
     
     ax_hist_x.hist(read_fit_cfactors.iloc[:, 0])
     ax_hist_y.hist(read_fit_cfactors.iloc[:, 1], orientation = "horizontal")

@@ -206,6 +206,7 @@ def closure_cfactor(data, fixed_fit_cfactors):
         if hasattr(cuts, 'load'):
             cuts = cuts.load()
         if ds.fit_cfac:
+            log.info(f"Applying fake data to {ds.name}")    
             op_cfacs = []
             for op, path in ds.fit_cfac.items():
                 value = fixed_fit_cfactors[op]
