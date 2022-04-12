@@ -10,13 +10,16 @@ from collections import defaultdict
 from copy import deepcopy
 import hashlib
 import logging
+from random import Random
 
 import numpy as np
 import pandas as pd
 
 from reportengine import collect
 from reportengine.table import table
+from NNPDF import RandomGenerator
 
+from validphys.fkparser import parse_cfactor
 from validphys.n3fit_data_utils import (
     common_data_reader_experiment,
     positivity_reader,
@@ -184,6 +187,53 @@ def _mask_fk_tables(dataset_dicts, tr_masks):
         dataset_dict["ex_fktables"] = ex_fks
 
     return np.concatenate(trmask_partial)
+
+def _load_closure_cfactor(path, value, cuts):
+    with open(path, 'rb') as stream:
+        cfac = parse_cfactor(stream)
+    central_value = (cfac.central_value[cuts] - 1) / (-10**(-4))
+    # Flatten in case cuts is None
+    return (central_value * value).flatten()
+
+def closure_cfactor(data, fixed_fit_cfactors):
+    if fixed_fit_cfactors is None:
+        # If no operators are fixed just return unity
+        return np.array(1.0)
+
+    cfactor = []
+    for ds in data.datasets:
+        cuts = ds.cuts
+        if hasattr(cuts, 'load'):
+            cuts = cuts.load()
+        if ds.fit_cfac:
+            op_cfacs = []
+            for op, path in ds.fit_cfac.items():
+                value = fixed_fit_cfactors[op]
+                op_cfacs.append(_load_closure_cfactor(path, value. cuts))
+            cfactor.append(1 + np.sum(op_cfacs, axis=0))
+        else:
+            ld = ds.load()
+            ndata = ld.GetNData()
+            cfactor.append(np.ones(ndata, dtype=np.float32))
+    return np.concatenate(cfactor)
+
+def generate_data_replica(data, replica_mcseed, closure_cfactor):
+    """
+    Generate a pseudodata replica for 'data' given the 'replica_mcseed'. 
+    """ 
+    spec_c = data.load()
+    base_mcseed = int(hashlib.sha256(str(data).encode()).hexdigest(), 16) % 10 ** 8
+    # copy C++ object to avoid umation 
+    # t0 not required for replica generation, since libnnpdf uses experimentañ
+    # covmat to generate replicas
+    spec_replica_c = type(spec_c)(spec_c)
+
+    # Replica generation
+    if replica_mcseed is not None:
+        mcseed = base_mcseed + replica_mcseed
+        RandomGenerator.InitRNG(0, mcseed)
+        spec_replica_c.MakeReplica()
+    return spec_replica_c.get_cv()*closure_cfactor
 
 
 def fitting_data_dict(

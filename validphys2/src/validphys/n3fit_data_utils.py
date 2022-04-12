@@ -71,7 +71,7 @@ def fk_parser(fk, is_hadronic=False):
     }
     return dict_out
 
-def parse_fit_cfac(fit_cfac, cuts, ndata):
+def parse_fit_cfac(fit_cfac, cuts):
     """
     Get the name of the C-factors that we use in fits
     Parameters
@@ -137,7 +137,7 @@ def common_data_reader_dataset(dataset_c, dataset_spec):
         "name": dataset_c.GetSetName(),
         "frac": dataset_spec.frac,
         "ndata": ndata,
-        "fit_cfac":parse_fit_cfac(dataset_spec.fit_cfac, cuts, ndata)
+        "fit_cfac":parse_fit_cfac(dataset_spec.fit_cfac, cuts)
     }
 
     return [dataset_dict]

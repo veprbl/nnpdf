@@ -413,6 +413,21 @@ class CoreConfig(configparser.Config):
         if fit_cfactors is not None:
             return len(fit_cfactors)
         return 0
+
+    def parse_fix_fit_cfactors_to(self, fit_cfactors_fixed_values: dict, fit_cfactors):
+        fit_cfactors = set(fit_cfactors)
+        for operator, value in fit_cfactors_fixed_values.items():
+            if operator not in fit_cfactors:
+                raise ConfigError(
+                    f"The operator {operator} was requested to be fixed,"
+                    " but was not specified in the fit_cfactors namespace."                    
+                )
+            if not isinstance(value, numbers.Real):
+                raise ConfigError(f"The value of {operator} must be float or int, not {type(value)}. ")
+        return fit_cfactors_fixed_values
+
+    def produce_fixed_fit_cfactors(self, fix_fit_cfactors_to=None):
+        return fix_fit_cfactors_to
     
     @element_of("dataset_inputs")
     def parse_dataset_input(self, dataset: Mapping):
