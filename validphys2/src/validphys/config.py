@@ -399,6 +399,19 @@ class CoreConfig(configparser.Config):
         """ Set the PDF and basis from the fit config. """
         return {**fitpdf, **basisfromfit}
 
+    def parse_quadratic_cfactors(self, quad_cfacs: list):
+        _, fit_cfacs = self.parse_from_(None, "fit_cfactors", write=False)
+        for quad_cfac in quad_cfacs:
+            if quad_cfac not in fit_cfacs:
+                raise ConfigError(
+                    f"A quadratic cfactor for {quad_cfac} was requested"
+                    " but it was not specified in fit_cfactors."
+                )
+        return tuple(quad_cfacs)
+
+    def produce_quad_cfacs(self, quadratic_cfactors=tuple()):
+        return quadratic_cfactors
+
     def parse_fit_cfactors(self, fit_cfactors_ns: list):
         """
         This method retrieves the value of the "fit_cfac" key

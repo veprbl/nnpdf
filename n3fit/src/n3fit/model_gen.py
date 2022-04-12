@@ -234,16 +234,29 @@ def observable_generator(
     # Post-observable treatment, if there are SMEFT C-factors to fit
     for idx, (dataset_dict, output_layer) in enumerate(zip(spec_dict['datasets'], model_obs_ex)):
         fit_cfac = dataset_dict.get('fit_cfac')
+        quad_fit_cfac = dataset_dict.get('quad_fit_cfac')
         if fit_cfac is not None:
             coefficients = np.array([i.central_value for i in fit_cfac.values()])
+            if quad_fit_cfac is not None:
+                quad_coefficients = np.array([i.central_value for i in quad_fit_cfac.values()])
+                log.info("Using quadratic cfactors.")
+            else:
+                quad_coefficients = np.zeros_like(coefficients)
             if split == 'ex':
                 cfacs = coefficients
+                quad_cfacs = quad_coefficients
             elif split == 'tr':
                 cfacs = coefficients[:, dataset_dict['ds_tr_mask']]
+                quad_cfacs = quad_coefficients[:, dataset_dict['ds_tr_mask']]
             elif split == 'vl':
                 cfacs = coefficients[:, ~dataset_dict['ds_tr_mask']]
+                quad_cfacs = quad_coefficients[:, ~dataset_dict['ds_tr_mask']]
             log.info("Applying fit_cfac layer")
-            model_obs_ex[idx] = post_observable(output_layer, cfactor_values=tf.constant(cfacs, dtype='float32'))
+            model_obs_ex[idx] = post_observable(
+                output_layer, 
+                cfactor_values=tf.constant(cfacs, dtype='float32'),
+                quad_cfactor_values=tf.constant(quad_cfacs, dtype='float32')
+                )
 
     out_tr = ObservableWrapper(
         spec_name,

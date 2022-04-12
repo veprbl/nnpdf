@@ -93,6 +93,7 @@ class ModelTrainer:
         cfactor_scale=1.0,
         nfitcfactors =0,
         fitcfactor_labels=None,
+        quad_fitcfactor_labels=None,
         pass_status="ok",
         failed_status="fail",
         debug=False,
@@ -153,6 +154,7 @@ class ModelTrainer:
         self.all_datasets = []
         self.nfitcfactors = nfitcfactors
         self.fitcfactor_labels = fitcfactor_labels
+        self.quad_fitcfactor_labels = quad_fitcfactor_labels
         self.cfactor_scale = cfactor_scale
         self._scaler = None
         self._parallel_models = parallel_models
@@ -466,7 +468,12 @@ class ModelTrainer:
         log.info("Generating layers")
 
         # Generate layer of trainable SMEFT C-factors 
-        combiner = CombineCfacLayer(self.nfitcfactors, self.cfactor_scale)
+        combiner = CombineCfacLayer(
+            self.nfitcfactors,
+            self.cfactor_scale,
+            self.fitcfactor_labels,
+            self.quad_fitcfactor_labels
+            )
         log.info(f"Using cfactor scale {self.cfactor_scale}")
         self.combiner = combiner
 

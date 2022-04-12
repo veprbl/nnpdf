@@ -243,6 +243,7 @@ def fitting_data_dict(
     dataset_inputs_t0_covmat_from_systematics,
     tr_masks,
     kfold_masks,
+    quad_cfacs=None,
     diagonal_basis=None,
 ):
     """
@@ -293,7 +294,7 @@ def fitting_data_dict(
 
     expdata = make_replica
 
-    datasets = common_data_reader_experiment(spec_c, data)
+    datasets = common_data_reader_experiment(spec_c, data, quad_cfacs)
 
     # t0 covmat
     covmat = dataset_inputs_t0_covmat_from_systematics

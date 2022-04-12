@@ -71,7 +71,7 @@ def fk_parser(fk, is_hadronic=False):
     }
     return dict_out
 
-def parse_fit_cfac(fit_cfac, cuts):
+def parse_fit_cfac(fit_cfac, cuts, is_quadratic=False):
     """
     Get the name of the C-factors that we use in fits
     Parameters
@@ -93,12 +93,30 @@ def parse_fit_cfac(fit_cfac, cuts):
     for name, path in fit_cfac.items():
         with open(path, 'rb') as stream:
             cfac = parse_cfactor(stream)
-            cfac.central_value = (cfac.central_value[cuts] - 1) / (-10e-4)
+            #TODO: Figure out a better way to handle the default
+            if is_quadratic:
+                cfac.central_value = (cfac.central_value[cuts] - 1) / (-10e-4)**2
+            else:
+                cfac.central_value = (cfac.central_value[cuts] - 1) / (-10e-4)
             cfac.uncertainty = cfac.uncertainty[cuts]
         name_cfac_map[name] = cfac
     return name_cfac_map
 
-def common_data_reader_dataset(dataset_c, dataset_spec):
+def parse_quad_cfacs(fit_cfac, cuts, quad_cfacs):
+    if fit_cfac is None:
+        return None
+    quad_token = '_quadratic.dat'
+    # Change the paths to now include the _quadratic.dat suffix
+    quad_fit_cfac = {}
+    for quad_cfac in quad_cfacs:
+        old_path = fit_cfac[quad_cfac]
+        new_name = old_path.name.replace('.dat', quad_token)
+        quad_fit_cfac[quad_cfac] = old_path.with_name(new_name)
+
+    result = parse_fit_cfac(quad_fit_cfac, cuts, is_quadratic=True)
+    return result
+
+def common_data_reader_dataset(dataset_c, dataset_spec, quad_cfacs=None):
     """
     Import fktable, common data and experimental data for the given data_name
 
@@ -130,6 +148,11 @@ def common_data_reader_dataset(dataset_c, dataset_spec):
 
     ndata = dataset_c.GetNData()
 
+    if quad_cfacs:
+        quad_fit_cfac = parse_quad_cfacs(dataset_spec.fit_cfac, cuts, quad_cfacs)
+    else:
+        quad_fit_cfac = None
+
     dataset_dict = {
         "fktables": dict_fktables,
         "hadronic": dataset_c.IsHadronic(),
@@ -137,13 +160,14 @@ def common_data_reader_dataset(dataset_c, dataset_spec):
         "name": dataset_c.GetSetName(),
         "frac": dataset_spec.frac,
         "ndata": ndata,
-        "fit_cfac":parse_fit_cfac(dataset_spec.fit_cfac, cuts)
+        "fit_cfac":parse_fit_cfac(dataset_spec.fit_cfac, cuts),
+        "quad_fit_cfac": quad_fit_cfac
     }
 
     return [dataset_dict]
 
 
-def common_data_reader_experiment(experiment_c, experiment_spec):
+def common_data_reader_experiment(experiment_c, experiment_spec, quad_cfacs=None):
     """
     Wrapper around the experiments. Loop over all datasets in an experiment,
     calls common_data_reader on them and return a list with the content.
@@ -157,7 +181,7 @@ def common_data_reader_experiment(experiment_c, experiment_spec):
     """
     parsed_datasets = []
     for dataset_c, dataset_spec in zip(experiment_c.DataSets(), experiment_spec.datasets):
-        parsed_datasets += common_data_reader_dataset(dataset_c, dataset_spec)
+        parsed_datasets += common_data_reader_dataset(dataset_c, dataset_spec, quad_cfacs)
     return parsed_datasets
 
 
