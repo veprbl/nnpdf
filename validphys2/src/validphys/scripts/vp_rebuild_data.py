@@ -49,7 +49,8 @@ REBUILD_CONFIG = dict(
     use_cuts="fromfit",
     # TODO: add namespace specifications to API
     closuretest={"from_": "fit"},
-    fakedata={"from_": "closuretest"}
+    fakedata={"from_": "closuretest"},
+    fit_cfactors={"from_": "fit"}
 )
 
 def main():
