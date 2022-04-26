@@ -22,18 +22,6 @@
    linearly dependent on the others
   rule: "MQQ<1350"
 
-- dataset: CMSTOPDIFF8TEVTRAPNORM
-  reason: |
-   We remove the last bin of the normalised distribution because it is
-   linearly dependent on the others
-  rule: "yQ<2.01"
-
-- dataset: CMSTOPDIFF8TEVTTRAPNORM
-  reason: |
-   We remove the last bin of the normalised distribution because it is
-   linearly dependent on the others
-  rule: "yQQ<1.82"
-
 - dataset: ATLAS1JET11
   reason: |
     We keep only the first rapidity bin since the chi2 to the whole set of
@@ -96,7 +84,7 @@
     for which the asymmetry is small is unfeasible. So we can only fit points
     at NNLO for which the value of the asymmetry is not too small.
   PTO: NNLO
-  rule: "fabs(central_value) >= 0.03"
+  rule: "central_value >= 0.03"
 
 - dataset: ATLAS_WP_JET_8TEV_PT
   reason: Avoid the region where small-pT resummation effects become important.
