@@ -471,6 +471,19 @@ class Loader(LoaderBase):
             for inp in default_filter_rules_input()
         ]
 
+    def check_fit_cfac(self, setname, fit_cfacs, theoryid):
+        _, theopath = self.check_theoryID(theoryid)
+        fit_cfac_path_mapping = {}
+
+        for fit_cfac in fit_cfacs:
+            cfactorpath = theopath / 'cfactor' / f'CF_{fit_cfac}_{setname}.dat'
+            if not cfactorpath.exists():
+                msg = f"Could not find fit cfactor {fit_cfac} for {setname} in {theopath}"
+                raise CfactorNotFound(msg)
+            fit_cfac_path_mapping[fit_cfac] = cfactorpath
+        
+        return fit_cfac_path_mapping
+
     def check_dataset(self,
                       name,
                       *,
@@ -482,7 +495,8 @@ class Loader(LoaderBase):
                       cuts=CutsPolicy.INTERNAL,
                       use_fitcommondata=False,
                       fit=None,
-                      weight=1):
+                      weight=1,
+                      fit_cfac=None):
 
         if not isinstance(theoryid, TheoryIDSpec):
             theoryid = self.check_theoryID(theoryid)
@@ -512,10 +526,13 @@ class Loader(LoaderBase):
                 cuts = self.check_internal_cuts(commondata, rules)
             elif cuts is CutsPolicy.FROM_CUT_INTERSECTION_NAMESPACE:
                 raise LoaderError(f"Intersection cuts not supported in loader calls.")
+        
+        if fit_cfac is not None:
+            fit_cfac = self.check_fit_cfac(name, fit_cfac, theoryno)
 
         return DataSetSpec(name=name, commondata=commondata,
                            fkspecs=fkspec, thspec=theoryid, cuts=cuts,
-                           frac=frac, op=op, weight=weight)
+                           frac=frac, op=op, weight=weight, fit_cfac=fit_cfac)
 
     def check_experiment(self, name: str, datasets: List[DataSetSpec]) -> DataGroupSpec:
         """Loader method for instantiating DataGroupSpec objects. The NNPDF::Experiment

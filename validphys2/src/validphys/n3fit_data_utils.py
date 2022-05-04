@@ -4,7 +4,7 @@ n3fit_data_utils.py
 Library of helper functions to n3fit_data.py for reading libnnpdf objects.
 """
 import numpy as np
-
+from validphys.fkparser import parse_cfactor
 
 def fk_parser(fk, is_hadronic=False):
     """
@@ -70,6 +70,17 @@ def fk_parser(fk, is_hadronic=False):
     }
     return dict_out
 
+def parse_fit_cfac(fit_cfac, ndata):
+    if fit_cfac is None:
+        return None
+    name_cfac_map = {}
+    for name, path in fit_cfac.items():
+        with open(path, 'rb') as stream:
+            cfac = parse_cfactor(stream)
+            cfac.central_value -= 1
+        name_cfac_map[name] = cfac
+    return name_cfac_map
+
 
 def common_data_reader_dataset(dataset_c, dataset_spec):
     """
@@ -100,13 +111,16 @@ def common_data_reader_dataset(dataset_c, dataset_spec):
         fktable = dataset_c.GetFK(i)
         dict_fktables.append(fk_parser(fktable, dataset_c.IsHadronic()))
 
+    ndata = dataset_c.GetNData()
+
     dataset_dict = {
         "fktables": dict_fktables,
         "hadronic": dataset_c.IsHadronic(),
         "operation": dataset_spec.op,
         "name": dataset_c.GetSetName(),
         "frac": dataset_spec.frac,
-        "ndata": dataset_c.GetNData(),
+        "ndata": ndata,
+        "fit_cfac": parse_fit_cfac(dataset_spec.fit_cfac, ndata)
     }
 
     return [dataset_dict]
